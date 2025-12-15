@@ -1,11 +1,47 @@
-Library/
-Temp/
-Obj/
-Build/
-Builds/
-Logs/
+# =====================
+# Unity generated
+# =====================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
 UserSettings/
-*.csproj
-*.sln
+
+# =====================
+# MemoryCaptures
+# =====================
+MemoryCaptures/
+
+# =====================
+# Asset meta data
+# =====================
+*.pidb.meta
+*.pdb.meta
+
+# =====================
+# IDE / Editor files
+# =====================
 .vscode/
 .idea/
+*.csproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# =====================
+# OS generated
+# =====================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =====================
+# Crash / temp
+# =====================
+sysinfo.txt
+crashlytics-build.properties
