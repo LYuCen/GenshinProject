@@ -21,5 +21,15 @@ namespace Common.LevelFSM.EnemyFSM
         {
             EnemyAnimController = new EnemyAnim(animator, this, avatarMask, leftHandIk, rightHandIk);
         }
+
+        private void Update()
+        {
+            EnemyAnimController.Update();
+        }
+
+        private void OnDisable()
+        {
+            EnemyAnimController.Destroy();
+        }
     }
 }

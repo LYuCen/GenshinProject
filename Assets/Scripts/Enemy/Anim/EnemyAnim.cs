@@ -13,8 +13,8 @@ namespace Enemy.Anim
         public Transform LeftHandEffector;
         public Transform RightHandEffector;
         public bool OpenIk = true;
-        private LowerBodyWeightController _lowerController = new ();
-        private UpperBodyWeightController _upperController = new();
+        private LowerBodyWeightController<EnemyManager> _lowerController = new ();
+        private UpperBodyWeightController<EnemyManager> _upperController = new();
         private EnemyAnimBuild _animBuild = new EnemyAnimBuild();
         private Animator _animator;
         private EnemyManager _manager;
@@ -30,12 +30,12 @@ namespace Enemy.Anim
             _upperController.SetEnable(true);
         }
         
-        public void ChangeLowerWeight(PlayerAnimState state)
+        public void ChangeLowerWeight(EnemyAnimState state)
         {
             _lowerController.ChangeState(state);
         }
 
-        public void ChangeUpperWeight(PlayerAnimState state)
+        public void ChangeUpperWeight(EnemyAnimState state)
         {
             _upperController.ChangeState(state);
         }
@@ -53,13 +53,13 @@ namespace Enemy.Anim
         public void Update()
         {
             _lowerController.Update();
-            _upperController.Update();
+            //_upperController.Update();
             _animBuild.Update(LeftHandIk, RightHandIk, OpenIk);
         }
 
-        public void OnDisable()
+        public void Destroy()
         {
-            _animBuild.OnDisable();
+            _animBuild.DestroyGraph();
         }
     }
 }

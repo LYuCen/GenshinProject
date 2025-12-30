@@ -20,7 +20,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);
             MyManager.gunCube.localEulerAngles = new Vector3(-90, 180, 0);
-            MyManager.cameraController.shootCinema.gameObject.SetActive(false);
             MyManager.stateName = "待机";
         }
 

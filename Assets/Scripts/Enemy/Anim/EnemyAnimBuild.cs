@@ -1,4 +1,5 @@
 ﻿using Common.LevelFSM.EnemyFSM;
+using Enemy.Anim.LowerBodyAnim;
 using Player.Anim;
 using Player.Ik;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace Enemy.Anim
             _manager = manager;
             _avatarMask = avatarMask;
             
-            _graph = PlayableGraph.Create();
+            _graph = PlayableGraph.Create("EnemyPlayAble");
             _root = new EnemyAnimRoot(_manager, _avatarMask);
             _rootPlayable = _root.BuildNode(_graph);
             
@@ -60,7 +61,7 @@ namespace Enemy.Anim
             _jobPlayable.SetJobData(job);
         }
 
-        public void OnDisable()
+        public void DestroyGraph()
         {
             _graph.Destroy();
         }
@@ -72,7 +73,7 @@ namespace Enemy.Anim
         private AvatarMask _avatarMask;
         public EnemyAnimRoot(EnemyManager myManager, AvatarMask avatarMask) : base(myManager)
         {
-            //AddState(new LowerBodyAnimState(MyManager));
+            AddState(new EnemyLowerBodyAnimState(MyManager));
             //AddState(new UpperBodyAnimState(MyManager));
             _avatarMask = avatarMask;
         }
@@ -106,7 +107,7 @@ namespace Enemy.Anim
                 graph.Connect(playable, 0, _rootLayer, i);
             }
 
-            //_rootLayer.SetInputWeight(0, 1f);
+            _rootLayer.SetInputWeight(0, 1f);
             //_rootLayer.SetInputWeight(1, 1f);
             //_rootLayer.SetLayerMaskFromAvatarMask(1, _avatarMask);
             return _rootLayer;

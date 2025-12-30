@@ -134,13 +134,13 @@ namespace mController
 
         public void DownPrimaryAction() // 按下武器主功能键
         {
-            Debug.Log("按下武器主功能键");
+            //Debug.Log("按下武器主功能键");
             Weapon.OnPrimaryAction();
         }
         
         public void PressPrimaryAction() // 按住武器主功能键
         {
-            Debug.Log("按住武器主功能键");
+            //Debug.Log("按住武器主功能键");
             if (Weapon.GetMagazine().BulletNumber > 0)
             {
                 firearmElement = Weapon.GetMagazine().Element;
@@ -155,7 +155,7 @@ namespace mController
 
         public void UpPrimaryAction() // 抬起武器主功能键
         {
-            Debug.Log("抬起武器主功能键");
+            //Debug.Log("抬起武器主功能键");
             Weapon.UpPrimaryAction();
         }
 

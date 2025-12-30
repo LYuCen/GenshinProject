@@ -48,7 +48,6 @@ namespace Common.FSM.PlayerFSM
         private Vector2 _lastMove; // 输入切换后移动方向
         private float _stableTimer = 0f; // 输入状态切换当前时间
         [Header("输入状态时间间隔")] public float stableThreshold = 0.05f; // 输入状态切换间隔
-        public Vector3 playerFront; // 角色正方向
         
         public void Init()
         {
@@ -179,10 +178,6 @@ namespace Common.FSM.PlayerFSM
             PlayAnimController.Update();
             PlayerMoveAnimContro();
             
-            // 角色正方向变化
-            playerFront = cameraController.rayEnd - transform.position - cameraController.camRight * cameraController.distance;
-            playerFront.y = 0;
-            playerFront.Normalize();
         }
 
         private void LateUpdate()
@@ -195,9 +190,7 @@ namespace Common.FSM.PlayerFSM
                 Vector3 forward = Vector3.Lerp(gun.forward, (cameraController.rayEnd - gunStock.position).normalized,
                     5 * Time.deltaTime);
                 gun.forward = forward;
-                cameraController.AwakeCinemachine(cameraController.shootCinema,cameraController.baseCinema);
             }
-            else cameraController.AwakeCinemachine(cameraController.baseCinema,cameraController.shootCinema);
         }
 
         bool IsGrounded()
@@ -246,7 +239,7 @@ namespace Common.FSM.PlayerFSM
 
         private void OnDisable()
         {
-            PlayAnimController.OnDisable();
+            PlayAnimController.Destroy();
         }
 
         public IArchitecture GetArchitecture()

@@ -4,7 +4,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
 {
     public class ShootWalkState : AbstractState<PlayerManager>
     {
-        private Vector2 _inputMove;
         public ShootWalkState(PlayerManager manager) : base(manager)
         {
             Conditions.Add(new WalkCondition(MyManager,"Walk"));
@@ -17,7 +16,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.speed = 1.6f;
             MyManager.PlayAnimController.LeftHandIk = 1;
             MyManager.PlayAnimController.RightHandIk = 1;
-            _inputMove = MyManager.inputMove;
             if (!MyManager.isReload)
             {
                 MyManager.gunCube.SetParent(MyManager.gun);
@@ -25,7 +23,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
                 MyManager.gunCube.localEulerAngles = Vector3.zero;
                 MyManager.rightHandIk.position = MyManager.gunGrip.position;
             }
-            MyManager.cameraController.shootCinema.gameObject.SetActive(true);
             MyManager.stateName = "据枪移动";
         }
 
@@ -33,17 +30,28 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         {
             MyManager.PlayAnimController.LeftHandIk = 1;
             MyManager.PlayAnimController.RightHandIk = 1;
-            if (_inputMove != MyManager.inputMove && MyManager.inputMove != Vector2.zero)
+            float targetYaw = MyManager.cameraController.Yaw;
+            
+            Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
+            Vector3 right   = Quaternion.Euler(0, targetYaw, 0) * Vector3.right;
+
+            Vector3 move =
+                forward * MyManager.inputMove.y +
+                right   * MyManager.inputMove.x;
+            
+            if (move.sqrMagnitude > 0.001f)
             {
-                _inputMove = MyManager.inputMove;
+                Quaternion targetRot = Quaternion.LookRotation(forward);
+                MyManager.transform.rotation = Quaternion.Slerp(
+                    MyManager.transform.rotation,
+                    targetRot,
+                    Time.deltaTime * 10f
+                );
             }
-            Vector3 shootPos = MyManager.cameraController.rayEnd - MyManager.transform.position;
-            shootPos.y = 0;
-            shootPos.Normalize();
-            MyManager.transform.forward = Vector3.Lerp(MyManager.transform.forward, shootPos,1f);
-            Vector3 right = new Vector3(MyManager.playerFront.z, 0, -MyManager.playerFront.x);
-            Vector3 move = MyManager.playerFront * MyManager.inputMove.y + right * MyManager.inputMove.x;
-            MyManager.characterController.Move(move.normalized * (MyManager.speed * Time.deltaTime));
+
+            MyManager.characterController.Move(
+                move.normalized * (MyManager.speed * Time.deltaTime)
+            );
         }
 
         public override void OnExitState()

@@ -25,21 +25,33 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);
             MyManager.gunCube.localEulerAngles = new Vector3(-90, 180, 0);
-            MyManager.cameraController.shootCinema.gameObject.SetActive(false);
             MyManager.stateName = "移动";
         }
 
         public override void OnUpdateState()
         {
-            float rotateY = MyManager.cameraController.Direction[((int)MyManager.inputMove.x, (int)MyManager.inputMove.y)] -
-                            MyManager.cameraController.GetAngle();
-            _rotationY = MyManager.transform.eulerAngles.y + rotateY;
-            float newY = Mathf.LerpAngle(MyManager.transform.eulerAngles.y, _rotationY, Time.deltaTime * 10f);
-            MyManager.transform.eulerAngles = new Vector3(0, newY, 0);
+            float targetYaw = MyManager.cameraController.Yaw;
+            
+            Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
+            Vector3 right   = Quaternion.Euler(0, targetYaw, 0) * Vector3.right;
 
-            Vector3 right = new Vector3(MyManager.playerFront.z, 0, -MyManager.playerFront.x);
-            Vector3 move = MyManager.playerFront * MyManager.inputMove.y + right * MyManager.inputMove.x;
-            MyManager.characterController.Move(move.normalized * (MyManager.speed * Time.deltaTime));
+            Vector3 move =
+                forward * MyManager.inputMove.y +
+                right   * MyManager.inputMove.x;
+            
+            if (move.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(move);
+                MyManager.transform.rotation = Quaternion.Slerp(
+                    MyManager.transform.rotation,
+                    targetRot,
+                    Time.deltaTime * 10f
+                );
+            }
+
+            MyManager.characterController.Move(
+                move.normalized * (MyManager.speed * Time.deltaTime)
+            );
         }
 
         public override void OnExitState()

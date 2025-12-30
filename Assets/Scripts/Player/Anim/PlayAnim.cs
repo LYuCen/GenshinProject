@@ -12,8 +12,8 @@ namespace Player.Anim
         public Transform LeftHandEffector;
         public Transform RightHandEffector;
         public bool OpenIk = true;
-        private LowerBodyWeightController _lowerController = new ();
-        private UpperBodyWeightController _upperController = new();
+        private LowerBodyWeightController<PlayerManager> _lowerController = new ();
+        private UpperBodyWeightController<PlayerManager> _upperController = new();
         private PlayerAnimBuild _animBuild = new PlayerAnimBuild();
         private Animator _animator;
         private PlayerManager _manager;
@@ -56,9 +56,9 @@ namespace Player.Anim
             _animBuild.Update(LeftHandIk, RightHandIk, OpenIk);
         }
 
-        public void OnDisable()
+        public void Destroy()
         {
-            _animBuild.OnDisable();
+            _animBuild.DestroyGraph();
         }
     }
 }

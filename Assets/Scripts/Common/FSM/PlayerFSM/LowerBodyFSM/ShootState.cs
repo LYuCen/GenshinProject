@@ -23,7 +23,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
                 MyManager.gunCube.localEulerAngles = Vector3.zero;
                 MyManager.rightHandIk.position = MyManager.gunGrip.position;
             }
-            MyManager.cameraController.shootCinema.gameObject.SetActive(true);
             MyManager.stateName = "据枪待机";
         }
 

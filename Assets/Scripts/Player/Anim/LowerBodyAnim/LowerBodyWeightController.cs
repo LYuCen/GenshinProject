@@ -3,16 +3,16 @@ using UnityEngine;
 
 namespace Player.Anim.LowerBodyAnim
 {
-    public class LowerBodyWeightController
+    public class LowerBodyWeightController<T>
     {
-        private PlayerAnimState _nowLeafState;   // 当前叶子状态
-        private PlayerAnimState _nextLeafState;  // 下一个叶子状态
+        private AnimState<T> _nowLeafState;   // 当前叶子状态
+        private AnimState<T> _nextLeafState;  // 下一个叶子状态
         private float _weight;             // 新状态的权重（0~1）
         private int _mixIndex;             // 新状态在父节点的混合索引
-        private PlayerAnimState _parentState;    // 公共父状态
+        private AnimState<T> _parentState;    // 公共父状态
         private bool _enable; // 是否启用
 
-        public void ChangeState(PlayerAnimState next)
+        public void ChangeState(AnimState<T> next)
         {
             if (next == null || !_enable) return;
             // 如果是第一次切换，直接赋值，不做过渡
@@ -36,8 +36,8 @@ namespace Player.Anim.LowerBodyAnim
             if (_nextLeafState == next) return;
 
             // 1. 记录旧状态的祖先链
-            Dictionary<PlayerAnimState, bool> hasp = new();
-            PlayerAnimState state = _nextLeafState;
+            Dictionary<AnimState<T>, bool> hasp = new();
+            AnimState<T> state = _nextLeafState;
             while (state != null)
             {
                 hasp[state] = true;
@@ -45,7 +45,7 @@ namespace Player.Anim.LowerBodyAnim
             }
 
             // 2. 找到新状态和旧状态的最近公共祖先
-            PlayerAnimState parentState = next.Parent;
+            AnimState<T> parentState = next.Parent;
             while (parentState != null && !hasp.ContainsKey(parentState))
             {
                 parentState = parentState.Parent;
@@ -60,7 +60,7 @@ namespace Player.Anim.LowerBodyAnim
             }
 
             // 4. 设置新状态链路权重
-            PlayerAnimState nState = next;
+            AnimState<T> nState = next;
             while (nState != null && nState.Parent != parentState)
             {
                 nState.Parent.SetWeight(nState.MixIndex, 1);

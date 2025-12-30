@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-using Cinemachine;
-using Common.FSM.PlayerFSM;
+﻿using Common.FSM.PlayerFSM;
 using mSystem.HaemalStrandSystem;
-using mSystem.InputSystem.mEvent;
 using QFramework;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 
 namespace mController
@@ -13,17 +9,22 @@ namespace mController
     public class CameraController : MonoBehaviour, IController
     {
         public Transform playerTransform;
-        public Transform cameraTransform;
-        public Transform viewTransform;
-        [Header("视野偏移")] public float distance;
-        public Vector3 camForward;
-        public Vector3 camRight;
         [Header("射线长度")] public float rayLength;
         public Vector3 rayEnd; // 射击终点
-        public Dictionary<(int, int), float> Direction; // 八向图
-        public PlayerManager playerManager;
-        public CinemachineFreeLook baseCinema;
-        public CinemachineFreeLook shootCinema;
+        
+        public PlayerManager manager;
+        public float sensitivity = 2f;
+        public float distance = 2f;
+        public float aimDistance = 1f;
+        public float height = 1.5f;
+        public float minPitch = -30f;
+        public float maxPitch = 60f;
+        public float shoulderOffset = 0.2f; // 正数右肩，负数左肩
+
+        private float _yaw;
+        public float Yaw => _yaw;
+        private float _pitch;
+        private float _nowDistance;
         
         private IHaemalSystem _haemalSystem;
         private Ray _ray;
@@ -31,27 +32,24 @@ namespace mController
         
         private void Start()
         {
-            Direction = new Dictionary<(int, int), float>();
-            Direction.TryAdd((0, 0), 0);
-            Direction.TryAdd((0, 1), 0);
-            Direction.TryAdd((1, 1), 45);
-            Direction.TryAdd((1, 0), 90);
-            Direction.TryAdd((1, -1), 135);
-            Direction.TryAdd((0, -1), 180);
-            Direction.TryAdd((-1, -1), -135);
-            Direction.TryAdd((-1, 0), -90);
-            Direction.TryAdd((-1, 1), -45);
-
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            
+            Vector3 euler = transform.eulerAngles;
+            _yaw = euler.y;  // XOZ平面与 z轴正方向偏转角
+            _pitch = euler.x; // YOZ平面与 z轴正方向偏转角
+            _nowDistance = distance; // 当前相机离角色距离
             _haemalSystem = this.GetSystem<IHaemalSystem>();
             _camera = Camera.main;
         }
 
+        
         public float GetAngle() // 获取偏转角
         {
             Vector3 playerFront = playerTransform.forward;
             Vector2 front = new Vector2(playerFront.x, playerFront.z);
-            Vector2 cameraFront = new Vector2(playerTransform.position.x - cameraTransform.position.x,
-                playerTransform.position.z - cameraTransform.position.z);
+            Vector2 cameraFront = new Vector2(playerTransform.position.x - transform.position.x,
+                playerTransform.position.z - transform.position.z);
             float dot = Vector2.Dot(front, cameraFront.normalized); // 点乘结果
             dot = Mathf.Clamp(dot, -1f, 1f);
             float angle = Mathf.Acos(dot) * Mathf.Rad2Deg; // 转为角度制
@@ -60,23 +58,12 @@ namespace mController
             if (cross < 0) angle = -angle;
             return angle;
         }
+    
 
         public void UpdateForward()
         {
-            camForward = playerTransform.position - cameraTransform.position;
-            camForward.y = 0;
-            camForward.Normalize();
-            camRight = new Vector3(camForward.z, 0, -camForward.x);
-            viewTransform.position = playerTransform.position + camRight * distance;
             Shooting();
             _haemalSystem.UIUpdate();
-        }
-
-        public void AwakeCinemachine(CinemachineFreeLook from, CinemachineFreeLook to)
-        {
-            // 同步角度状态
-            to.m_XAxis.Value = from.m_XAxis.Value;
-            to.m_YAxis.Value = from.m_YAxis.Value;
         }
         
 
@@ -97,6 +84,24 @@ namespace mController
                     rayEnd = hit.point;
                 }
             }
+        }
+        
+        void LateUpdate()
+        {
+            _yaw += Input.GetAxis("Mouse X") * sensitivity;   // 获取鼠标 x输入
+            _yaw = Mathf.Repeat(_yaw, 360f);
+            _pitch -= Input.GetAxis("Mouse Y") * sensitivity; // 获取鼠标 y输入
+            _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);  // 限制 y轴方向的范围
+
+            Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0);
+
+            _nowDistance += manager.isShoot ? -0.25f : 0.25f;
+            _nowDistance = Mathf.Clamp(_nowDistance, aimDistance, distance);
+            Vector3 targetPos = playerTransform.position + Vector3.up * height;
+            Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;
+            
+            transform.position = camPos;
+            transform.rotation = rot;
         }
 
         private void OnDrawGizmos()

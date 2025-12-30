@@ -25,7 +25,7 @@ namespace Player.Anim
             _manager = manager;
             _avatarMask = avatarMask;
             
-            _graph = PlayableGraph.Create();
+            _graph = PlayableGraph.Create("PlayerPlayAble");
             _root = new AnimRoot(_manager, _avatarMask);
             _rootPlayable = _root.BuildNode(_graph);
             
@@ -61,7 +61,7 @@ namespace Player.Anim
             _jobPlayable.SetJobData(job);
         }
 
-        public void OnDisable()
+        public void DestroyGraph()
         {
             _graph.Destroy();
         }
