@@ -19,7 +19,7 @@ namespace Enemy.Anim.LowerBodyAnim.BaseMove
 
         protected override bool CheckState()
         {
-            return MyManager.moveSpeed > 0.1f;
+            return MyManager.moveSpeed > 0.3f;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

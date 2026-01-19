@@ -38,7 +38,6 @@ namespace Enemy.Anim.LowerBodyAnim
             if (index != _nextIndex)
             {
                 if(_prevIndex != -1) _mixer.SetInputWeight(_prevIndex, 0);
-                Debug.Log($"切换节点{index}");
                 _prevIndex = _nextIndex;
                 _nextIndex = index;
             }

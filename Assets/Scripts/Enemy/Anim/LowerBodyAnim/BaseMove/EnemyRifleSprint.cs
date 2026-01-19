@@ -1,4 +1,5 @@
 ﻿using Common.LevelFSM.EnemyFSM;
+using mModel.ScriptableConfig;
 using Player.Anim;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -25,7 +26,7 @@ namespace Enemy.Anim.LowerBodyAnim.BaseMove
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<PlayerAnimConfig>("Anim/Rifle/Sprint/RifleSprintF");
+            Config = Resources.Load<AnimConfig>("Anim/Rifle/Sprint/RifleSprintF");
             AnimationClipPlayable grenadeSprintMoveClipF = AnimationClipPlayable.Create(graph, Config.animClip);
             grenadeSprintMoveClipF.SetSpeed(Config.animSpeed);
             return grenadeSprintMoveClipF;

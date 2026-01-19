@@ -1,3 +1,4 @@
+using mModel.ScriptableConfig;
 using UnityEngine;
 
 namespace Firearms
@@ -9,13 +10,9 @@ namespace Firearms
         protected Transform Muzzle;
         protected Transform MagazineTransform;
         protected Vector3 GunForward;
-        protected float BulletSpeed; // 子弹初速
-        protected float HitMp; // 击中倍率
-        protected float HeadshotMp; // 爆头倍率
-        protected float ShootCd; // 射击 Cd
+        protected WeaponGunConfig Config;
         protected float PrevShootTime; // 上次射击时间
         protected bool IsCanShoot; // 是否可以射击
-        protected float ReloadCd; // 换弹 Cd
         protected float EndReloadTime; // 换弹结束时间
         protected bool IsReload; // 是否正在换弹
         protected bool Enable = true;
@@ -23,11 +20,16 @@ namespace Firearms
         protected void UpdateState()
         {
             IsReload = EndReloadTime > Time.time;
-            IsCanShoot = PrevShootTime + ShootCd < Time.time && !IsReload;
+            IsCanShoot = PrevShootTime + Config.shootCd < Time.time && !IsReload;
         }
         
         public abstract void Reload(AbstractMagazine magazine);
         public abstract void Shoot();
+
+        public WeaponGunConfig GetWeaponConfig()
+        {
+            return Config;
+        }
 
         public virtual void OnDisable()
         {

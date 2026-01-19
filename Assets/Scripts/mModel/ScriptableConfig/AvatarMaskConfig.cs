@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 
-namespace Player.Anim
+namespace mModel.ScriptableConfig
 {
     [CreateAssetMenu(menuName = "Config/PlayerAvatarMask")]
-    public class PlayerAvatarMask : ScriptableObject
+    public class AvatarMaskConfig : ScriptableObject
     {
         public AvatarMask avatarMask;
     }

@@ -89,5 +89,15 @@ namespace Firearms
         /// </summary>
         /// <returns></returns>
         bool GetEnable();
+        
+        /// <summary>
+        /// 切换到该武器时调用
+        /// </summary>
+        void OnWeaponSwitchEnter();
+        
+        /// <summary>
+        /// 切换到其他武器时调用
+        /// </summary>
+        void OnWeaponSwitchExit();
     }
 }

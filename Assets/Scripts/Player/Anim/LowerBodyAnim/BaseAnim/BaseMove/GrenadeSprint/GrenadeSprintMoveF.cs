@@ -1,4 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -24,7 +25,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<PlayerAnimConfig>("Anim/Grenade/GrenadeSprintF");
+            Config = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeSprintF");
             AnimationClipPlayable grenadeSprintMoveClipF = AnimationClipPlayable.Create(graph, Config.animClip);
             grenadeSprintMoveClipF.SetSpeed(Config.animSpeed);
             return grenadeSprintMoveClipF;

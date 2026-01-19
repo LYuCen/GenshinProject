@@ -10,7 +10,8 @@
         protected override void BuildState()
         {
             States.TryAdd("Idle", new EnemyIdleState(MyManager));
-            States.TryAdd("Move", new EnemyMoveMixState(MyManager));
+            States.TryAdd("Follow", new EnemyFollowState(MyManager));
+            States.TryAdd("Attack", new EnemyAttackState(MyManager));
             IsBuilt = true;
         }
     }

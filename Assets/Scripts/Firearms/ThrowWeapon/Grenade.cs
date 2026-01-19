@@ -160,5 +160,15 @@ namespace Firearms.ThrowWeapon
         {
             return Enable;
         }
+        
+        public void OnWeaponSwitchEnter()
+        {
+            
+        }
+
+        public void OnWeaponSwitchExit()
+        {
+            
+        }
     }
 }

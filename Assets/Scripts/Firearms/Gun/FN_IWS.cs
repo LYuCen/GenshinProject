@@ -1,5 +1,6 @@
 ﻿using Firearms.Magazine;
 using mModel;
+using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
 using mSystem.SoundSystem;
@@ -17,13 +18,8 @@ namespace Firearms.Gun
             Magazine = new BaseMagazine(0, 30, 30, ElementEnum.Fire);
             PrevShootTime = 0;
             IsCanShoot = true;
-            PrevShootTime = 0;
             IsReload = false;
-            BulletSpeed = 50f;
-            ShootCd = 0.08f;
-            HitMp = 1.2f;
-            HeadshotMp = 2f;
-            ReloadCd = 3f;
+            Config = Resources.Load<WeaponGunConfig>("WeaponConfig/FN_IWS");
         }
 
         public void InitTransform()
@@ -34,10 +30,10 @@ namespace Firearms.Gun
         public void TryReload(int element)
         {
             if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
-            SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/FN_IWS/Reload.mp3");
+            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
             IsCanShoot = false;
             IsReload = true;
-            EndReloadTime = Time.time + ReloadCd;
+            EndReloadTime = Time.time + Config.reloadCd;
         }
 
         public void SetEnable(bool enable)
@@ -68,12 +64,12 @@ namespace Firearms.Gun
             Bullet.Bullet bullet = new Bullet.Bullet()
             {
                 Transform = obj.transform,
-                baseHit = Magazine.BaseHurt * HitMp,
+                baseHit = Magazine.BaseHurt * Config.hitMp,
                 element = (int)Magazine.Element,
-                headHit = Magazine.BaseHurt * HeadshotMp,
+                headHit = Magazine.BaseHurt * Config.headshotMp,
                 elementMeasure = 1f,
                 moveNormalize = GunForward,
-                speed = BulletSpeed,
+                speed = Config.bulletSpeed,
                 MoveTime = 3f
             };
             var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
@@ -88,7 +84,7 @@ namespace Firearms.Gun
             muzzleObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
             Muzzle.Muzzle muzzle = muzzleObj.GetComponent<Muzzle.Muzzle>();
             muzzle.UpdateColor(ElementModel.Instance.colors[(int)Magazine.Element]);
-            SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/FN_IWS/Fire.mp3");
+            SoundSystem.Instance.PlaySound(Config.shootAudioClip);
             Magazine.BulletNumber--;
         }
 
@@ -144,6 +140,16 @@ namespace Firearms.Gun
         public bool GetEnable()
         {
             return Enable;
+        }
+
+        public void OnWeaponSwitchEnter()
+        {
+            SoundSystem.Instance.PlaySound(Config.getWeaponAudioClip);
+        }
+
+        public void OnWeaponSwitchExit()
+        {
+            
         }
     }
 }

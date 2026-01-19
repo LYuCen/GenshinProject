@@ -1,4 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -24,7 +25,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Clip = Resources.Load<PlayerAnimConfig>("Anim/RifleRun").animClip;
+            Clip = Resources.Load<AnimConfig>("Anim/RifleRun").animClip;
             AnimationClipPlayable rifleRunClip = AnimationClipPlayable.Create(graph, Clip);
             rifleRunClip.SetSpeed(1.5f);
             return rifleRunClip;

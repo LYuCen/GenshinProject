@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Common.FSM.PlayerFSM;
 using Common.LevelFSM.EnemyFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -12,7 +13,7 @@ namespace Player.Anim
         protected T MyManager;
         public AnimState<T> Parent;
         protected AnimationClip Clip = null;
-        protected PlayerAnimConfig Config;
+        protected AnimConfig Config;
         public int MixIndex;
 
         protected AnimState(T myManager)
@@ -48,7 +49,20 @@ namespace Player.Anim
         /// <param name="graph">动画树</param>
         /// <param name="mixIndex">混合下标</param>
         /// <returns>返回状态节点</returns>
-        public abstract Playable BuildNode(PlayableGraph graph, int mixIndex = -1); 
+        public abstract Playable BuildNode(PlayableGraph graph, int mixIndex = -1);
+
+        /// <summary>
+        /// 切换动画节点
+        /// </summary>
+        /// <param name="playable">新动画节点</param>
+        /// <param name="index">动画下标</param>
+        public virtual void SetAnimClip(Playable playable, int index){}
+        
+        /// <summary>
+        /// 切换动画节点，外界调用的方法
+        /// </summary>
+        /// <param name="config">动画信息</param>
+        public virtual void SetAnimClip(AnimConfig config){}
         
         /// <summary>
         /// 进入当前状态
@@ -84,7 +98,7 @@ namespace Player.Anim
             get => base.Parent as PlayerAnimState;
             set => base.Parent = value;
         }
-        
+
         protected PlayerAnimState(PlayerManager myManager) : base(myManager)
         {
         }

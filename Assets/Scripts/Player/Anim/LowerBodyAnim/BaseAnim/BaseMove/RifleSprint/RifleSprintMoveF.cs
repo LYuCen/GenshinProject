@@ -1,4 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -24,7 +25,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<PlayerAnimConfig>("Anim/Rifle/Sprint/RifleSprintF");
+            Config = Resources.Load<AnimConfig>("Anim/Rifle/Sprint/RifleSprintF");
             AnimationClipPlayable rifleSprintMoveClipF = AnimationClipPlayable.Create(graph, Config.animClip);
             rifleSprintMoveClipF.SetSpeed(Config.animSpeed);
             return rifleSprintMoveClipF;
@@ -37,7 +38,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
         
         public override void NextState()
         {
-            
+            if (!CheckState()) return;
+            MyManager.PlayAnimController.ChangeLowerWeight(this);
         }
     }
 }

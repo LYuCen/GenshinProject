@@ -5,12 +5,13 @@ namespace Player.Ik
 {
     public struct BodyIkJob : IAnimationJob
     {
-        public TransformSceneHandle LeftHand;
+        // AnimationStream 中表示 LeftHand 快照的一个索引句柄
+        public TransformSceneHandle LeftHand;  
         public TransformSceneHandle RightHand;
         public float LeftWeight;
         public float RightWeight;
         
-        
+        // AnimationStream 动画系统评估构建的那一帧该动画有关 Transform 和动画依赖的 Transform 组件的只读快照
         public void ProcessAnimation(AnimationStream stream)
         {
             if (!stream.isValid) return;
@@ -18,6 +19,7 @@ namespace Player.Ik
             
             if (LeftHand.IsValid(stream))
             {
+                // 通过 TransformSceneHandle 对 Transform 的映射在 stream 快照中获取到其 position值
                 human.SetGoalPosition(AvatarIKGoal.LeftHand,LeftHand.GetPosition(stream));
                 human.SetGoalRotation(AvatarIKGoal.LeftHand,LeftHand.GetRotation(stream));
                 human.SetGoalWeightPosition(AvatarIKGoal.LeftHand, LeftWeight);

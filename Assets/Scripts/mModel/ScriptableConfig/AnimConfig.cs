@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 
-namespace Player.Anim
+namespace mModel.ScriptableConfig
 {
     [CreateAssetMenu(menuName = "Config/PlayerAnimConfig")]
-    public class PlayerAnimConfig : ScriptableObject
+    public class AnimConfig : ScriptableObject
     {
         public AnimationClip animClip;
         public float animSpeed;
     }
-
-    
 }

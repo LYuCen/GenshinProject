@@ -1,6 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
 using Player.Anim.LowerBodyAnim.BaseAnim;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -36,7 +35,6 @@ namespace Player.Anim.LowerBodyAnim
             if (index != _nextIndex)
             {
                 if(_prevIndex != -1) _mixer.SetInputWeight(_prevIndex, 0);
-                Debug.Log($"切换节点{index}");
                 _prevIndex = _nextIndex;
                 _nextIndex = index;
             }

@@ -34,5 +34,13 @@ namespace mSystem.SoundSystem
 
             audioSource.PlayOneShot(_dic[path]);
         }
+
+        public void PlaySound(AudioClip audioClip, float volume = 1)
+        {
+            if (audioClip != null)
+            {
+                audioSource.PlayOneShot(audioClip, volume);
+            } 
+        }
     }
 }

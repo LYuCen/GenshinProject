@@ -1,4 +1,5 @@
 ﻿using Common.LevelFSM.EnemyFSM;
+using mModel.ScriptableConfig;
 using Player.Anim;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -36,7 +37,7 @@ namespace Enemy.Anim.LowerBodyAnim.BaseIdle
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<PlayerAnimConfig>("Anim/RifleIdle");
+            Config = Resources.Load<AnimConfig>("Anim/RifleIdle");
             AnimationClipPlayable rifleIdleClip = AnimationClipPlayable.Create(graph, Config.animClip);
             rifleIdleClip.SetSpeed(Config.animSpeed);
             return rifleIdleClip;

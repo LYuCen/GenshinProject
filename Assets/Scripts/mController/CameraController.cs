@@ -10,21 +10,23 @@ namespace mController
     {
         public Transform playerTransform;
         [Header("射线长度")] public float rayLength;
+        [Header("相机碰撞黑名单")] [SerializeField] private LayerMask obstacleMask;
+        [Header("相机碰撞阈值")] [SerializeField] private float wallOffset = 0.1f;
         public Vector3 rayEnd; // 射击终点
         
         public PlayerManager manager;
-        public float sensitivity = 2f;
-        public float distance = 2f;
-        public float aimDistance = 1f;
-        public float height = 1.5f;
-        public float minPitch = -30f;
-        public float maxPitch = 60f;
+        public float sensitivity = 2f;  // 灵敏度
+        public float distance = 2f;     // 摄像机与角色距离
+        public float aimDistance = 1f;  // 瞄准距离
+        public float height = 1.5f;     // 摄像机与焦点高度
+        public float minPitch = -30f;   // y 方向最小偏移
+        public float maxPitch = 60f;    // y 方向最大偏移
         public float shoulderOffset = 0.2f; // 正数右肩，负数左肩
 
         private float _yaw;
-        public float Yaw => _yaw;
-        private float _pitch;
-        private float _nowDistance;
+        public float Yaw => _yaw;   // XOZ平面与 z轴正方向偏转角
+        private float _pitch;       // YOZ平面与 z轴正方向偏转角
+        private float _nowDistance; // 当前相机离角色距离
         
         private IHaemalSystem _haemalSystem;
         private Ray _ray;
@@ -36,27 +38,11 @@ namespace mController
             Cursor.visible = false;
             
             Vector3 euler = transform.eulerAngles;
-            _yaw = euler.y;  // XOZ平面与 z轴正方向偏转角
-            _pitch = euler.x; // YOZ平面与 z轴正方向偏转角
-            _nowDistance = distance; // 当前相机离角色距离
+            _yaw = euler.y;  
+            _pitch = euler.x; 
+            _nowDistance = distance;
             _haemalSystem = this.GetSystem<IHaemalSystem>();
             _camera = Camera.main;
-        }
-
-        
-        public float GetAngle() // 获取偏转角
-        {
-            Vector3 playerFront = playerTransform.forward;
-            Vector2 front = new Vector2(playerFront.x, playerFront.z);
-            Vector2 cameraFront = new Vector2(playerTransform.position.x - transform.position.x,
-                playerTransform.position.z - transform.position.z);
-            float dot = Vector2.Dot(front, cameraFront.normalized); // 点乘结果
-            dot = Mathf.Clamp(dot, -1f, 1f);
-            float angle = Mathf.Acos(dot) * Mathf.Rad2Deg; // 转为角度制
-
-            float cross = front.x * cameraFront.y - front.y * cameraFront.x; // 计算叉乘
-            if (cross < 0) angle = -angle;
-            return angle;
         }
     
 
@@ -100,9 +86,35 @@ namespace mController
             Vector3 targetPos = playerTransform.position + Vector3.up * height;
             Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;
             
-            transform.position = camPos;
+            //transform.position = camPos;
+            CheckWall(targetPos, camPos);
             transform.rotation = rot;
         }
+        
+        private void CheckWall(Vector3 targetPos, Vector3 camPos)
+        {
+            Vector3 rayVec = camPos - targetPos;
+            float dist = rayVec.magnitude;
+            Vector3 dir = rayVec.normalized;
+
+            Ray ray = new Ray(targetPos, dir);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, dist, obstacleMask))
+            {
+                // 被墙挡住，相机放在碰撞点前一点
+                transform.position = hit.point - dir * wallOffset;
+            }
+            else
+            {
+                // 没有障碍物，直接使用理想相机位置
+                transform.position = camPos;
+            }
+
+            // Debug 可视化
+            Debug.DrawRay(targetPos, dir * dist, Color.yellow);
+        }
+
 
         private void OnDrawGizmos()
         {

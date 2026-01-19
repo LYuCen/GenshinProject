@@ -1,4 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -7,8 +8,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
 {
     public class GrenadeLayerMixSprint : PlayerAnimState
     {
-        private PlayerAnimConfig _configL;
-        private PlayerAnimConfig _configR;
+        private AnimConfig _configL;
+        private AnimConfig _configR;
         private AnimationLayerMixerPlayable _grenadeSprintLayer;
         private AvatarMask _avatarMask;
         
@@ -29,7 +30,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
             int inputCount = Children.Count;
             MixIndex = mixIndex;
             _grenadeSprintLayer = AnimationLayerMixerPlayable.Create(graph, inputCount);
-            _avatarMask = Resources.Load<PlayerAvatarMask>("Anim/Rifle/Sprint/HeadMask").avatarMask;
+            _avatarMask = Resources.Load<AvatarMaskConfig>("Anim/Rifle/Sprint/HeadMask").avatarMask;
             for (int i = 0; i < inputCount; i++)
             {
                 Playable playable = Children[i].BuildNode(graph, i);
@@ -52,22 +53,6 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
         {
             if (!CheckState()) return;
             MyManager.PlayAnimController.ChangeLowerWeight(this);
-            float angle = MyManager.cameraController.GetAngle();
-            if (angle > 1)
-            {
-                if (angle > 90) angle = 180 - angle;
-                _grenadeSprintLayer.SetInputWeight(1, 0f);
-                float weight = Mathf.Clamp(angle / 90f, 0, 1f);
-                _grenadeSprintLayer.SetInputWeight(2, weight);
-            }
-            else if(angle < -1)
-            {
-                angle = -angle;
-                if (angle > 90) angle = 180 - angle;
-                _grenadeSprintLayer.SetInputWeight(2, 0f);
-                float weight = Mathf.Clamp(angle / 90f, 0, 1f);
-                _grenadeSprintLayer.SetInputWeight(1, weight);
-            }
         }
 
         public override void SetWeight(int index, float weight = 0)

@@ -1,5 +1,6 @@
 ﻿using Common.FSM.PlayerFSM;
 using mEvent;
+using mModel.ScriptableConfig;
 using QFramework;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -43,7 +44,7 @@ namespace Player.Anim.UpperBodyAnim
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            PlayerAnimConfig config = Resources.Load<PlayerAnimConfig>("Anim/Grenade/GrenadeDown");
+            AnimConfig config = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeDown");
             _throwDownPlayable = AnimationClipPlayable.Create(graph, config.animClip);
             _throwDownPlayable.SetSpeed(config.animSpeed);
             _throwDownPlayable.Pause(); // 暂停动画

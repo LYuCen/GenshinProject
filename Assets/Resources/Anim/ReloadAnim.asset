@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: ReloadAnim
   m_EditorClassIdentifier: 
   animClip: {fileID: 7400000, guid: 9640b72c23a0f844680e1a52f1b7ceb8, type: 2}
-  animSpeed: 0
+  animSpeed: 1

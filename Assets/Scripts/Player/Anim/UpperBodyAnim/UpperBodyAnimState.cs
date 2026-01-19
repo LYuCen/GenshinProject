@@ -1,4 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -63,9 +64,20 @@ namespace Player.Anim.UpperBodyAnim
             return _mixer;
         }
 
-        public override void OnExitState()
+        public override void SetAnimClip(Playable playable, int index)
         {
+            var graph = _mixer.GetGraph();
+            _mixer.SetInputWeight(index, 0);
+            // 删除旧动画节点
+            var old = _mixer.GetInput(index);
+            if (old.IsValid())
+            {
+                _mixer.DisconnectInput(index);
+                old.Destroy();
+            }
+            else Debug.Log("旧节点动画删除失败");
             
+            graph.Connect(playable, 0, _mixer, index);
         }
     }
 }

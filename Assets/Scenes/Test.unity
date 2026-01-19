@@ -11586,7 +11586,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 31bec9f5ae5f0994d9f46e3c51c833d9, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -12109,14 +12109,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4343013994979888179}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a76b1d1be5d7499a9444cab2bd499d84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 8478526350046033388}
   clip1: {fileID: 7400000, guid: d55736ea0db6c6641aeb1d1ecc9e6705, type: 2}
-  clip2: {fileID: 7400000, guid: a22b84d5e3e87f542a63c48e8ccb257f, type: 2}
+  clip2: {fileID: 7400000, guid: d8600093cd0206042b172e113a0bac6b, type: 2}
   openAnimTime: 0
   time: 0
   speed: 0
@@ -12128,7 +12128,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4343013994979888179}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c3d251456c148f9aba3c48fa625de73, type: 3}
   m_Name: 

@@ -2,6 +2,7 @@
 using Firearms;
 using Firearms.Gun;
 using Firearms.ThrowWeapon;
+using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
 using mSystem.InputSystem.mEvent;
@@ -88,6 +89,7 @@ namespace mController
         {
             Weapon?.OnDisable();
             Weapon = weapon;
+            
             view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
             view.ElementImage((int)Weapon.GetMagazine().Element);
         }
@@ -104,7 +106,9 @@ namespace mController
                     _mainWeapon1.Init();
                 }
                 view.UpdateWeapon("FN IWS",0);
+                Weapon?.OnWeaponSwitchExit();
                 AwakeGun(_mainWeapon1);
+                Weapon?.OnWeaponSwitchEnter();
                 trans = _mainWeapon1.GetWeapon();
             }
             else if(index == 1 && weaponIndex != index)
@@ -115,7 +119,9 @@ namespace mController
                     _mainWeapon2.Init();
                 }
                 view.UpdateWeapon("MK14",1);
+                Weapon?.OnWeaponSwitchExit();
                 AwakeGun(_mainWeapon2);
+                Weapon?.OnWeaponSwitchEnter();
                 trans = _mainWeapon2.GetWeapon();
             }
 

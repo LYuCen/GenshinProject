@@ -64,10 +64,5 @@ namespace Player.Anim.UpperBodyAnim
 
             return _mixer;
         }
-
-        public override void OnExitState()
-        {
-            
-        }
     }
 }

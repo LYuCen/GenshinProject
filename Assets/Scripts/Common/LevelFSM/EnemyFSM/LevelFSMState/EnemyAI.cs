@@ -1,71 +1,107 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyAI : MonoBehaviour
     {
-        [SerializeField] private EnemyManager manager;
         [SerializeField] private NavMeshAgent navMeshAgent;
-        [SerializeField] private Transform playerTrans;
-        [Header("移动朝向")] [SerializeField] private Vector3 front;
-        [Header("旋转速度")] [SerializeField] private float angularSpeed;
-        [Header("检测半径")] public float detectRadius = 5f;
-        [Header("追踪半径")] public float traceRadius = 15f;
-        public LayerMask playerLayer;
-        private Collider[] _hits = new Collider[4];
-        [SerializeField] private bool isStopping;
+        [SerializeField] private int moveOri; // 移动方位
 
-        void Update()
+        private void Start()
         {
-            manager.moveSpeed = navMeshAgent.velocity.magnitude;
-            int count = Physics.OverlapSphereNonAlloc(
-                transform.position,
-                detectRadius,
-                _hits,
-                playerLayer
-            );
-            
-            if (count > 0)
+            navMeshAgent.updateRotation = false;
+        }
+
+        /// <summary>
+        /// 目标是否在范围内
+        /// </summary>
+        /// <param name="aim">目标</param>
+        /// <param name="range">范围半径</param>
+        /// <returns></returns>
+        public bool IsInRange(Transform aim,float range)
+        {
+            if (!aim) return false;
+            Vector3 dic = aim.position - transform.position;
+            float distance = dic.sqrMagnitude;
+            return distance < range * range;
+        }
+
+        /// <summary>
+        /// 移动到目标地点
+        /// </summary>
+        /// <param name="aim">目标</param>
+        /// <param name="stopPrevAgent">是否强制前往目标</param>
+        public void MoveToAim(Transform aim, bool stopPrevAgent = false)
+        {
+            if (!aim) return;
+            if (stopPrevAgent || !navMeshAgent.hasPath) // 强制打断 或 不存在有效路径
             {
-                playerTrans = _hits[0].transform.root;
-                front = playerTrans.position - transform.position;
-                front.y = 0;
-
-                float distance = front.magnitude; // 与玩家距离
-                
-                isStopping = !navMeshAgent.pathPending  // 不在寻路
-                             && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance // 在目标范围
-                             && navMeshAgent.velocity.sqrMagnitude < 0.01f;    // 速度几乎为 0
-                
-                // 如果寻路结束，下次启动则在角色离开 traceRadius 距离后启动
-                if(!isStopping || distance >= traceRadius) navMeshAgent.SetDestination(playerTrans.position);
-                
-                if (front.sqrMagnitude > 0.001f) // 避免零向量报错
-                {
-                    front.Normalize();
-
-                    // 当前朝向
-                    Quaternion currentRot = transform.rotation;
-
-                    // 目标朝向
-                    Quaternion targetRot = Quaternion.LookRotation(front);
-
-                    // 平滑旋转，参数：最大角速度 * deltaTime
-                    transform.rotation = Quaternion.RotateTowards(
-                        currentRot,
-                        targetRot,
-                        angularSpeed * Time.deltaTime
-                    );
-                }
-                
+                navMeshAgent.isStopped = false;
+                navMeshAgent.SetDestination(aim.position);
             }
         }
         
-        void OnDrawGizmosSelected()
+        /// <summary>
+        /// 停止 AI 寻路
+        /// </summary>
+        public void StopMove()
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, detectRadius);
+            if (!navMeshAgent) return;
+
+            navMeshAgent.isStopped = true;   // 停止移动
+            navMeshAgent.ResetPath();        // 清空当前路径
+        }
+        
+        /// <summary>
+        /// 沿着玩家随机走位
+        /// </summary>
+        /// <param name="target">目标</param>
+        /// <param name="moveDistance">位移距离</param>
+        public void StrafeAroundTarget(Transform target, float moveDistance)
+        {
+            if (!navMeshAgent || !target) return;
+
+            // 左 or 右
+            int dir = Random.value > 0.5f ? 1 : -1;
+            this.moveOri = dir;
+
+            Vector3 right = Vector3.Cross(Vector3.up, (target.position - transform.position).normalized);
+            Vector3 moveDir = right * dir;
+
+            Vector3 targetPos = transform.position + moveDir * moveDistance;
+
+            if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, moveDistance, NavMesh.AllAreas))
+            {
+                navMeshAgent.isStopped = false;
+                navMeshAgent.SetDestination(hit.position);
+            }
+        }
+
+        public void ChangeMoveSpeed(float speed)
+        {
+            navMeshAgent.speed = speed;
+        }
+        
+        /// <summary>
+        /// 获得当前速度
+        /// </summary>
+        /// <returns></returns>
+        public float GetCurrentSpeed()
+        {
+            if (!navMeshAgent) return 0f;
+            return navMeshAgent.velocity.magnitude;
+        }
+
+        /// <summary>
+        /// 获得当前位移方向
+        /// </summary>
+        /// <returns></returns>
+        public int GetMoveDir()
+        {
+            return moveOri;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using mController;
-using mSystem.BuffSystem.ElementBuff;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
 using Player.Anim;
@@ -38,6 +37,7 @@ namespace Common.FSM.PlayerFSM
         [Header("握把")] public Transform gunGrip;
         [Header("枪判定矩形")] public Transform gunCube;
         [Header("武器装备控制器")] public FirearmController firearmController;
+        public PlayerAnimState ReloadState;
         public Transform gunStock;
         public Transform gun; // 枪托
         public Transform shoulder; // 右肩
@@ -46,7 +46,7 @@ namespace Common.FSM.PlayerFSM
         private Vector3 _fV3; // 力方向
         private Vector3 _bottom;
         private Vector2 _lastMove; // 输入切换后移动方向
-        private float _stableTimer = 0f; // 输入状态切换当前时间
+        private float _stableTimer; // 输入状态切换当前时间
         [Header("输入状态时间间隔")] public float stableThreshold = 0.05f; // 输入状态切换间隔
         
         public void Init()
@@ -104,13 +104,11 @@ namespace Common.FSM.PlayerFSM
                     if(e.GunIndex == 0)
                     {
                         playerGun = firearmController.GetWeapon(0);
-                        SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/FN_IWS/Get.mp3");
                         Debug.Log("切换为主武器1");
                     }
                     else if(e.GunIndex == 1)
                     {
                         playerGun = firearmController.GetWeapon(1);
-                        SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/MK14/Get.mp3");
                         Debug.Log("切换为主武器2");
                     }
                     isShoot = false;
