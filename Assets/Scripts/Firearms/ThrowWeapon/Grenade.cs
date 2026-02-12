@@ -35,9 +35,11 @@ namespace Firearms.ThrowWeapon
             IsReadyThrow = true;
             for (int i = 0; i < _points.Length; i++)
             {
-                _points[i] = Transform.position + Forward * (_force * i * _pointDistance)
-                                                + Physics.gravity * (0.5f * i * _pointDistance * i * _pointDistance)
-                                                + _yOffset;
+                
+                _points[i] = Transform.position
+                             + Forward * (_force * i * _pointDistance) // v0 * t
+                             + Physics.gravity * (0.5f * i * _pointDistance * i * _pointDistance) // 1/2 * g * t^2
+                             + _yOffset;
                 
             }
 

@@ -10,7 +10,7 @@ namespace mController
     {
         public Transform playerTransform;
         [Header("射线长度")] public float rayLength;
-        [Header("相机碰撞黑名单")] [SerializeField] private LayerMask obstacleMask;
+        [Header("相机碰撞白名单")] [SerializeField] private LayerMask obstacleMask;
         [Header("相机碰撞阈值")] [SerializeField] private float wallOffset = 0.1f;
         public Vector3 rayEnd; // 射击终点
         
