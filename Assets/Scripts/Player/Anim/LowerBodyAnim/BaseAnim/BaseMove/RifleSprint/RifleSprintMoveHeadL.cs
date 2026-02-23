@@ -8,7 +8,6 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
 {
     public class RifleSprintMoveHeadL : PlayerAnimState
     {
-        private AnimConfig _configL;
         private AnimationClipPlayable _sprintHead;
         
         public RifleSprintMoveHeadL(PlayerManager myManager) : base(myManager)
@@ -29,9 +28,10 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            _configL = Resources.Load<AnimConfig>("Anim/Rifle/Sprint/RifleSprintL");
-            _sprintHead = AnimationClipPlayable.Create(graph, _configL.animClip);
-            _sprintHead.SetSpeed(_configL.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Sprint/RifleSprintL.asset");
+            Clip = Config.animClip;
+            _sprintHead = AnimationClipPlayable.Create(graph, Config.animClip);
+            _sprintHead.SetSpeed(Config.animSpeed);
             return _sprintHead;
         }
 

@@ -1,6 +1,5 @@
 ﻿using Common.FSM.PlayerFSM;
 using mModel.ScriptableConfig;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -22,8 +21,11 @@ namespace Player.Anim.UpperBodyAnim
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Clip = Resources.Load<AnimConfig>("Anim/IdleThrowAnim").animClip;
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Grenade/GrenadeUp.asset");
+            Clip = Config.animClip;
             _throwPlayable = AnimationClipPlayable.Create(graph, Clip);
+            _throwPlayable.SetSpeed(Config.animSpeed);
+            _throwPlayable.Pause(); // 暂停动画
             return _throwPlayable;
         }
 

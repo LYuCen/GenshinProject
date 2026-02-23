@@ -43,11 +43,12 @@ namespace Player.Anim.UpperBodyAnim
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            AnimConfig config = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeUpper");
-            _throwUpperPlayable = AnimationClipPlayable.Create(graph, config.animClip);
-            _throwUpperPlayable.SetSpeed(config.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Grenade/GrenadeUpper.asset");
+            Clip = Config.animClip;
+            _throwUpperPlayable = AnimationClipPlayable.Create(graph, Config.animClip);
+            _throwUpperPlayable.SetSpeed(Config.animSpeed);
             _throwUpperPlayable.Pause(); // 暂停动画
-            _animTime = config.animClip.length;
+            _animTime = Config.animClip.length;
             return _throwUpperPlayable;
         }
 

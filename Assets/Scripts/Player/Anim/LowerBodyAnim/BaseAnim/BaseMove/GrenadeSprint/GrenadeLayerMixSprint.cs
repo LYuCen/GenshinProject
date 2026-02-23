@@ -1,4 +1,5 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using AssetBundleFramework.Core.Resource;
+using Common.FSM.PlayerFSM;
 using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -30,7 +31,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
             int inputCount = Children.Count;
             MixIndex = mixIndex;
             _grenadeSprintLayer = AnimationLayerMixerPlayable.Create(graph, inputCount);
-            _avatarMask = Resources.Load<AvatarMaskConfig>("Anim/Rifle/Sprint/HeadMask").avatarMask;
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/AvatarMask/HeadMask.mask", false);
+            _avatarMask = ir.GetAsset<AvatarMask>();
             for (int i = 0; i < inputCount; i++)
             {
                 Playable playable = Children[i].BuildNode(graph, i);

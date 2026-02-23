@@ -2,7 +2,6 @@
 using Enemy.Anim.LowerBodyAnim.BaseIdle;
 using Enemy.Anim.LowerBodyAnim.BaseMove;
 using Player.Anim;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 

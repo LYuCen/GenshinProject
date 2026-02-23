@@ -1,5 +1,4 @@
 ﻿using Common.FSM.PlayerFSM;
-using mModel.ScriptableConfig;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -21,7 +20,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.TakeAnim.Rifle
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<AnimConfig>("Anim/RifleWalkForwardRight");
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Walk/RifleWalkForwardRight.asset");
+            Clip = Config.animClip;
             AnimationClipPlayable rifleMoveClipFR = AnimationClipPlayable.Create(graph, Config.animClip);
             rifleMoveClipFR.SetSpeed(Config.animSpeed);
             return rifleMoveClipFR;

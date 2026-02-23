@@ -36,7 +36,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseIdle
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<AnimConfig>("Anim/RifleIdle");
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Idle/RifleIdle.asset");
+            Clip = Config.animClip;
             AnimationClipPlayable rifleIdleClip = AnimationClipPlayable.Create(graph, Config.animClip);
             rifleIdleClip.SetSpeed(Config.animSpeed);
             return rifleIdleClip;

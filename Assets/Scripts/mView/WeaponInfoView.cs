@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using mModel;
+using mSystem.BuffSystem.ElementBuff;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,7 @@ namespace mView
         [SerializeField] private RectTransform mainRt;      // 主武器 UI
         [SerializeField] private RectTransform auxiliaryRt; // 附武器 UI 
 
-        private int[] _ints = new int[3];
+        private ElementEnum[] _ints = new ElementEnum[3];
 
         private int _prevIndex;
         private int _useWeaponIndex;
@@ -31,11 +32,7 @@ namespace mView
             _useWeaponIndex = 0; // 默认 0 号下标为初始武器
         }
 
-        /// <summary>
-        /// 更新子弹数
-        /// </summary>
-        /// <param name="bullets">备弹数组</param>
-        public void UpdateBulletsText(int[] bullets)
+        public void Init(int[] bullets)
         {
             int j = 0;
             for (int i = 0; i < 8; i++)
@@ -44,9 +41,21 @@ namespace mView
                 {
                     elementBullets[j].text = $"{bullets[i]:D3}";
                     elementIconImg[j].sprite = ElementModel.Instance.elementUI[i];
-                    _ints[j] = i;
+                    _ints[j] = (ElementEnum)i;
                     j++;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 更新子弹数
+        /// </summary>
+        /// <param name="bullets">备弹数组</param>
+        public void UpdateBulletsText(int[] bullets)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                elementBullets[i].text = $"{bullets[(int)_ints[i]]:D3}";
             }
         }
         
@@ -109,7 +118,7 @@ namespace mView
         /// 获取当前选择元素
         /// </summary>
         /// <returns>选择下标</returns>
-        public int GetChose()
+        public ElementEnum GetChose()
         {
             return _ints[_prevIndex];
         }

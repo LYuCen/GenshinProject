@@ -1,6 +1,4 @@
 ﻿using Common.FSM.PlayerFSM;
-using mModel.ScriptableConfig;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -8,7 +6,6 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
 {
     public class GrenadeSprintMoveHeadR : PlayerAnimState
     {
-        private AnimConfig _configL;
         private AnimationClipPlayable _sprintHead;
 
 
@@ -29,9 +26,10 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            _configL = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeSprintR");
-            _sprintHead = AnimationClipPlayable.Create(graph, _configL.animClip);
-            _sprintHead.SetSpeed(_configL.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Grenade/GrenadeSprintR.asset");
+            Clip = Config.animClip;
+            _sprintHead = AnimationClipPlayable.Create(graph, Config.animClip);
+            _sprintHead.SetSpeed(Config.animSpeed);
             return _sprintHead;
         }
 

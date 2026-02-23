@@ -11,7 +11,6 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
 
         public override void OnEnterState()
         {
-            Debug.Log("正在换弹");
             MyManager.upperName = "换弹";
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);

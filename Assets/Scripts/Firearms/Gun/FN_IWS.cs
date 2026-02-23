@@ -1,4 +1,5 @@
-﻿using Firearms.Magazine;
+﻿using AssetBundleFramework.Core.Resource;
+using Firearms.Magazine;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -12,14 +13,17 @@ namespace Firearms.Gun
     {
         public void Init()
         {
-            Gun = Object.Instantiate(Resources.Load<Transform>("Prefab/FN IWS"));
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/Gun/FN IWS.prefab", false);
+            GameObject prefab = ir.GetAsset<GameObject>();
+            Gun = Object.Instantiate(prefab).transform;
             Muzzle = Gun.Find("Muzzle");
             MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 30, 30, ElementEnum.Fire);
             PrevShootTime = 0;
             IsCanShoot = true;
             IsReload = false;
-            Config = Resources.Load<WeaponGunConfig>("WeaponConfig/FN_IWS");
+            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FN_IWS.asset", false);
+            Config = ir.GetAsset<WeaponGunConfig>();
         }
 
         public void InitTransform()
@@ -27,29 +31,9 @@ namespace Firearms.Gun
             Gun.transform.localPosition = new Vector3(-0.076f, -1.722f, -0.203f);
         }
 
-        public void TryReload(int element)
-        {
-            if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
-            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
-            IsCanShoot = false;
-            IsReload = true;
-            EndReloadTime = Time.time + Config.reloadCd;
-        }
-
         public void SetEnable(bool enable)
         {
             Enable = enable;
-        }
-
-        public override void Reload(AbstractMagazine magazine)
-        {
-            Magazine = magazine;
-            // 更新武器材质
-            MeshRenderer meshRenderer = MagazineTransform.GetComponent<MeshRenderer>();
-            Material[] materials = meshRenderer.materials;
-            int m = materials.Length;
-            materials[m - 1] = ElementModel.Instance.materials[(int)magazine.Element];
-            meshRenderer.materials = materials;
         }
 
         public override void Shoot()
@@ -102,14 +86,14 @@ namespace Firearms.Gun
             
         }
 
-        public void OnSecondaryAction()
+        public void OnSecondaryAction(ref bool isShoot)
         {
-            
+            isShoot = !isShoot;
         }
 
         public void ReloadAction(AbstractMagazine magazine)
         {
-            Reload(magazine);
+            ReloadEnd(magazine);
         }
 
         public float ReloadTime()
@@ -149,7 +133,7 @@ namespace Firearms.Gun
 
         public void OnWeaponSwitchExit()
         {
-            
+            Gun.gameObject.SetActive(false);
         }
     }
 }

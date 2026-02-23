@@ -60,7 +60,7 @@ namespace Firearms.ThrowWeapon
             //Debug.Log("投掷手雷");
         }
 
-        public void OnSecondaryAction()
+        public void OnSecondaryAction(ref bool isShoot)
         {
             if (!Enable) return;
             IsDownThrow = !IsDownThrow && IsReadyThrow;

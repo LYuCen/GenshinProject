@@ -1,6 +1,5 @@
 ﻿using BaseClass;
 using Firearms.Bullet;
-using mSystem.BuffSystem.ElementBuff;
 using mSystem.HurtSystem;
 using UnityEngine;
 
@@ -31,7 +30,6 @@ namespace mSystem.BulletSystem
                         out RaycastHit hit, distance))
                 {
                     bullet.Transform.position = hit.point;
-                    Debug.Log("击中：" + hit.collider.name + $" 附加{bullet.elementMeasure}点{(ElementEnum)bullet.element}元素量");
                     if (hit.collider.name is "Body" or "Head")
                     {
                         HurtComponent hurtComponent = new HurtComponent()

@@ -1,9 +1,16 @@
+using Firearms.WeaponInterface;
+using mModel;
 using mModel.ScriptableConfig;
+using mSystem.BuffSystem.ElementBuff;
+using mSystem.SoundSystem;
 using UnityEngine;
 
 namespace Firearms
 {
-    public abstract class AbstractGun // 枪械抽象类
+    /// <summary>
+    /// 枪械抽象类
+    /// </summary>
+    public abstract class AbstractGun : IReloadable
     {
         protected AbstractMagazine Magazine; // 弹匣
         protected Transform Gun; // 枪
@@ -22,8 +29,8 @@ namespace Firearms
             IsReload = EndReloadTime > Time.time;
             IsCanShoot = PrevShootTime + Config.shootCd < Time.time && !IsReload;
         }
+
         
-        public abstract void Reload(AbstractMagazine magazine);
         public abstract void Shoot();
 
         public WeaponGunConfig GetWeaponConfig()
@@ -31,12 +38,63 @@ namespace Firearms
             return Config;
         }
 
-        public virtual void OnDisable()
+        public bool TryReload(ElementEnum ele, int bullet)
         {
-            Gun.gameObject.SetActive(false);
-            foreach (Transform info in Muzzle)
+            int index = (int)ele;
+            // 子弹已上满并且上的是同元素的子弹
+            if (Magazine.IsFull() && Magazine.GetElementEnum() == index) return false;
+            // 子弹数量为 0
+            if (bullet <= 0) return false;
+            
+            // 进入换弹阶段 播放声音
+            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
+            IsCanShoot = false;
+            IsReload = true;
+            EndReloadTime = Time.time + Config.reloadCd;
+            return true;
+        }
+        
+        public bool TryReload(AbstractMagazine magazine)
+        {
+            if (magazine == null) return false;
+            
+            // 进入换弹阶段 播放声音
+            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
+            IsCanShoot = false;
+            IsReload = true;
+            EndReloadTime = Time.time + Config.reloadCd;
+            return true;
+        }
+        
+        public void ReloadEnd(ElementEnum ele, ref int[] bullets)
+        {
+            bullets[Magazine.GetElementEnum()] += Magazine.GetBulletNumber();
+            Magazine.SetBulletNumber(bullets[(int)ele], ele);
+            bullets[Magazine.GetElementEnum()] -= Magazine.GetBulletNumber();
+            
+            // 更新武器材质
+            if (MagazineTransform)
             {
-                FireMuzzleObjectPool.Instance.RemoveObj(info.gameObject);
+                MeshRenderer meshRenderer = MagazineTransform.GetComponent<MeshRenderer>();
+                Material[] materials = meshRenderer.materials;
+                int m = materials.Length;
+                materials[m - 1] = ElementModel.Instance.materials[Magazine.GetElementEnum()];
+                meshRenderer.materials = materials;
+            }
+        }
+        
+        public void ReloadEnd(AbstractMagazine magazine)
+        {
+            Magazine = magazine;
+            
+            // 更新武器材质
+            if (MagazineTransform)
+            {
+                MeshRenderer meshRenderer = MagazineTransform.GetComponent<MeshRenderer>();
+                Material[] materials = meshRenderer.materials;
+                int m = materials.Length;
+                materials[m - 1] = ElementModel.Instance.materials[Magazine.GetElementEnum()];
+                meshRenderer.materials = materials;
             }
         }
     }

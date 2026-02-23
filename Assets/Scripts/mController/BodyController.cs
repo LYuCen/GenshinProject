@@ -26,25 +26,6 @@ namespace mController
             if (hp < 0) hp = maxHp;
             hpUI.fillAmount = 1f * hp / maxHp;
         }
-
-        private void Update()
-        {
-            IsGrounded();
-        }
-
-        void IsGrounded()
-        {
-            _bottom = transform.position + Vector3.down * h;
-
-            Collider[] hits = Physics.OverlapSphere(_bottom, radius);
-            objs.Clear();
-            foreach (var col in hits)
-            {
-                if (col.transform.root == transform) continue; // 排除自己
-                if (col.gameObject.CompareTag("Plane") || col.gameObject.CompareTag("Wall")) continue;
-                objs.Add(col.transform.root);
-            }
-        }
         
         private void OnDrawGizmos()
         {

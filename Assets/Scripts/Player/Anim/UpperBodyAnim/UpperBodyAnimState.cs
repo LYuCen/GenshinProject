@@ -67,17 +67,19 @@ namespace Player.Anim.UpperBodyAnim
         public override void SetAnimClip(Playable playable, int index)
         {
             var graph = _mixer.GetGraph();
-            _mixer.SetInputWeight(index, 0);
             // 删除旧动画节点
             var old = _mixer.GetInput(index);
+            _mixer.SetInputWeight(index, 0);
+            
             if (old.IsValid())
             {
                 _mixer.DisconnectInput(index);
                 old.Destroy();
             }
             else Debug.Log("旧节点动画删除失败");
-            
             graph.Connect(playable, 0, _mixer, index);
+            _mixer.SetInputWeight(index, 0);
+            graph.Evaluate(0f);   // 强制立即刷新姿态
         }
     }
 }

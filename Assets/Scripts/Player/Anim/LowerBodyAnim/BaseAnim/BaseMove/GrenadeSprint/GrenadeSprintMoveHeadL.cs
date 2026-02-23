@@ -8,7 +8,6 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
 {
     public class GrenadeSprintMoveHeadL : PlayerAnimState
     {
-        private AnimConfig _configL;
         private AnimationClipPlayable _sprintHead;
 
 
@@ -29,9 +28,10 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            _configL = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeSprintL");
-            _sprintHead = AnimationClipPlayable.Create(graph, _configL.animClip);
-            _sprintHead.SetSpeed(_configL.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Grenade/GrenadeSprintL.asset");
+            Clip = Config.animClip;
+            _sprintHead = AnimationClipPlayable.Create(graph, Config.animClip);
+            _sprintHead.SetSpeed(Config.animSpeed);
             return _sprintHead;
         }
 

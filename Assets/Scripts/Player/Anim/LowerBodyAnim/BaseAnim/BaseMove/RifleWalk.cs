@@ -20,9 +20,10 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            AnimConfig config = Resources.Load<AnimConfig>("Anim/RifleWalk");
-            AnimationClipPlayable rifleMoveClip = AnimationClipPlayable.Create(graph, config.animClip);
-            rifleMoveClip.SetSpeed(config.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Walk/RifleWalk.asset");
+            Clip = Config.animClip;
+            AnimationClipPlayable rifleMoveClip = AnimationClipPlayable.Create(graph, Config.animClip);
+            rifleMoveClip.SetSpeed(Config.animSpeed);
             return rifleMoveClip;
         }
 

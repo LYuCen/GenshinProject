@@ -44,6 +44,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 
                 MyManager.choiceTimer = 0f;
             }
+            else MyManager.Shoot();
         }
 
         public override void OnExitState()

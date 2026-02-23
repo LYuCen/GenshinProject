@@ -25,7 +25,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<AnimConfig>("Anim/Rifle/Sprint/RifleSprintF");
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Sprint/RifleSprintF.asset");
+            Clip = Config.animClip;
             AnimationClipPlayable rifleSprintMoveClipF = AnimationClipPlayable.Create(graph, Config.animClip);
             rifleSprintMoveClipF.SetSpeed(Config.animSpeed);
             return rifleSprintMoveClipF;

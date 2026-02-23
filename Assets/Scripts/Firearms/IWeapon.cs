@@ -2,6 +2,9 @@
 
 namespace Firearms
 {
+    /// <summary>
+    /// 武器基础信息
+    /// </summary>
     public interface IWeapon
     {
         /// <summary>
@@ -22,13 +25,7 @@ namespace Firearms
         /// <summary>
         /// 按下副功能键 （默认右键）
         /// </summary>
-        void OnSecondaryAction();
-
-        /// <summary>
-        /// 换弹
-        /// </summary>
-        /// <param name="magazine"> 弹匣 </param>
-        void ReloadAction(AbstractMagazine magazine);
+        void OnSecondaryAction(ref bool isShoot);
 
         /// <summary>
         /// 换弹剩余时间
@@ -43,7 +40,7 @@ namespace Firearms
         
 
         /// <summary>
-        /// 更新枪口朝向
+        /// 更新武器正朝向
         /// </summary>
         void UpdateForward(Vector3 forward);
 
@@ -67,16 +64,6 @@ namespace Firearms
         /// 初始化 Transform 位置旋转等信息
         /// </summary>
         void InitTransform();
-
-        /// <summary>
-        /// 尝试换弹 （可能会被打断）
-        /// </summary>
-        void TryReload(int element);
-
-        /// <summary>
-        /// 卸下武器
-        /// </summary>
-        void OnDisable();
 
         /// <summary>
         /// 修改武器功能激活状态

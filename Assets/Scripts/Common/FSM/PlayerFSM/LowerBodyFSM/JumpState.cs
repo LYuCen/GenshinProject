@@ -23,7 +23,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             _v3.y = MyManager.f * Time.deltaTime;
             _move = MyManager.inputMove * (MyManager.speed * Time.deltaTime);
             
-            Debug.Log("进入跳跃状态");
         }
 
         public override void OnUpdateState()

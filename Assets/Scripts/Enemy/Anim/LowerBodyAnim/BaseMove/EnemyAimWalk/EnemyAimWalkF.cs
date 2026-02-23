@@ -1,7 +1,5 @@
 ﻿using Common.LevelFSM.EnemyFSM;
-using mModel.ScriptableConfig;
 using Player.Anim;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -21,9 +19,10 @@ namespace Enemy.Anim.LowerBodyAnim.BaseMove.EnemyAimWalk
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            AnimConfig config = Resources.Load<AnimConfig>("Anim/RifleWalkForward");
-            AnimationClipPlayable rifleMoveClip = AnimationClipPlayable.Create(graph, config.animClip);
-            rifleMoveClip.SetSpeed(config.animSpeed);
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Walk/RifleWalkForward.asset");
+            Clip = Config.animClip;
+            AnimationClipPlayable rifleMoveClip = AnimationClipPlayable.Create(graph, Config.animClip);
+            rifleMoveClip.SetSpeed(Config.animSpeed);
             return rifleMoveClip;
         }
 

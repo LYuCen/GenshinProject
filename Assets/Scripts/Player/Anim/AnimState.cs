@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AssetBundleFramework.Core.Resource;
 using Common.FSM.PlayerFSM;
 using Common.LevelFSM.EnemyFSM;
 using mModel.ScriptableConfig;
@@ -73,6 +74,19 @@ namespace Player.Anim
         /// 离开当前状态
         /// </summary>
         public virtual void OnEnterState(){}
+
+        /// <summary>
+        /// 获取动画文件
+        /// </summary>
+        /// <param name="animPath">AssetBundle 文件目录</param>
+        protected virtual AnimConfig GetAnimConfig(string animPath)
+        {
+            IResource ir =
+                ResourceManager.instance.Load(
+                    animPath,
+                    false);
+            return ir.GetAsset<AnimConfig>();
+        }
 
         /// <summary>
         /// 检查状态

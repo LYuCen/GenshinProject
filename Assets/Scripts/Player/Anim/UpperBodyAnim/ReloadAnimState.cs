@@ -1,10 +1,7 @@
-﻿using AssetBundleFramework.Core.Resource;
-using Common.FSM.PlayerFSM;
+﻿using Common.FSM.PlayerFSM;
 using mModel.ScriptableConfig;
-using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using ResourceManager = AssetBundleFramework.Core.Resource.ResourceManager;
 
 namespace Player.Anim.UpperBodyAnim
 {
@@ -25,15 +22,12 @@ namespace Player.Anim.UpperBodyAnim
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            IResource ir =
-                ResourceManager.instance.Load(
-                    "Assets/AssetBundle/ScriptableObject/Anim/Weapon/FN_IWS/ReloadAnim.asset",
-                    false);
-            AnimConfig animConfig = ir.GetAsset<AnimConfig>();
-            Clip = animConfig.animClip;
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset");
+            Clip = Config.animClip;
             _reloadPlayable = AnimationClipPlayable.Create(graph, Clip);
-            _reloadPlayable.SetSpeed(animConfig.animSpeed);
+            _reloadPlayable.SetSpeed(Config.animSpeed);
             _reloadPlayable.Pause(); // 暂停动画
+            MyManager.ReloadState = this;
             return _reloadPlayable;
         }
 

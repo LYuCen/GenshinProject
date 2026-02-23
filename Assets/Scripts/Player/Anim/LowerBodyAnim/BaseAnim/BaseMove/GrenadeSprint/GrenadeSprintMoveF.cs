@@ -25,7 +25,8 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.GrenadeSprint
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            Config = Resources.Load<AnimConfig>("Anim/Grenade/GrenadeSprintF");
+            Config = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Grenade/GrenadeSprintF.asset");
+            Clip = Config.animClip;
             AnimationClipPlayable grenadeSprintMoveClipF = AnimationClipPlayable.Create(graph, Config.animClip);
             grenadeSprintMoveClipF.SetSpeed(Config.animSpeed);
             return grenadeSprintMoveClipF;

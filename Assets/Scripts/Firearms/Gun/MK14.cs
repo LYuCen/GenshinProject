@@ -1,4 +1,5 @@
-﻿using Firearms.Magazine;
+﻿using AssetBundleFramework.Core.Resource;
+using Firearms.Magazine;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -12,14 +13,17 @@ namespace Firearms.Gun
     {
         public void Init()
         {
-            Gun = Object.Instantiate(Resources.Load<Transform>("Prefab/MK14"));
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/Gun/MK14.prefab", false);
+            GameObject prefab = ir.GetAsset<GameObject>();
+            Gun = Object.Instantiate(prefab).transform;
             Muzzle = Gun.Find("Muzzle");
             MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 45, 30, ElementEnum.Fire);
             PrevShootTime = 0;
             IsCanShoot = true;
             IsReload = false;
-            Config = Resources.Load<WeaponGunConfig>("WeaponConfig/MK14");
+            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/MK14.asset", false);
+            Config = ir.GetAsset<WeaponGunConfig>();
         }
 
         public void InitTransform()
@@ -35,17 +39,6 @@ namespace Firearms.Gun
             IsCanShoot = false;
             IsReload = true;
             EndReloadTime = Time.time + Config.reloadCd;
-        }
-
-        public override void Reload(AbstractMagazine magazine)
-        {
-            Magazine = magazine;
-            // 更新武器材质
-            MeshRenderer meshRenderer = MagazineTransform.GetComponent<MeshRenderer>();
-            Material[] materials = meshRenderer.materials;
-            int m = materials.Length;
-            materials[m - 1] = ElementModel.Instance.materials[(int)magazine.Element];
-            meshRenderer.materials = materials;
         }
 
         public override void Shoot()
@@ -98,14 +91,14 @@ namespace Firearms.Gun
             
         }
 
-        public void OnSecondaryAction()
+        public void OnSecondaryAction(ref bool isShoot)
         {
-            
+            isShoot = !isShoot;
         }
 
         public void ReloadAction(AbstractMagazine magazine)
         {
-            Reload(magazine);
+            ReloadEnd(magazine);
         }
 
         public float ReloadTime()
@@ -150,7 +143,7 @@ namespace Firearms.Gun
 
         public void OnWeaponSwitchExit()
         {
-            
+            Gun.gameObject.SetActive(false);
         }
     }
 }

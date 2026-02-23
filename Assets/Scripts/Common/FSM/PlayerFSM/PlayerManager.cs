@@ -1,4 +1,6 @@
-﻿using mController;
+﻿using AssetBundleFramework.Core.Resource;
+using mController;
+using mModel.ScriptableConfig;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
 using Player.Anim;
@@ -73,9 +75,8 @@ namespace Common.FSM.PlayerFSM
             {
                 if (e.IsDown)
                 {
-                    isShoot = !isShoot;
                     if (isShoot) isRun = false;
-                    firearmController.DownSecondaryAction();
+                    firearmController.DownSecondaryAction(ref isShoot);
                 }
             });
             this.RegisterEvent<WeaponPrimaryActionEvent>(e =>
@@ -104,11 +105,19 @@ namespace Common.FSM.PlayerFSM
                     if(e.GunIndex == 0)
                     {
                         playerGun = firearmController.GetWeapon(0);
+                        IResource ir = ResourceManager.instance.Load(
+                            "Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset", false);
+                        AnimConfig config = ir.GetAsset<AnimConfig>();
+                        ReloadState.SetAnimClip(config);
                         Debug.Log("切换为主武器1");
                     }
                     else if(e.GunIndex == 1)
                     {
                         playerGun = firearmController.GetWeapon(1);
+                        IResource ir = ResourceManager.instance.Load(
+                            "Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/MK14/MK14_State_Reload.asset", false);
+                        AnimConfig config = ir.GetAsset<AnimConfig>();
+                        ReloadState.SetAnimClip(config);
                         Debug.Log("切换为主武器2");
                     }
                     isShoot = false;

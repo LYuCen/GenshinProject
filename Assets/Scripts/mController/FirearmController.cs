@@ -2,7 +2,7 @@
 using Firearms;
 using Firearms.Gun;
 using Firearms.ThrowWeapon;
-using mModel.ScriptableConfig;
+using Firearms.WeaponInterface;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
 using mSystem.InputSystem.mEvent;
@@ -52,7 +52,7 @@ namespace mController
             FireMuzzleObjectPool.Instance.Init(muzzlePrefab);
             GrenadeObjectPool.Instance.Init(grenadePrefab);
             view.UpdateText(0, bullets[bulletIndex]);
-            view.UpdateBulletsText(bullets);
+            view.Init(bullets);
             
             // 初始化投掷物
             _grenade = new Grenade();
@@ -87,11 +87,10 @@ namespace mController
         
         public void AwakeGun(IWeapon weapon)
         {
-            Weapon?.OnDisable();
             Weapon = weapon;
             
-            view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
-            view.ElementImage((int)Weapon.GetMagazine().Element);
+            view.UpdateText(Weapon.GetMagazine().GetBulletNumber(), bullets[bulletIndex]);
+            view.ElementImage(Weapon.GetMagazine().GetElementEnum());
         }
 
         public Transform GetWeapon(int index)
@@ -165,45 +164,37 @@ namespace mController
             Weapon.UpPrimaryAction();
         }
 
-        public void DownSecondaryAction()
+        public void DownSecondaryAction(ref bool isShoot)
         {
-            Weapon.OnSecondaryAction();
+            Weapon.OnSecondaryAction(ref isShoot);
         }
 
         public bool TryReload()
         {
-            int choseIndex = view.GetChose();
-            if (Weapon.GetMagazine().BulletNumber == Weapon.GetMagazine().BulletCapacity && bulletIndex == choseIndex) return false;
-            int i, n = bullets.Length;
-            bulletIndex = view.GetChose();
-            bullets[_gunBulletIndex] += Weapon.GetMagazine().BulletNumber;
-            for (i = 0; i < n && (bulletIndex == n || bullets[bulletIndex] == 0); i++) // 遍历判断是否还有子弹
+            if (Weapon is IReloadable reloadable)
             {
-                if (bullets[i] <= 0) continue;
-                bulletIndex = i;
-                break;
+                ElementEnum elementEnum = view.GetChose();
+                return reloadable.TryReload(elementEnum, bullets[(int)elementEnum]);
             }
-            if (i == n) return false;
-            Weapon.TryReload(i);
-            return true;
+
+            return false;
         }
 
         public void Reload()
         {
-            AbstractMagazine magazine = Weapon.GetMagazine();
-            int bulletCapacity = magazine.BulletCapacity;
-            int nums = bullets[bulletIndex] >= bulletCapacity ? bulletCapacity : bullets[bulletIndex] % bulletCapacity;
-            bullets[bulletIndex] -= nums;
-            magazine.BulletNumber = nums;
-            magazine.Element = (ElementEnum)bulletIndex;
-            Weapon.ReloadAction(magazine);
-            _gunBulletIndex = bulletIndex;
+            if (Weapon is IReloadable reloadable)
+            {
+                bulletIndex = (int)view.GetChose();
+                reloadable.ReloadEnd((ElementEnum)bulletIndex, ref bullets);
+                
+                _gunBulletIndex = bulletIndex;
             
-            // 更新子弹面板数据
-            view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
-            if(weaponIndex == -1) view.GrenadeElementImage(bulletIndex);
-            else view.ElementImage(bulletIndex);
-            view.UpdateBulletsText(bullets);
+                // 更新子弹面板数据
+                view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
+                if(weaponIndex == -1) view.GrenadeElementImage(bulletIndex);
+                else view.ElementImage(bulletIndex);
+                view.UpdateBulletsText(bullets);
+            }
         }
 
         private void Update()
