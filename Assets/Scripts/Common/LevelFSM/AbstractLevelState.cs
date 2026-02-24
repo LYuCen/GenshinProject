@@ -8,12 +8,13 @@ namespace Common.LevelFSM
     public abstract class AbstractLevelState<T>
     {
         protected T MyManager;
+        private AbstractCondition<T> _selfCondition;
+        private List<AbstractCondition<T>> Conditions = new();
 
-        protected List<AbstractCondition<T>> Conditions = new();
-
-        public AbstractLevelState(T manager)
+        public AbstractLevelState(T manager, AbstractCondition<T> selfCondition)
         {
             MyManager = manager;
+            _selfCondition = selfCondition;
         }
         
         /// <summary>
@@ -44,6 +45,11 @@ namespace Common.LevelFSM
             }
 
             return false;
+        }
+
+        public virtual bool CheckSelfConditions()
+        {
+            return _selfCondition != null && _selfCondition.CheckCondition(out _);
         }
 
         // 添加条件
@@ -111,5 +117,7 @@ namespace Common.LevelFSM
                 return -1;
             }
         }
+        
+        
     }
 }

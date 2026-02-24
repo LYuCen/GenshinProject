@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Common.FSM;
 using UnityEngine;
 
 namespace Common.LevelFSM
@@ -7,6 +8,13 @@ namespace Common.LevelFSM
     {
         // 状态字典
         private Dictionary<string, AbstractLevelState<T>> _mStates;
+
+        public AbstractMixLevelState(T manager, AbstractCondition<T> selfCondition) : base(manager, selfCondition)
+        {
+            IsBuilt = false;
+            Init();
+        }
+
         public Dictionary<string, AbstractLevelState<T>> States
         {
             get
@@ -42,11 +50,7 @@ namespace Common.LevelFSM
         private AbstractLevelState<T> _mDefaultState;
         public bool IsBuilt { get; protected set; } // 是否创建完成
 
-        public AbstractMixLevelState(T manager) : base(manager)
-        {
-            IsBuilt = false;
-            Init();
-        }
+        
         
         /// <summary>
         /// 初始化
@@ -59,6 +63,18 @@ namespace Common.LevelFSM
         protected virtual void BuildState(){}
         public override void OnUpdateState()
         {
+            if (_mCurrentState == null) // 如果初始状态为空，那就搜索第一个满足的状态
+            {
+                foreach (var state in _mStates)
+                {
+                    if (state.Value.CheckSelfConditions())
+                    {
+                        _mCurrentState = state.Value;
+                        _mCurrentState.OnEnterState();
+                        break;
+                    }
+                }
+            }
             if (_mCurrentState == null || _mStates == null || !IsBuilt)
             {
                 return;

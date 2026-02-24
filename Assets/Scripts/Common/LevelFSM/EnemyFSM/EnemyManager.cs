@@ -1,15 +1,17 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState;
+﻿using BaseClass;
+using Common.LevelFSM.EnemyFSM.LevelFSMState;
 using Enemy.Anim;
 using Firearms;
 using Firearms.Gun;
 using Firearms.Magazine;
 using Firearms.WeaponInterface;
+using mController;
 using mSystem.BuffSystem.ElementBuff;
 using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM
 {
-    public class EnemyManager : MonoBehaviour
+    public class EnemyManager : MonoBehaviour, IManager
     {
         [Header("当前状态")] public string stateStr;
         [Header("是否在地面")] public bool isGround;
@@ -28,6 +30,8 @@ namespace Common.LevelFSM.EnemyFSM
         [Header("下一次决策时间")] public float choiceTimer;
         [Header("决策时间间隔")] public float choiceCd; // 移动选择 cd
         [Header("是否在追击状态")] public bool isFollow;
+        [Header("敌人状态")] public BodyController bodyController;
+        [Header("是否为全局打断状态")] public bool isGlobalInterrupt;
         
         public EnemyAnim EnemyAnimController; // 动画控制器
         public EnemyAI enemyAIController; // 决策控制器
@@ -40,8 +44,6 @@ namespace Common.LevelFSM.EnemyFSM
 
         public void Init()
         {
-            
-
             AbstractMagazine magazine = new BaseMagazine(30, 30, 20, ElementEnum.Fire);
             
             _weapon = new XM7();
@@ -102,6 +104,12 @@ namespace Common.LevelFSM.EnemyFSM
         private void OnDisable()
         {
             EnemyAnimController.Destroy();
+        }
+
+        public void UpdateHp(float val)
+        {
+            bodyController.LoseHp((int)val);
+            if (bodyController.hp == 0) isGlobalInterrupt = true;
         }
     }
 }

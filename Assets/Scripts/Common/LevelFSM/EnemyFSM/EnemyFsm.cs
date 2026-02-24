@@ -15,7 +15,7 @@ namespace Common.LevelFSM.EnemyFSM
 
         private void Init()
         {
-            _root = new RootState(_myManager);
+            _root = new RootState(_myManager, null);
         }
 
         public void Update()

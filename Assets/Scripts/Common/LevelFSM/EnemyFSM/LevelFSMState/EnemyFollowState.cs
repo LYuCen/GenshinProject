@@ -1,13 +1,16 @@
-﻿using UnityEngine;
+﻿using Common.FSM;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyFollowState : AbstractLeafLevelState<EnemyManager>
     {
-        public EnemyFollowState(EnemyManager manager) : base(manager)
+        public EnemyFollowState(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
-            Conditions.Add(new EnemyIdleCondition(MyManager, "Idle"));
-            Conditions.Add(new EnemyAttackCondition(MyManager, "Attack"));
+            AddCondition(new EnemyIdleCondition(MyManager, "Idle"));
+            AddCondition(new EnemyAttackCondition(MyManager, "Attack"));
+            AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt"));
         }
 
         public override void OnEnterState()

@@ -1,14 +1,16 @@
 ﻿
+using Common.FSM;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyAttackState : AbstractLeafLevelState<EnemyManager>
     {
-        public EnemyAttackState(EnemyManager manager) : base(manager)
+        public EnemyAttackState(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
-            Conditions.Add(new EnemyIdleCondition(MyManager, "Idle"));
-            
+            AddCondition(new EnemyIdleCondition(MyManager, "Idle"));
+            AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt"));
         }
 
         public override void OnEnterState()

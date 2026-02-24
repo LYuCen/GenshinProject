@@ -5,6 +5,7 @@ using mSystem.BuffSystem.ElementBuff.ElementBuffSystem;
 using mSystem.HitTextSystem;
 using QFramework;
 using Unity.VisualScripting;
+using IManager = BaseClass.IManager;
 
 namespace mSystem.HurtSystem
 {
@@ -54,8 +55,18 @@ namespace mSystem.HurtSystem
             };
             HitTextSystem.HitTextSystem.Instance.EnQueue(textComponent);
 
-            BodyController body = component.Transform.GetComponent<BodyController>();
-            if (body) body.LoseHp(harm);
+            // 判断是否有 Manager接口 有就通过 Manager 接口进行血量更改否则就直接查找是否有 BodyController
+            IManager im = component.Transform.GetComponent<IManager>();
+            if (im != null)
+            {
+                im.UpdateHp(harm);
+            }
+            else
+            {
+                BodyController body = component.Transform.GetComponent<BodyController>();
+                if (body) body.LoseHp(harm);
+            }
+            
         }
 
         public IArchitecture GetArchitecture()
