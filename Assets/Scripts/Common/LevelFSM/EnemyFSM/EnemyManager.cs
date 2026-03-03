@@ -6,6 +6,7 @@ using Firearms.Gun;
 using Firearms.Magazine;
 using Firearms.WeaponInterface;
 using mController;
+using mSystem.AISystem;
 using mSystem.BuffSystem.ElementBuff;
 using UnityEngine;
 
@@ -32,6 +33,10 @@ namespace Common.LevelFSM.EnemyFSM
         [Header("是否在追击状态")] public bool isFollow;
         [Header("敌人状态")] public BodyController bodyController;
         [Header("是否为全局打断状态")] public bool isGlobalInterrupt;
+        [Header("敌人是否处于战斗状态")] public bool isCombat;
+        [Header("敌人是否在寻找掩体")] public bool isTryMoveCover;
+        [Header("敌人是否在射击状态")] public bool isStrafeShoot;
+        [Header("敌人是否在扫射")] public bool isSuppressShoot;
         
         public EnemyAnim EnemyAnimController; // 动画控制器
         public EnemyAI enemyAIController; // 决策控制器
@@ -41,6 +46,8 @@ namespace Common.LevelFSM.EnemyFSM
         [Header("持枪手")] public Transform head;
         [Header("枪械")] public Transform gun;
         private IWeapon _weapon;
+
+        private IAISystem _aiSystem;
 
         public void Init()
         {
@@ -61,6 +68,8 @@ namespace Common.LevelFSM.EnemyFSM
             EnemyAnimController = new EnemyAnim(animator, this, avatarMask, leftHandIk, rightHandIk);
             EnemyAnimController.LeftHandIk = 1;
             EnemyAnimController.RightHandIk = 0;
+
+            _aiSystem = new AISystem(GetPlayerTrans());
         }
 
         private void Update()
@@ -78,18 +87,23 @@ namespace Common.LevelFSM.EnemyFSM
                 _hits, 
                 playerLayerMask
                 );
+            /*
             if (count > 0) // 如果检测到玩家就朝向玩家
             {
                 Vector3 f = _hits[0].transform.position - transform.position;
                 _weapon.UpdateForward(f);
                 f.y = 0;
-                Quaternion targetRot = Quaternion.LookRotation(f);
+                if (f.sqrMagnitude > 0.001f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(f);
                     transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRot,
-                    Time.deltaTime * 10f
-                );
+                        transform.rotation,
+                        targetRot,
+                        Time.deltaTime * 10f
+                    );
+                }
             }
+            */
             return count == 0 ? null : _hits[0].transform;
         }
 
@@ -101,7 +115,7 @@ namespace Common.LevelFSM.EnemyFSM
             }
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             EnemyAnimController.Destroy();
         }
@@ -110,6 +124,12 @@ namespace Common.LevelFSM.EnemyFSM
         {
             bodyController.LoseHp((int)val);
             if (bodyController.hp == 0) isGlobalInterrupt = true;
+        }
+
+        public CoverPoint[] GetCoverPoints()
+        {
+            _aiSystem.SetTarget(GetPlayerTrans());
+            return _aiSystem.FindCoverPoints(transform, 10f);
         }
     }
 }

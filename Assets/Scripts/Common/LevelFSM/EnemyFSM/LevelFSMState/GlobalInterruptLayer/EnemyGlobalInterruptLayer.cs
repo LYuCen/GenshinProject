@@ -1,5 +1,5 @@
 ﻿using Common.FSM;
-using UnityEngine;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
@@ -10,6 +10,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
     {
         public EnemyGlobalInterruptLayer(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
+            AddCondition(new EnemyCombatLayerCondition(MyManager, "Combat"));
         }
 
         public override void OnEnterState()

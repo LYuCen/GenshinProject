@@ -1,4 +1,5 @@
 ﻿using Common.FSM;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         public EnemyFollowState(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
             AddCondition(new EnemyIdleCondition(MyManager, "Idle"));
-            AddCondition(new EnemyAttackCondition(MyManager, "Attack"));
             AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt"));
+            AddCondition(new EnemyCombatLayerCondition(MyManager,"Combat"));
         }
 
         public override void OnEnterState()

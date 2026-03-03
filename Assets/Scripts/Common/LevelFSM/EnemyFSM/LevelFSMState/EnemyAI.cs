@@ -102,5 +102,23 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         {
             return moveOri;
         }
+        
+        /// <summary>
+        /// 是否以到达目标点位
+        /// </summary>
+        /// <returns></returns>
+        public bool HasArrived()
+        {
+            if (navMeshAgent.pathPending) return false;
+
+            if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+            {
+                if (!navMeshAgent.hasPath || navMeshAgent.velocity.sqrMagnitude == 0f)
+                    return true;
+            }
+
+            return false;
+        }
+        
     }
 }

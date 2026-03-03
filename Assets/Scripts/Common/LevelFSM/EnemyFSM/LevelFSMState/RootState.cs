@@ -1,4 +1,5 @@
 ﻿using Common.FSM;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
@@ -14,10 +15,12 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         {
             States.TryAdd("Idle", new EnemyIdleState(MyManager, new EnemyIdleCondition(MyManager, "Idle")));
             States.TryAdd("Follow", new EnemyFollowState(MyManager, new EnemyFollowCondition(MyManager, "Follow")));
-            States.TryAdd("Attack", new EnemyAttackState(MyManager, new EnemyAttackCondition(MyManager, "Attack")));
+            //States.TryAdd("Attack", new EnemyAttackState(MyManager, new EnemyAttackCondition(MyManager, "Attack")));
             States.TryAdd("GlobalInterrupt",
                 new EnemyGlobalInterruptLayer(MyManager,
                     new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt")));
+            States.TryAdd("Combat",
+                new EnemyCombatLayer(MyManager, new EnemyCombatLayerCondition(MyManager, "Combat")));
             IsBuilt = true;
         }
     }

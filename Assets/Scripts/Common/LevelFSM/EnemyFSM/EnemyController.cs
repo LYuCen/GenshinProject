@@ -6,6 +6,7 @@ namespace Common.LevelFSM.EnemyFSM
     {
         private EnemyFsm _fsm;
         public EnemyManager enemyManager;
+        
 
         private void Start()
         {
@@ -15,7 +16,7 @@ namespace Common.LevelFSM.EnemyFSM
 
         private void Update()
         {
-            _fsm.Update();
+            //_fsm.Update();
         }
     }
 }
