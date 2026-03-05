@@ -10,6 +10,7 @@ namespace AI.VisualRequest.VisualRequest
     {
         public Vector3 PointPos;
         public Color PointColor = Color.yellow; // 圆球颜色
+        public string Text = null; // 新增字段，用于显示数字或文字
         public bool Enable = true;
 
         public void Draw(Dictionary<VisualRequestEnum, IVisualizer> visualizers)

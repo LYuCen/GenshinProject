@@ -15,6 +15,11 @@ namespace AI.VisualRequest.VisualRequest
             _requests.Add(request);
         }
 
+        public void ClearRequest()
+        {
+            _requests.Clear();
+        }
+
         public void Draw(Dictionary<VisualRequestEnum, IVisualizer> visualizers)
         {
             if (Enable)

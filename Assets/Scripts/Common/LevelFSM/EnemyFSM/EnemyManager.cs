@@ -6,7 +6,6 @@ using Firearms.Gun;
 using Firearms.Magazine;
 using Firearms.WeaponInterface;
 using mController;
-using mSystem.AISystem;
 using mSystem.BuffSystem.ElementBuff;
 using UnityEngine;
 
@@ -47,8 +46,6 @@ namespace Common.LevelFSM.EnemyFSM
         [Header("枪械")] public Transform gun;
         private IWeapon _weapon;
 
-        private IAISystem _aiSystem;
-
         public void Init()
         {
             AbstractMagazine magazine = new BaseMagazine(30, 30, 20, ElementEnum.Fire);
@@ -68,8 +65,6 @@ namespace Common.LevelFSM.EnemyFSM
             EnemyAnimController = new EnemyAnim(animator, this, avatarMask, leftHandIk, rightHandIk);
             EnemyAnimController.LeftHandIk = 1;
             EnemyAnimController.RightHandIk = 0;
-
-            _aiSystem = new AISystem(GetPlayerTrans());
         }
 
         private void Update()
@@ -124,12 +119,6 @@ namespace Common.LevelFSM.EnemyFSM
         {
             bodyController.LoseHp((int)val);
             if (bodyController.hp == 0) isGlobalInterrupt = true;
-        }
-
-        public CoverPoint[] GetCoverPoints()
-        {
-            _aiSystem.SetTarget(GetPlayerTrans());
-            return _aiSystem.FindCoverPoints(transform, 10f);
         }
     }
 }
