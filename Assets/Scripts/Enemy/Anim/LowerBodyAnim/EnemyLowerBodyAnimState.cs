@@ -1,6 +1,6 @@
 ﻿using Common.LevelFSM.EnemyFSM;
-using Enemy.Anim.LowerBodyAnim.BaseIdle;
 using Enemy.Anim.LowerBodyAnim.BaseMove;
+using Enemy.Anim.LowerBodyAnim.CombatAnim;
 using Player.Anim;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -14,8 +14,8 @@ namespace Enemy.Anim.LowerBodyAnim
         private AnimationMixerPlayable _mixer;
         public EnemyLowerBodyAnimState(EnemyManager myManager) : base(myManager)
         {
-            AddState(new EnemyRifleIdle(MyManager));
-            AddState(new EnemyMove(MyManager));
+            AddState(new EnemyPatrol(MyManager));
+            AddState(new EnemyCombatAnim(MyManager));
         }
 
         protected override bool CheckState()

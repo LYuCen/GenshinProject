@@ -10,6 +10,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         {
             Conditions.Add(new IdleCondition(MyManager,"Idle"));
             Conditions.Add(new ShootWalkCondition(MyManager, "ShootWalk"));
+            Conditions.Add(new WalkCondition(MyManager, "Walk"));
         }
 
         public override void OnEnterState()

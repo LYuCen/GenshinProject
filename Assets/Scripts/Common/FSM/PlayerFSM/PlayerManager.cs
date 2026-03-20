@@ -4,6 +4,7 @@ using mModel.ScriptableConfig;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
 using Player.Anim;
+using Player.Anim.UpperBodyAnim;
 using QFramework;
 using UnityEngine;
 
@@ -39,7 +40,7 @@ namespace Common.FSM.PlayerFSM
         [Header("握把")] public Transform gunGrip;
         [Header("枪判定矩形")] public Transform gunCube;
         [Header("武器装备控制器")] public FirearmController firearmController;
-        public PlayerAnimState ReloadState;
+        public ReloadAnimState ReloadState;
         public Transform gunStock;
         public Transform gun; // 枪托
         public Transform shoulder; // 右肩
@@ -75,14 +76,14 @@ namespace Common.FSM.PlayerFSM
             {
                 if (e.IsDown)
                 {
-                    if (isShoot) isRun = false;
                     firearmController.DownSecondaryAction(ref isShoot);
+                    if (isShoot) isRun = false;
                 }
             });
             this.RegisterEvent<WeaponPrimaryActionEvent>(e =>
             {
-                isShoot = true;
                 isRun = false;
+                isShoot = true;
                 if(e.IsDown) firearmController.DownPrimaryAction();
                 if(e.IsPress) firearmController.PressPrimaryAction();
                 if(e.IsUp) firearmController.UpPrimaryAction();

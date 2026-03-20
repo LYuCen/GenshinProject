@@ -1,7 +1,5 @@
-﻿
-using Common.FSM;
+﻿using Common.FSM;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
-using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {
@@ -23,30 +21,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 
         public override void OnUpdateState()
         {
-            Transform player = MyManager.GetPlayerTrans();
-            if (!player ||
-                !MyManager.enemyAIController.IsInRange(player, MyManager.outAttackRange))
-            {
-                MyManager.isAttack = false;
-                return;
-            }
-
-            // 走位冷却
-            MyManager.choiceTimer += Time.deltaTime;
-            if (MyManager.choiceTimer >= MyManager.choiceCd)
-            {
-                // 只有太近才走位
-                float distance = Vector3.Distance(
-                    MyManager.transform.position, player.position);
-
-                if (distance < MyManager.outAttackRange)
-                {
-                    MyManager.enemyAIController.StrafeAroundTarget(player, 2.0f);
-                }
-
-                MyManager.choiceTimer = 0f;
-            }
-            else MyManager.Shoot();
+            
         }
 
         public override void OnExitState()

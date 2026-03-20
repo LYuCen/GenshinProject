@@ -23,6 +23,9 @@ namespace AI.EqsController
         [Header("点数量")] public int PointCount = 20; // 点数目
         [Header("投射高度")] public float RayOriginHeight = 10f; // 投射高度
         [Header("半径")] public float Radius = 2f;
+        [Header("圆形坐标")] public Vector3 center;
+        public EqsPoint BasePoint;
+        public bool enable;
 
         private MixVisualRequest _mvr;
         private List<PointVisualRequest> _list = new List<PointVisualRequest>();
@@ -42,8 +45,11 @@ namespace AI.EqsController
             _context = new BaseContext(transform, target);
 
             _inCircleTest = new InCircleTest(transform.position, 2f);
-            _inCircleTest2 = new InCircleTest(transform.position, 1f, 1, true);
+            _inCircleTest2 = new InCircleTest(transform.position, 3f, 1, true);
+            
             _eqsTests.Add(new NavMeshReachableTest());
+            _eqsTests.Add(new SightTargetTest(1f, false, LayerMask.GetMask("Wall")));
+            _eqsTests.Add(new DistanceToPositionTest(transform.position));
             _eqsTests.Add(_inCircleTest);
             _eqsTests.Add(_inCircleTest2);
             _eqsSystem = new EqsSystem(_eqsGenerator, _eqsTests);
@@ -61,27 +67,35 @@ namespace AI.EqsController
                 _mvr.AddRequest(pvr);
             }
 
-            EqsPoint bass = _eqsSystem.GetBestPoint();
+            BasePoint = _eqsSystem.GetBestPoint();
             for (int i = 0; i < _points.Count; i++)
             {
-                if(_points[i] == bass) _list[i].PointColor = Color.cyan;
+                if(_points[i] == BasePoint) _list[i].PointColor = Color.cyan;
             }
             
             
             VisualizerManager.Instance.Register(_mvr);
         }
+        
+        
 
         private void Update()
         {
+            _eqsSystem.RunQuery(_context);
+            
+            _mvr.Enable = enable;
+            if (!enable) return;
+            
+            _eqsGenerator.Center = center;
+            
             _inCircleTest.Radius = Radius;
             _inCircleTest.Center = transform.position;
             _inCircleTest2.Center = transform.position;
-            
             _eqsGenerator.Radius = CircleRadius;
             _eqsGenerator.HeightOffset = HeightOffset;
             _eqsGenerator.PointCount = PointCount;
             _eqsGenerator.RayOriginHeight = RayOriginHeight;
-            _eqsSystem.RunQuery(_context);
+            
             _points = _eqsSystem.Points;
             if (_points.Count == _list.Count)
             {
@@ -92,10 +106,10 @@ namespace AI.EqsController
                     _list[i].Text = _points[i].Score.ToString("F2");
                 }
                 
-                EqsPoint bass = _eqsSystem.GetBestPoint();
+                BasePoint = _eqsSystem.GetBestPoint();
                 for (int i = 0; i < _points.Count; i++)
                 {
-                    if(_points[i] == bass) _list[i].PointColor = Color.cyan;
+                    if(_points[i] == BasePoint) _list[i].PointColor = Color.cyan;
                 }
             }
             else
@@ -110,10 +124,10 @@ namespace AI.EqsController
                     _list.Add(pvr);
                     _mvr.AddRequest(pvr);
                 }
-                EqsPoint bass = _eqsSystem.GetBestPoint();
+                BasePoint = _eqsSystem.GetBestPoint();
                 for (int i = 0; i < _points.Count; i++)
                 {
-                    if(_points[i] == bass) _list[i].PointColor = Color.cyan;
+                    if(_points[i] == BasePoint) _list[i].PointColor = Color.cyan;
                 }
             }
         }

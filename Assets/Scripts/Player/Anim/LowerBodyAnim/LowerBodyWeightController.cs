@@ -97,8 +97,6 @@ namespace Player.Anim.LowerBodyAnim
         {
             if (_parentState == null || _nextLeafState == null)
             {
-                if(_parentState == null) Debug.Log("父状态为空");
-                if(_nextLeafState == null) Debug.Log("切换状态为空");
                 return;
             }
 

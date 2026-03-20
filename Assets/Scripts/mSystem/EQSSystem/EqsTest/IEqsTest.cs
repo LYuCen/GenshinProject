@@ -9,7 +9,11 @@ namespace mSystem.EQSSystem.EqsTest
     public interface IEqsTest
     {
         float Weight { get; }
-        bool IsOpposite { get; }
+        
+        /// <summary>
+        /// 是否取反
+        /// </summary>
+        bool IsOpposite { get; set; }
 
         void Execute(List<EqsPoint> points, IEqsContext context);
     }

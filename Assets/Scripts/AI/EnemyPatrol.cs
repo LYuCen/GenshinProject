@@ -10,6 +10,7 @@ namespace AI
         public Transform patrolLine;
         public List<Transform> points;
         public EnemyAI enemyAI;
+        public bool enable;
         private int currentIndex;
         private float waitTimer;
 
@@ -22,20 +23,12 @@ namespace AI
             }
         }
 
-        private void Start()
-        {
-            if (!patrolLine || points.Count == 0)
-                return;
-
-            enemyAI.MoveToAim(points[0]);
-        }
-
         private void Update()
         {
             if (!patrolLine || points.Count == 0)
                 return;
 
-            if (enemyAI.HasArrived())
+            if (enemyAI.HasArrived() && enable)
             {
                 waitTimer += Time.deltaTime;
 
@@ -51,11 +44,12 @@ namespace AI
         
         void GoNext()
         {
+            enemyAI.MoveToAim(points[currentIndex].position);
+            
             if (currentIndex + _add >= points.Count) _add = -1;
             else if (currentIndex + _add < 0) _add = 1;
-
             currentIndex += _add;
-            enemyAI.MoveToAim(points[currentIndex]);
+            
         }
     }
 }

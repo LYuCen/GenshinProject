@@ -1,5 +1,7 @@
 ﻿using Common.FSM;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
@@ -11,6 +13,8 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
         public EnemyGlobalInterruptLayer(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
             AddCondition(new EnemyCombatLayerCondition(MyManager, "Combat"));
+            AddCondition(new EnemyPatrolLayerCondition(MyManager,"PatrolLayer"));
+            AddCondition(new EnemyRetreatLayerCondition(MyManager, "RetreatLayer"));
         }
 
         public override void OnEnterState()
@@ -21,6 +25,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
         protected override void BuildState()
         {
             States.TryAdd("Dead", new EnemyDeadState(MyManager, new EnemyDeadCondition(MyManager, "Dead")));
+            States.TryAdd("Hurt", new EnemyHurtState(MyManager, new EnemyHurtCondition(MyManager, "Hurt")));
             IsBuilt = true;
         }
     }

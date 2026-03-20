@@ -15,6 +15,5 @@ public class PositionController : MonoBehaviour
     void Update()
     {
         this.transform.position = vec;
-        Debug.Log(transform.position);
     }
 }

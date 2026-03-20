@@ -1,5 +1,6 @@
 ﻿using Common.FSM.PlayerFSM;
 using mModel.ScriptableConfig;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -34,6 +35,7 @@ namespace Player.Anim.UpperBodyAnim
         public override void OnExitState()
         {
             _isReload = false;
+            _reloadPlayable.SetSpeed(Config.animSpeed);
         }
 
         public override void NextState()
@@ -48,6 +50,11 @@ namespace Player.Anim.UpperBodyAnim
                 _reloadPlayable.SetTime(0);
                 _reloadPlayable.Play();
                 _isReload = true;
+            }
+            
+            if (_reloadPlayable.GetTime() >= _reloadPlayable.GetAnimationClip().length)
+            {
+                _reloadPlayable.SetSpeed(0); // 暂停动画
             }
         }
 
@@ -66,6 +73,21 @@ namespace Player.Anim.UpperBodyAnim
             
             Parent.SetAnimClip(anim, MixIndex);
             _reloadPlayable = anim;
+        }
+        
+        public double GetCurrentTime()
+        {
+            return _reloadPlayable.GetTime();
+        }
+
+        public AnimationClip GetClip()
+        {
+            return _reloadPlayable.GetAnimationClip();
+        }
+        
+        public bool HasPlayable()
+        {
+            return _reloadPlayable.IsValid();
         }
     }
 }

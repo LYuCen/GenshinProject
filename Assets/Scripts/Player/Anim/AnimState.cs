@@ -15,6 +15,9 @@ namespace Player.Anim
         public AnimState<T> Parent;
         protected AnimationClip Clip = null;
         protected AnimConfig Config;
+        protected bool IsLeaf;
+        protected float Weight;
+        protected float targetWeight;
         public int MixIndex;
 
         protected AnimState(T myManager)
@@ -102,6 +105,28 @@ namespace Player.Anim
                     Children[i].NextState();
                 }
             }
+        }
+
+        public virtual float UpdateNode()
+        {
+            if (IsLeaf)
+            {
+                Weight = Mathf.MoveTowards(Weight, targetWeight, Time.fixedDeltaTime);
+                return Weight;
+            }
+
+            float maxTarget = 0f;
+
+            foreach (var child in Children)
+            {
+                child.UpdateNode();
+                maxTarget = Mathf.Max(maxTarget, child.targetWeight);
+            }
+
+            targetWeight = maxTarget;
+            Weight = Mathf.MoveTowards(Weight, targetWeight, Time.fixedDeltaTime);
+
+            return Weight;
         }
     }
 

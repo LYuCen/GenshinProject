@@ -1,4 +1,5 @@
 ﻿using Common.LevelFSM.EnemyFSM;
+using Enemy.Anim.HurtBodyAnim;
 using Enemy.Anim.LowerBodyAnim;
 using Player.Anim;
 using Player.Ik;
@@ -25,7 +26,7 @@ namespace Enemy.Anim
             _manager = manager;
             _avatarMask = avatarMask;
             
-            _graph = PlayableGraph.Create("EnemyPlayAble");
+            _graph = PlayableGraph.Create("EnemyPlayAble" + manager.transform.name);
             _root = new EnemyAnimRoot(_manager, _avatarMask);
             _rootPlayable = _root.BuildNode(_graph);
             
@@ -74,7 +75,7 @@ namespace Enemy.Anim
         public EnemyAnimRoot(EnemyManager myManager, AvatarMask avatarMask) : base(myManager)
         {
             AddState(new EnemyLowerBodyAnimState(MyManager));
-            //AddState(new UpperBodyAnimState(MyManager));
+            AddState(new EnemyHurtBodyAnim(MyManager));
             _avatarMask = avatarMask;
         }
 
@@ -108,8 +109,8 @@ namespace Enemy.Anim
             }
 
             _rootLayer.SetInputWeight(0, 1f);
-            //_rootLayer.SetInputWeight(1, 1f);
-            //_rootLayer.SetLayerMaskFromAvatarMask(1, _avatarMask);
+            _rootLayer.SetInputWeight(1, 0.3f);
+            _rootLayer.SetLayerMaskFromAvatarMask(1, _avatarMask);
             return _rootLayer;
         }
 

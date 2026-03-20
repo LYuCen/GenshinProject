@@ -35,7 +35,7 @@ namespace AI
 
             _mixVisualRequest = new MixVisualRequest();
             _mixVisualRequest.AddRequest(_circleVisualRequest);
-            _mixVisualRequest.AddRequest(_pointVisualRequest);
+            //_mixVisualRequest.AddRequest(_pointVisualRequest);
         }
 
         private void OnEnable()

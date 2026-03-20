@@ -10,15 +10,20 @@ namespace mSystem.EQSSystem.EqsTest
     public class DistanceToPositionTest : IEqsTest
     {
         public float Weight { get; }
-        public bool IsOpposite { get; }
+        public bool IsOpposite
+        {
+            get => _isOpposite;
+            set => _isOpposite = value;
+        }
 
-        private Vector3 _targetPosition;
+        private bool _isOpposite;
+        public Vector3 TargetPosition;
 
         public DistanceToPositionTest(Vector3 targetPosition, float weight = 1f, bool isOpposite = false)
         {
-            _targetPosition = targetPosition;
+            TargetPosition = targetPosition;
             Weight = weight;
-            IsOpposite = isOpposite;
+            _isOpposite = isOpposite;
         }
 
         public void Execute(List<EqsPoint> points, IEqsContext context)
@@ -29,14 +34,14 @@ namespace mSystem.EQSSystem.EqsTest
             float maxLen = 0f;
             foreach (var point in points)
             {
-                float dist = Vector3.Distance(point.Position, _targetPosition);
+                float dist = Vector3.Distance(point.Position, TargetPosition);
                 if (dist > maxLen) maxLen = dist;
             }
             if (maxLen < 0.001f) maxLen = 0.001f; // 防止除以0
 
             foreach (var point in points)
             {
-                float len = Vector3.Distance(point.Position, _targetPosition);
+                float len = Vector3.Distance(point.Position, TargetPosition);
                 // 分数计算：距离越近分越高
                 float score = Weight * (1f - len / maxLen);
 
@@ -48,6 +53,11 @@ namespace mSystem.EQSSystem.EqsTest
                 // 分数累加
                 point.Score += score;
             }
+        }
+        
+        public void OppositeBool()
+        {
+            _isOpposite = !IsOpposite;
         }
     }
 }

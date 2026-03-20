@@ -11,8 +11,9 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
 
         public override bool CheckCondition(out string nextState)
         {
-            nextState = "Combat";
-            return MyManager.isCombat;
+            nextState = "CombatLayer";
+            return MyManager.isCombat && !MyManager.isGlobalInterrupt
+                                      && MyManager.bodyController.hp >= MyManager.bodyController.maxHp * 0.3;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using mEnum;
+using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
@@ -12,6 +13,11 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         private void Start()
         {
             navMeshAgent.updateRotation = false;
+        }
+
+        public NavMeshAgent GetAgent()
+        {
+            return navMeshAgent;
         }
 
         /// <summary>
@@ -33,13 +39,12 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         /// </summary>
         /// <param name="aim">目标</param>
         /// <param name="stopPrevAgent">是否强制前往目标</param>
-        public void MoveToAim(Transform aim, bool stopPrevAgent = false)
+        public void MoveToAim(Vector3 aim, bool stopPrevAgent = false)
         {
-            if (!aim) return;
             if (stopPrevAgent || !navMeshAgent.hasPath) // 强制打断 或 不存在有效路径
             {
                 navMeshAgent.isStopped = false;
-                navMeshAgent.SetDestination(aim.position);
+                navMeshAgent.SetDestination(aim);
             }
         }
         
@@ -54,31 +59,6 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
             navMeshAgent.ResetPath();        // 清空当前路径
         }
         
-        /// <summary>
-        /// 沿着玩家随机走位
-        /// </summary>
-        /// <param name="target">目标</param>
-        /// <param name="moveDistance">位移距离</param>
-        public void StrafeAroundTarget(Transform target, float moveDistance)
-        {
-            if (!navMeshAgent || !target) return;
-
-            // 左 or 右
-            int dir = Random.value > 0.5f ? 1 : -1;
-            this.moveOri = dir;
-
-            Vector3 right = Vector3.Cross(Vector3.up, (target.position - transform.position).normalized);
-            Vector3 moveDir = right * dir;
-
-            Vector3 targetPos = transform.position + moveDir * moveDistance;
-
-            if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, moveDistance, NavMesh.AllAreas))
-            {
-                navMeshAgent.isStopped = false;
-                navMeshAgent.SetDestination(hit.position);
-            }
-        }
-
         public void ChangeMoveSpeed(float speed)
         {
             navMeshAgent.speed = speed;
@@ -119,6 +99,88 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 
             return false;
         }
+
+        /// <summary>
+        /// 朝向移动方向（平滑旋转）
+        /// </summary>
+        /// <param name="rotateSpeed">旋转速度</param>
+        public void RotateToMoveDirection(float rotateSpeed)
+        {
+            if (!navMeshAgent) return;
+
+            Vector3 velocity = navMeshAgent.velocity;
+
+            // 如果速度很小，不旋转
+            if (velocity.sqrMagnitude < 0.01f)
+                return;
+
+            // 计算目标方向
+            Vector3 dir = velocity.normalized;
+
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+
+            // 平滑旋转
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRot,
+                rotateSpeed * Time.deltaTime
+            );
+        }
         
+        public void RotateToMoveDirection(float rotateSpeed, Vector3 forward)
+        {
+            if (!navMeshAgent) return;
+
+            forward.y = 0;
+
+            if (forward.sqrMagnitude < 0.001f)
+                return;
+
+            Quaternion targetRot = Quaternion.LookRotation(forward);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRot,
+                rotateSpeed * Time.deltaTime
+            );
+        }
+        
+        /// <summary>
+        /// 获取8方向移动
+        /// </summary>
+        public MoveDirection8 GetMoveDirection()
+        {
+            if (!navMeshAgent) return MoveDirection8.Forward;
+
+            Vector3 velocity = navMeshAgent.velocity;
+
+            if (velocity.sqrMagnitude < 0.01f)
+                return MoveDirection8.Forward;
+
+            // 转换到角色本地坐标
+            Vector3 localVelocity = transform.InverseTransformDirection(velocity).normalized;
+
+            float x = localVelocity.x;
+            float z = localVelocity.z;
+
+            if (z > 0.5f)
+            {
+                if (x > 0.5f) return MoveDirection8.ForwardRight;
+                if (x < -0.5f) return MoveDirection8.ForwardLeft;
+                return MoveDirection8.Forward;
+            }
+
+            if (z < -0.5f)
+            {
+                if (x > 0.5f) return MoveDirection8.BackRight;
+                if (x < -0.5f) return MoveDirection8.BackLeft;
+                return MoveDirection8.Back;
+            }
+
+            if (x > 0.5f) return MoveDirection8.Right;
+            if (x < -0.5f) return MoveDirection8.Left;
+
+            return MoveDirection8.Forward;
+        }
     }
 }

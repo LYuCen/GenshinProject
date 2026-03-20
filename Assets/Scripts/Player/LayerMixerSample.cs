@@ -37,6 +37,8 @@ namespace Player
             _graph.Connect(reload, 0, _layer, 1);
             _layer.SetLayerMaskFromAvatarMask(1, avatarMask);
             _layer.SetInputWeight(0, 1);
+            
+            reload.SetSpeed(2f);
 
 
             AnimationPlayableOutput output = AnimationPlayableOutput.Create(_graph, "output", animator);

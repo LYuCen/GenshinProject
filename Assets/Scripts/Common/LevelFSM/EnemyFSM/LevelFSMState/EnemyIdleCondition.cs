@@ -11,7 +11,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
         public override bool CheckCondition(out string nextState)
         {
             nextState = "Idle";
-            return MyManager.isGround && MyManager.moveSpeed < 0.01f && !MyManager.isFollow && !MyManager.isAttack;
+            return MyManager.isGround && MyManager.moveSpeed < 0.01f && !MyManager.isAttack;
         }
     }
 }

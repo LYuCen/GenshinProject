@@ -8,7 +8,7 @@ namespace mController
     public class BodyController : MonoBehaviour
     {
         public int hp;
-        [SerializeField] private int maxHp;
+        [SerializeField] public int maxHp;
         [SerializeField] private Image hpUI;
 
         public HashSet<Transform> objs;

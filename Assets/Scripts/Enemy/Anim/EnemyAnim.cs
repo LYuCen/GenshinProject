@@ -53,7 +53,7 @@ namespace Enemy.Anim
         public void Update()
         {
             _lowerController.Update();
-            //_upperController.Update();
+            _upperController.Update();
             _animBuild.Update(LeftHandIk, RightHandIk, OpenIk);
         }
 

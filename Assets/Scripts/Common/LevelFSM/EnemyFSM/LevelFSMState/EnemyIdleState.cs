@@ -9,7 +9,6 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
     {
         public EnemyIdleState(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
-            AddCondition(new EnemyFollowCondition(MyManager, "Follow"));
             AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt"));
             AddCondition(new EnemyCombatLayerCondition(MyManager, "Combat"));
 
@@ -22,12 +21,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 
         public override void OnUpdateState()
         {
-            Transform player = MyManager.GetPlayerTrans();
-            if (MyManager.enemyAIController.IsInRange(player, MyManager.perceptionRange))
-            {
-                // 进入追击状态
-                MyManager.isFollow = true;
-            }
+            
         }
 
         public override void OnExitState()

@@ -1,5 +1,8 @@
 ﻿using Common.FSM;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
+using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
 {
@@ -7,20 +10,33 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
     {
         public EnemyCombatLayer(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
-            AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager,"GlobalInterrupt"));
+            AddCondition(new EnemyPatrolLayerCondition(MyManager,"PatrolLayer"));
+            AddCondition(new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterruptLayer"));
+            AddCondition(new EnemyRetreatLayerCondition(MyManager, "RetreatLayer"));
         }
 
         protected override void BuildState()
         {
-            States.TryAdd("MoveToCover",
-                new MoveToCoverState(MyManager, new MoveToCoverStateCondition(MyManager, "MoveToCover")));
-            States.TryAdd("StrafeShoot",
-                new StrafeShootState(MyManager, new StrafeShootCondition(MyManager, "StrafeShoot")));
-            States.TryAdd("SuppressShoot",
-                new SuppressShootState(MyManager, new StrafeShootCondition(MyManager, "SuppressShoot")));
-            States.TryAdd("CombatIdle",
-                new EnemyCombatIdleState(MyManager, new EnemyCombatIdleCondition(MyManager, "CombatIdle")));
+            States.Add("CombatWalk",
+                new EnemyCombatWalkState(MyManager, new EnemyAttackCondition(MyManager, "CombatWalk")));
+            States.Add("CombatIdle",
+                new EnemyCombatIdleState(MyManager, new EnemyCombatIdleCondition(MyManager, "CombatWalk")));
             IsBuilt = true;
+        }
+
+        public override void OnUpdateState()
+        {
+            MyManager.isCombat = MyManager.AISightPerception.isSight;
+            MyManager.CircleEqsControllerTest.center = MyManager.AISightPerception.sightPoint;
+            MyManager.CircleEqsControllerTest.enable = true;
+            Vector3 forward = MyManager.CircleEqsControllerTest.center - MyManager.transform.position;
+            MyManager.enemyAIController.RotateToMoveDirection(8f, forward);
+            base.OnUpdateState();
+        }
+
+        public override void OnExitState()
+        {
+            MyManager.CircleEqsControllerTest.enable = false;
         }
     }
 }

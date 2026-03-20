@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using mSystem.EQSSystem.EqsContext;
+using mSystem.EQSSystem.EqsTest;
 
 namespace mSystem.EQSSystem
 {
@@ -18,6 +19,8 @@ namespace mSystem.EQSSystem
         /// </summary>
         /// <param name="context">环境信息</param>
         public void RunQuery(IEqsContext context);
+
+        public void SetTestList(List<IEqsTest> tests);
 
         /// <summary>
         /// 获取最优候选点

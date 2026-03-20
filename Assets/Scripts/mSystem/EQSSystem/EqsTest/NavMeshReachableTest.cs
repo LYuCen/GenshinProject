@@ -10,9 +10,14 @@ namespace mSystem.EQSSystem.EqsTest
     /// </summary>
     public class NavMeshReachableTest : IEqsTest
     {
-        public float Weight { get; private set; }
-        public bool IsOpposite { get; private set; }
+        public float Weight { get; }
+        public bool IsOpposite
+        {
+            get => _isOpposite;
+            set => _isOpposite = value;
+        }
         private int _areaMask;
+        private bool _isOpposite;
 
         /// <summary>
         /// 构造函数
@@ -23,7 +28,7 @@ namespace mSystem.EQSSystem.EqsTest
         public NavMeshReachableTest(float weight = 1f, bool isOpposite = false, int areaMask = NavMesh.AllAreas)
         {
             Weight = weight;
-            IsOpposite = isOpposite;
+            _isOpposite = isOpposite;
             _areaMask = areaMask;
         }
 
@@ -48,6 +53,11 @@ namespace mSystem.EQSSystem.EqsTest
                 // 分值就用权重
                 point.Score += valid ? Weight : 0f;
             }
+        }
+        
+        public void OppositeBool()
+        {
+            _isOpposite = !IsOpposite;
         }
     }
 }

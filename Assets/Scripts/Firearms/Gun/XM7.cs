@@ -22,7 +22,7 @@ namespace Firearms.Gun
             PrevShootTime = 0;
             IsCanShoot = true;
             IsReload = false;
-            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FN_IWS.asset", false);
+            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/XM7.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
         }
 

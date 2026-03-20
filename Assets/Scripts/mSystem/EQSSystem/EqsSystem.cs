@@ -8,10 +8,13 @@ namespace mSystem.EQSSystem
     public class EqsSystem : IEqsSystem
     {
         private readonly IEqsGenerator _generator;
-        private readonly List<IEqsTest> _tests;
         private readonly List<EqsPoint> _points = new();
+        private List<IEqsTest> _tests;
 
         public IReadOnlyList<EqsPoint> Points => _points;
+
+        private EqsPoint _prevBestPoint;
+        private IEqsContext _context;
 
         public EqsSystem(IEqsGenerator generator, List<IEqsTest> tests)
         {
@@ -23,6 +26,7 @@ namespace mSystem.EQSSystem
         {
             _points.Clear();
             _points.AddRange(_generator.Generate(context));
+            _context = context;
 
             for (int i = 0; i < _tests.Count; i++)
             {
@@ -30,9 +34,27 @@ namespace mSystem.EQSSystem
             }
         }
 
+        public void SetTestList(List<IEqsTest> tests)
+        {
+            _tests = tests;
+        }
+
         public EqsPoint GetBestPoint()
         {
             EqsPoint best = null;
+
+            if (_prevBestPoint != null)
+            {
+                List<EqsPoint> l = new List<EqsPoint>();
+                l.Add(_prevBestPoint);
+                for (int i = 0; i < _tests.Count; i++)
+                {
+                    _tests[i].Execute(l, _context);
+                }
+
+                if (_prevBestPoint.IsValid) return _prevBestPoint;
+            }
+            
 
             for (int i = 0; i < _points.Count; i++)
             {
@@ -44,6 +66,7 @@ namespace mSystem.EQSSystem
                     best = p;
             }
 
+            _prevBestPoint = best;
             return best;
         }
     }

@@ -1,6 +1,8 @@
 ﻿using Common.FSM;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {
@@ -8,19 +10,20 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState
     {
         public RootState(EnemyManager manager, AbstractCondition<EnemyManager> selfCondition) : base(manager, selfCondition)
         {
-            SetDefaultState("Idle");
+            
         }
 
         protected override void BuildState()
         {
-            States.TryAdd("Idle", new EnemyIdleState(MyManager, new EnemyIdleCondition(MyManager, "Idle")));
-            States.TryAdd("Follow", new EnemyFollowState(MyManager, new EnemyFollowCondition(MyManager, "Follow")));
-            //States.TryAdd("Attack", new EnemyAttackState(MyManager, new EnemyAttackCondition(MyManager, "Attack")));
-            States.TryAdd("GlobalInterrupt",
+            States.Add("PatrolLayer",
+                new EnemyPatrolLayer(MyManager, new EnemyPatrolLayerCondition(MyManager, "PatrolLayer")));
+            States.Add("CombatLayer",
+                new EnemyCombatLayer(MyManager, new EnemyCombatLayerCondition(MyManager, "CombatLayer")));
+            States.Add("GlobalInterruptLayer",
                 new EnemyGlobalInterruptLayer(MyManager,
-                    new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterrupt")));
-            States.TryAdd("Combat",
-                new EnemyCombatLayer(MyManager, new EnemyCombatLayerCondition(MyManager, "Combat")));
+                    new EnemyGlobalInterruptLayerCondition(MyManager, "GlobalInterruptLayer")));
+            States.Add("RetreatLayer",
+                new EnemyRetreatLayer(MyManager, new EnemyRetreatLayerCondition(MyManager, "RetreatLayer")));
             IsBuilt = true;
         }
     }

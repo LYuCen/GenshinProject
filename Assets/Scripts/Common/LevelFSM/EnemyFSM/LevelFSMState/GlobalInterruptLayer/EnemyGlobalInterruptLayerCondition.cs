@@ -10,7 +10,7 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 
         public override bool CheckCondition(out string nextState)
         {
-            nextState = "GlobalInterrupt";
+            nextState = "GlobalInterruptLayer";
             return MyManager.isGlobalInterrupt;
         }
     }

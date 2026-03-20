@@ -10,7 +10,15 @@ namespace mSystem.EQSSystem.EqsTest
     public class InCircleTest : IEqsTest
     {
         public float Weight { get; }
-        public bool IsOpposite { get; }
+
+        public bool IsOpposite
+        {
+            get => _isOpposite;
+            set => _isOpposite = value;
+        }
+
+        private bool _isOpposite;
+        private bool _pointAble;
 
         /// <summary>
         /// 圆心位置
@@ -29,12 +37,14 @@ namespace mSystem.EQSSystem.EqsTest
         /// <param name="radius">半径</param>
         /// <param name="weight">权重</param>
         /// <param name="isOpposite">是否取反</param>
-        public InCircleTest(Vector3 center, float radius, float weight = 1f, bool isOpposite = false)
+        /// <param name="pointAble">是否具有否决权</param>
+        public InCircleTest(Vector3 center, float radius, float weight = 1f, bool isOpposite = false, bool pointAble = false)
         {
             Center = center;
             Radius = radius;
             Weight = weight;
-            IsOpposite = isOpposite;
+            _isOpposite = isOpposite;
+            _pointAble = pointAble;
         }
 
         public void Execute(List<EqsPoint> points, IEqsContext context)
@@ -50,9 +60,14 @@ namespace mSystem.EQSSystem.EqsTest
                 // 根据 IsOpposite 取反
                 bool valid = IsOpposite ? !inside : inside;
 
-                point.IsValid &= valid;
+                if(_pointAble) point.IsValid &= valid;
                 point.Score += valid ? Weight : 0f;
             }
+        }
+        
+        public void OppositeBool()
+        {
+            _isOpposite = !IsOpposite;
         }
     }
 }

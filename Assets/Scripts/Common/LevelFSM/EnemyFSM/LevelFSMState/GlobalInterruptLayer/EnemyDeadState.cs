@@ -1,4 +1,5 @@
-﻿using Common.FSM;
+﻿using AssetBundleFramework.Core.Resource;
+using Common.FSM;
 using UnityEngine;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
@@ -15,6 +16,8 @@ namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
         public override void OnEnterState()
         {
             Debug.Log("敌人已阵亡");
+            MyManager.CreateSnapshot();
+            MyManager.gameObject.SetActive(false);
         }
     }
 }

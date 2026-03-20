@@ -16,7 +16,7 @@ namespace Common.LevelFSM.EnemyFSM
 
         private void Update()
         {
-            //_fsm.Update();
+            _fsm.Update();
         }
     }
 }
