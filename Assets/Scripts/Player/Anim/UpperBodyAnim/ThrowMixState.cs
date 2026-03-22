@@ -19,7 +19,7 @@ namespace Player.Anim.UpperBodyAnim
 
         protected override bool CheckState()
         {
-            return MyManager.isThrow && !MyManager.isRun;
+            return MyManager.isThrow && !MyManager.isSprint;
         }
 
         public override void SetWeight(int index, float weight = 0)

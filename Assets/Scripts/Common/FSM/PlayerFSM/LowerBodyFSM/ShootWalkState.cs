@@ -16,13 +16,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.speed = 1.6f;
             MyManager.PlayAnimController.LeftHandIk = 1;
             MyManager.PlayAnimController.RightHandIk = 1;
-            if (!MyManager.isReload)
-            {
-                MyManager.gunCube.SetParent(MyManager.gun);
-                MyManager.gunCube.localPosition = new Vector3(0.5f, 0f, 4f);
-                MyManager.gunCube.localEulerAngles = Vector3.zero;
-                MyManager.rightHandIk.position = MyManager.gunGrip.position;
-            }
             MyManager.stateName = "据枪移动";
         }
 

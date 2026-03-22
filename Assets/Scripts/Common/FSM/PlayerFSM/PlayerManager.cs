@@ -5,7 +5,9 @@ using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
 using Player.Anim;
 using Player.Anim.UpperBodyAnim;
+using Player.AnimTree;
 using QFramework;
+using RootMotion.FinalIK;
 using UnityEngine;
 
 namespace Common.FSM.PlayerFSM
@@ -18,7 +20,7 @@ namespace Common.FSM.PlayerFSM
         [Header("是否在跳跃")] public bool isJump;
         [Header("是否在射击")] public bool isShoot;
         [Header("是否在换弹")] public bool isReload;
-        [Header("是否在奔跑")] public bool isRun;
+        [Header("是否在奔跑")] public bool isSprint;
         [Header("是否在投弹")] public bool isThrow;
         [Header("按键移动方位")] public Vector2 inputMove;
         [Header("角色移动方向")] public Vector2 playerMove;
@@ -32,7 +34,7 @@ namespace Common.FSM.PlayerFSM
         [Header("组件")] public CharacterController characterController;
         [Header("角色动画组件")] public Animator animator;
         [Header("角色上下半身动画遮罩")] public AvatarMask avatarMask;
-
+        [Header("瞄准Ik")] public AimIK aimIK;
         [Header("手")] public Transform hand;
         [Header("左手ik")] public Transform leftHandIk;
         [Header("右手ik")] public Transform rightHandIk;
@@ -42,25 +44,28 @@ namespace Common.FSM.PlayerFSM
         [Header("武器装备控制器")] public FirearmController firearmController;
         public ReloadAnimState ReloadState;
         public Transform gunStock;
-        public Transform gun; // 枪托
         public Transform shoulder; // 右肩
         public bool runEnable = true;
-        private Ray _gunRay;
+
         private Vector3 _fV3; // 力方向
         private Vector3 _bottom;
         private Vector2 _lastMove; // 输入切换后移动方向
         private float _stableTimer; // 输入状态切换当前时间
         [Header("输入状态时间间隔")] public float stableThreshold = 0.05f; // 输入状态切换间隔
+
+        public PlayerAnimController AnimController;
         
         public void Init()
         {
             animator.applyRootMotion = false;
             PlayAnimController = new PlayAnim(animator, this, avatarMask, leftHandIk, rightHandIk);
+            AnimController =
+                new PlayerAnimController(animator, this, avatarMask, leftHandIk, rightHandIk);
             playerGun = firearmController.GetWeapon(0);
             playerGun.SetParent(gunCube, true); // 保持世界位置/旋转/缩放
             gunCube.SetParent(hand, true);
-            gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);
-            gunCube.localEulerAngles = new Vector3(-90, 180, 0);
+            gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
+            gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
             firearmController.Weapon.InitTransform();
             gunGrip = playerGun.Find("Grip");
             this.RegisterEvent<MoveEvent>(e =>
@@ -77,12 +82,12 @@ namespace Common.FSM.PlayerFSM
                 if (e.IsDown)
                 {
                     firearmController.DownSecondaryAction(ref isShoot);
-                    if (isShoot) isRun = false;
+                    if (isShoot) isSprint = false;
                 }
             });
             this.RegisterEvent<WeaponPrimaryActionEvent>(e =>
             {
-                isRun = false;
+                isSprint = false;
                 isShoot = true;
                 if(e.IsDown) firearmController.DownPrimaryAction();
                 if(e.IsPress) firearmController.PressPrimaryAction();
@@ -133,7 +138,7 @@ namespace Common.FSM.PlayerFSM
             {
                 if (inputMove != Vector2.zero && runEnable)
                 {
-                    isRun = true;
+                    isSprint = true;
                     isShoot = false;
                 }
             });
@@ -162,17 +167,18 @@ namespace Common.FSM.PlayerFSM
             );
         }
 
+        public void ReloadEnd()
+        {
+            isReload = false;
+            firearmController.Reload();
+        }
+
 
         private void Update()
         {
-            if (isRun)
+            if (isSprint)
             {
-                isRun = inputMove != Vector2.zero;
-            }
-            if (isReload && firearmController.Weapon.ReloadTime() == 0)
-            {
-                isReload = false;
-                firearmController.Reload();
+                isSprint = inputMove != Vector2.zero;
             }
             isGround = IsGrounded();
             if (!isGround)
@@ -183,7 +189,8 @@ namespace Common.FSM.PlayerFSM
                 isJump = false;
             }
             firearmController.UpdateForward((cameraController.rayEnd - gunStock.position).normalized);
-            PlayAnimController.Update();
+            //PlayAnimController.Update();
+            AnimController.Update();
             PlayerMoveAnimContro();
             
         }
@@ -191,14 +198,6 @@ namespace Common.FSM.PlayerFSM
         private void LateUpdate()
         {
             cameraController.UpdateForward();
-            if (isShoot)
-            {
-                _gunRay = new Ray(gunStock.position, (cameraController.rayEnd - gunStock.position).normalized);
-                gun.position = shoulder.position;
-                Vector3 forward = Vector3.Lerp(gun.forward, (cameraController.rayEnd - gunStock.position).normalized,
-                    5 * Time.deltaTime);
-                gun.forward = forward;
-            }
         }
 
         bool IsGrounded()
@@ -240,9 +239,6 @@ namespace Common.FSM.PlayerFSM
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(_bottom, radius);
-
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(_gunRay.origin, cameraController.rayEnd);
         }
 
         private void OnDisable()

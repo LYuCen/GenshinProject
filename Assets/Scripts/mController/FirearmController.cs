@@ -171,6 +171,7 @@ namespace mController
 
         public bool TryReload()
         {
+            
             if (Weapon is IReloadable reloadable)
             {
                 ElementEnum elementEnum = view.GetChose();
@@ -182,6 +183,7 @@ namespace mController
 
         public void Reload()
         {
+            
             if (Weapon is IReloadable reloadable)
             {
                 bulletIndex = (int)view.GetChose();

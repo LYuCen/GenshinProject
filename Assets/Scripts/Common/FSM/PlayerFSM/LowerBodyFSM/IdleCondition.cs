@@ -13,7 +13,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         {
             nextState = "Idle";
             return MyManager.isGround && !MyManager.isJump &&
-                   MyManager.inputMove == Vector2.zero && !MyManager.isShoot && !MyManager.isRun;
+                   MyManager.inputMove == Vector2.zero && !MyManager.isShoot && !MyManager.isSprint;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove
 
         protected override bool CheckState()
         {
-            return !MyManager.isRun;
+            return !MyManager.isSprint;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

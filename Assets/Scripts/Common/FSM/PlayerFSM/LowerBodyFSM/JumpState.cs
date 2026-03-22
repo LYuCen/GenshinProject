@@ -16,8 +16,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
 
         public override void OnEnterState()
         {
-            MyManager.PlayAnimController.LeftHandEffector.localPosition = _leftHandPosition;
-            MyManager.PlayAnimController.LeftHandEffector.localEulerAngles = _leftHandRotation;
             
             MyManager.f = 1.5f;
             _v3.y = MyManager.f * Time.deltaTime;

@@ -32,8 +32,7 @@ namespace Player.Ik
                 human.SetGoalRotation(AvatarIKGoal.RightHand, RightHand.GetRotation(stream));
                 human.SetGoalWeightPosition(AvatarIKGoal.RightHand, RightWeight);
                 human.SetGoalWeightRotation(AvatarIKGoal.RightHand, RightWeight);
-            }
-            
+            } 
             human.SolveIK();
         }
 

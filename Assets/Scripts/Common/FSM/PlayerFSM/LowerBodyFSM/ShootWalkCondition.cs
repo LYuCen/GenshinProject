@@ -11,7 +11,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         public override bool CheckCondition(out string nextState)
         {
             nextState = "ShootWalk";
-            return MyManager.isShoot && MyManager.isGround && MyManager.inputMove != Vector2.zero && !MyManager.isRun;
+            return MyManager.isShoot && MyManager.isGround && MyManager.inputMove != Vector2.zero && !MyManager.isSprint;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove.RifleSprint
 
         protected override bool CheckState()
         {
-            return MyManager.isRun && !MyManager.isThrow;
+            return MyManager.isSprint && !MyManager.isThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

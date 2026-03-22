@@ -7309,8 +7309,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 1350643464}
+  upperBodyMask: {fileID: 31900000, guid: 5c33c58049a599e448099941cc53b271, type: 2}
   moveKeyPressed: 0
   isSprint: 0
+  isReload: 0
   endAll: 0
 --- !u!114 &1350643462
 MonoBehaviour:

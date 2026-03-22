@@ -4,6 +4,7 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
 {
     public class ReloadState : AbstractState<PlayerManager>
     {
+        private bool _aimIkEnable;
         public ReloadState(PlayerManager manager) : base(manager)
         {
             Conditions.Add(new NullCondition(MyManager,"Null"));
@@ -13,8 +14,8 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
         {
             MyManager.upperName = "换弹";
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);
-            MyManager.gunCube.localEulerAngles = new Vector3(-90, 180, 0);
+            MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
+            MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
             MyManager.PlayAnimController.OpenIk = false;
         }
 
@@ -25,12 +26,6 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
         public override void OnExitState()
         {
             MyManager.PlayAnimController.OpenIk = true;
-            if (MyManager.isShoot)
-            {
-                MyManager.gunCube.SetParent(MyManager.gun);
-                MyManager.gunCube.localPosition = new Vector3(0.5f, 0f, 4f);
-                MyManager.gunCube.localEulerAngles = Vector3.zero;
-            }
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Player.Anim.LowerBodyAnim.BaseAnim.BaseMove
 
         protected override bool CheckState()
         {
-            return MyManager.isRun && !MyManager.isThrow;
+            return MyManager.isSprint && !MyManager.isThrow;
         }
 
         public override void SetWeight(int index, float weight = 0)

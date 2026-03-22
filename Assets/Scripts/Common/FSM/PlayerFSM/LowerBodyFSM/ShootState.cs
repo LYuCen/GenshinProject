@@ -14,29 +14,33 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         public override void OnEnterState()
         {
             MyManager.speed = 0.4f;
-            MyManager.PlayAnimController.LeftHandIk = 1;
             MyManager.PlayAnimController.RightHandIk = 1;
-            if (!MyManager.isReload)
-            {
-                MyManager.gunCube.SetParent(MyManager.gun);
-                MyManager.gunCube.localPosition = new Vector3(0.5f, 0f, 4f);
-                MyManager.gunCube.localEulerAngles = Vector3.zero;
-                MyManager.rightHandIk.position = MyManager.gunGrip.position;
-            }
+            MyManager.aimIK.enabled = true;
             MyManager.stateName = "据枪待机";
         }
 
         public override void OnUpdateState()
         {
-            Vector3 shootPos = MyManager.cameraController.rayEnd - MyManager.transform.position;
-            shootPos.y = 0;
-            shootPos.Normalize();
-            MyManager.transform.forward = Vector3.Lerp(MyManager.transform.forward, shootPos,1f);
+            float targetYaw = MyManager.cameraController.Yaw;
+            
+            Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
+            
+            Quaternion targetRot = Quaternion.LookRotation(forward);
+            MyManager.transform.rotation = Quaternion.Slerp(
+                MyManager.transform.rotation,
+                targetRot,
+                Time.deltaTime * 10f);
         }
 
         public override void OnExitState()
         {
             MyManager.PlayAnimController.RightHandIk = 0;
+            float targetYaw = MyManager.cameraController.Yaw;
+            
+            Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
+            
+            Quaternion targetRot = Quaternion.LookRotation(forward);
+            MyManager.transform.rotation = targetRot;
         }
     }
 }

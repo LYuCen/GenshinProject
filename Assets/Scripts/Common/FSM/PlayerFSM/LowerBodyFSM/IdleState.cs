@@ -18,8 +18,9 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.PlayAnimController.LeftHandIk = 1;
             MyManager.PlayAnimController.RightHandIk = 0;
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.gunCube.localPosition = new Vector3(0.00016f, 0.00203f, 0.00078f);
-            MyManager.gunCube.localEulerAngles = new Vector3(-90, 180, 0);
+            MyManager.aimIK.enabled = false;
+            MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
+            MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
             MyManager.stateName = "待机";
         }
 
