@@ -1,10 +1,6 @@
-﻿using AssetBundleFramework.Core.Resource;
-using mController;
-using mModel.ScriptableConfig;
+﻿using mController;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
-using Player.Anim;
-using Player.Anim.UpperBodyAnim;
 using Player.AnimTree;
 using QFramework;
 using RootMotion.FinalIK;
@@ -22,9 +18,10 @@ namespace Common.FSM.PlayerFSM
         [Header("是否在换弹")] public bool isReload;
         [Header("是否在奔跑")] public bool isSprint;
         [Header("是否在投弹")] public bool isThrow;
+        [Header("是否蹲下")] public bool isCrouch;
+        [Header("是否滑铲")] public bool isSliding;
         [Header("按键移动方位")] public Vector2 inputMove;
         [Header("角色移动方向")] public Vector2 playerMove;
-        [Header("动画控制器")] public PlayAnim PlayAnimController;
         [Header("相机控制器")] public CameraController cameraController;
         [Header("移动速度")] public float speed;
         [Header("脚下判定框高度")] public float h;
@@ -42,9 +39,7 @@ namespace Common.FSM.PlayerFSM
         [Header("握把")] public Transform gunGrip;
         [Header("枪判定矩形")] public Transform gunCube;
         [Header("武器装备控制器")] public FirearmController firearmController;
-        public ReloadAnimState ReloadState;
         public Transform gunStock;
-        public Transform shoulder; // 右肩
         public bool runEnable = true;
 
         private Vector3 _fV3; // 力方向
@@ -54,11 +49,11 @@ namespace Common.FSM.PlayerFSM
         [Header("输入状态时间间隔")] public float stableThreshold = 0.05f; // 输入状态切换间隔
 
         public PlayerAnimController AnimController;
+        public float slidingCd;
         
         public void Init()
         {
             animator.applyRootMotion = false;
-            PlayAnimController = new PlayAnim(animator, this, avatarMask, leftHandIk, rightHandIk);
             AnimController =
                 new PlayerAnimController(animator, this, avatarMask, leftHandIk, rightHandIk);
             playerGun = firearmController.GetWeapon(0);
@@ -111,19 +106,11 @@ namespace Common.FSM.PlayerFSM
                     if(e.GunIndex == 0)
                     {
                         playerGun = firearmController.GetWeapon(0);
-                        IResource ir = ResourceManager.instance.Load(
-                            "Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset", false);
-                        AnimConfig config = ir.GetAsset<AnimConfig>();
-                        ReloadState.SetAnimClip(config);
                         Debug.Log("切换为主武器1");
                     }
                     else if(e.GunIndex == 1)
                     {
                         playerGun = firearmController.GetWeapon(1);
-                        IResource ir = ResourceManager.instance.Load(
-                            "Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/MK14/MK14_State_Reload.asset", false);
-                        AnimConfig config = ir.GetAsset<AnimConfig>();
-                        ReloadState.SetAnimClip(config);
                         Debug.Log("切换为主武器2");
                     }
                     isShoot = false;
@@ -148,6 +135,15 @@ namespace Common.FSM.PlayerFSM
                 SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/Grenade/Get.mp3");
                 firearmController.UserThrow();
             });
+            this.RegisterEvent<CrouchEvent>(_ =>
+            {
+                if (isSliding) return;
+                if (isSprint && !isCrouch)
+                {
+                    if(slidingCd == 0) isSliding = true;
+                }
+                else isCrouch = !isCrouch;
+            });
         }
 
         public void SetParent(Transform child, Transform parent)
@@ -171,6 +167,11 @@ namespace Common.FSM.PlayerFSM
         {
             isReload = false;
             firearmController.Reload();
+        }
+
+        private void FixedUpdate()
+        {
+            slidingCd = Mathf.Max(0, slidingCd - Time.fixedDeltaTime);
         }
 
 
@@ -243,7 +244,7 @@ namespace Common.FSM.PlayerFSM
 
         private void OnDisable()
         {
-            PlayAnimController.Destroy();
+            AnimController.Destroy();
         }
 
         public IArchitecture GetArchitecture()

@@ -16,7 +16,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && !MyManager.isShoot;
+            return parentActive && !MyManager.isShoot && !MyManager.isThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

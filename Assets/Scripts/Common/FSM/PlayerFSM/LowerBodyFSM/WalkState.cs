@@ -20,11 +20,10 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         public override void OnEnterState()
         {
             MyManager.speed = 1.6f;
-            MyManager.PlayAnimController.LeftHandIk = 1;
-            MyManager.PlayAnimController.RightHandIk = 0;
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
             MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
+            MyManager.aimIK.enabled = false;
             MyManager.stateName = "移动";
         }
 

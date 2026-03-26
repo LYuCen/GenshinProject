@@ -37482,6 +37482,8 @@ MonoBehaviour:
   isReload: 0
   isSprint: 0
   isThrow: 0
+  isCrouch: 0
+  isSliding: 0
   inputMove: {x: 0, y: 0}
   playerMove: {x: 0, y: 0}
   cameraController: {fileID: 963194231}
@@ -37502,9 +37504,9 @@ MonoBehaviour:
   gunCube: {fileID: 2089367680}
   firearmController: {fileID: 4745851977780531876}
   gunStock: {fileID: 641788025}
-  shoulder: {fileID: 3120547840423819990}
   runEnable: 1
   stableThreshold: 0.05
+  slidingCd: 0
 --- !u!1 &7984719137254670486
 GameObject:
   m_ObjectHideFlags: 0

@@ -34,10 +34,10 @@ namespace Player.AnimPro
 
         public override void OnExitState()
         {
-            // 1. 清理状态保持引用，防止下次进入时产生姿态跳变
+            // 清理状态保持引用，防止下次进入时产生姿态跳变
             LastActiveChild = null;
 
-            // 2. 强制清理所有子节点
+            // 强制清理所有子节点
             for (int i = 0; i < Children.Count; i++)
             {
                 if (Children[i].Weight > 0)

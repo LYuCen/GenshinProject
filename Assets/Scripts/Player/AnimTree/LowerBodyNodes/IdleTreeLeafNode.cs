@@ -17,7 +17,9 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyManager.isGround && MyManager.inputMove == Vector2.zero;
+            return parentActive && MyManager.isGround &&
+                   MyManager.inputMove == Vector2.zero &&
+                   !MyManager.isSliding && !MyManager.isThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
@@ -25,7 +27,7 @@ namespace Player.AnimTree.LowerBodyNodes
             MixIndex = mixIndex;
             var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Idle/RifleIdle.asset");
             _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
-            _playable.SetSpeed(0);
+            _playable.SetSpeed(cfg.animSpeed);
             return _playable;
         }
     }

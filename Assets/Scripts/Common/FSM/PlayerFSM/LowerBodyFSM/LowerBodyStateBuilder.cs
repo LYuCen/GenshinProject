@@ -13,6 +13,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             _dictionary.TryAdd("Shoot", new ShootState(MyManager));
             _dictionary.TryAdd("ShootWalk", new ShootWalkState(MyManager));
             _dictionary.TryAdd("Run", new RunState(MyManager));
+            _dictionary.TryAdd("Sliding", new SlidingState(MyManager));
             IsBuilt = true;
         }
 

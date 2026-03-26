@@ -3,16 +3,18 @@ using Player.AnimPro;
 
 namespace Player.AnimTree.UpperBodyNodes
 {
-    // 上半身 Mixer：负责战斗/动作切换
+    /// <summary>
+    /// 上半身混合节点
+    /// </summary>
     public class UpperBodySubTree : AnimTreeMixNode<PlayerManager>
     {
         public UpperBodySubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new ReloadTreeLeafNode(myManager));
+            AddNode(new ReloadTreeLeafNode(MyManager));
+            //AddNode(new ThrowSubTree(MyManager));
         }
 
         /// <summary>
-        /// 核心修改：重写 CheckState。
         /// 只有当父节点激活，且【至少有一个子节点】满足条件时，该 Mixer 节点才返回激活。
         /// </summary>
         public override bool CheckState(bool parentActive)

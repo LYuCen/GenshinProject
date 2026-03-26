@@ -11,8 +11,9 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
     {
         public WalkSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new RifleWalkTreeLeafNode(MyManager));
-            AddState(new ShoulderShootSubTree(MyManager));
+            AddNode(new RifleWalkTreeLeafNode(MyManager));
+            AddNode(new ShoulderShootSubTree(MyManager));
+            AddNode(new ThrowWalkTreeLeafNode(MyManager));
         }
         
         

@@ -1,6 +1,4 @@
 ﻿using Common.FSM.PlayerFSM;
-using Player.Anim.LowerBodyAnim;
-using Player.Anim.UpperBodyAnim;
 using UnityEngine;
 
 namespace Player.Anim
@@ -12,8 +10,8 @@ namespace Player.Anim
         public Transform LeftHandEffector;
         public Transform RightHandEffector;
         public bool OpenIk = true;
-        private LowerBodyWeightController<PlayerManager> _lowerController = new ();
-        private UpperBodyWeightController<PlayerManager> _upperController = new();
+        //private LowerBodyWeightController<PlayerManager> _lowerController = new ();
+        //private UpperBodyWeightController<PlayerManager> _upperController = new();
         private PlayerAnimBuild _animBuild = new PlayerAnimBuild();
         private Animator _animator;
         private PlayerManager _manager;
@@ -25,34 +23,34 @@ namespace Player.Anim
             LeftHandEffector = leftHand;
             RightHandEffector = rightHand;
             _animBuild.Init(animator, manager, avatarMask, LeftHandEffector, RightHandEffector);
-            _lowerController.SetEnable(true);
-            _upperController.SetEnable(true);
+            //_lowerController.SetEnable(true);
+            //_upperController.SetEnable(true);
         }
         
         public void ChangeLowerWeight(PlayerAnimState state)
         {
-            _lowerController.ChangeState(state);
+            //_lowerController.ChangeState(state);
         }
 
         public void ChangeUpperWeight(PlayerAnimState state)
         {
-            _upperController.ChangeState(state);
+            //_upperController.ChangeState(state);
         }
 
         public void SetLowerWeightEnable(bool enable)
         {
-            _lowerController.SetEnable(enable);
+            //_lowerController.SetEnable(enable);
         }
 
         public void SetUpperWeightEnable(bool enable)
         {
-            _upperController.SetEnable(enable);
+            //_upperController.SetEnable(enable);
         }
         
         public void Update()
         {
-            _lowerController.Update();
-            _upperController.Update();
+            //_lowerController.Update();
+            //_upperController.Update();
             _animBuild.Update(LeftHandIk, RightHandIk, OpenIk);
         }
 

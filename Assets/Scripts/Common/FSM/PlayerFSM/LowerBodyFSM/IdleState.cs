@@ -10,13 +10,12 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             Conditions.Add(new WalkCondition(MyManager,"Walk"));
             Conditions.Add(new JumpCondition(MyManager,"Jump"));
             Conditions.Add(new ShootCondition(MyManager, "Shoot"));
+            AddCondition(new RunCondition(MyManager, "Run"));
             
         }
 
         public override void OnEnterState()
         {
-            MyManager.PlayAnimController.LeftHandIk = 1;
-            MyManager.PlayAnimController.RightHandIk = 0;
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.aimIK.enabled = false;
             MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
@@ -31,7 +30,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
 
         public override void OnExitState()
         {
-            MyManager.PlayAnimController.LeftHandIk = 0;
+            
         }
     }
 }

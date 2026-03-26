@@ -10,7 +10,8 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
     {
         public SprintSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new RifleSprintFTreeLeafNode(MyManager));
+            AddNode(new RifleSprintFTreeLeafNode(MyManager));
+            AddNode(new ThrowSprintTreeLeafNode(MyManager));
         }
 
         public override bool CheckState(bool parentActive) => parentActive && MyManager.isSprint;

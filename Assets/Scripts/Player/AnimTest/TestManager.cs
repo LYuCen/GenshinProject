@@ -70,8 +70,8 @@ public class BaseMovementMixer : AnimTreeMixNode<TestManager>
 {
     public BaseMovementMixer(TestManager manager) : base(manager)
     {
-        AddState(new IdleNode(manager));
-        AddState(new MoveSubMixer(manager));
+        AddNode(new IdleNode(manager));
+        AddNode(new MoveSubMixer(manager));
     }
 
     public override bool CheckState(bool parentActive) => parentActive;
@@ -84,8 +84,8 @@ public class MoveSubMixer : AnimTreeMixNode<TestManager>
 {
     public MoveSubMixer(TestManager manager) : base(manager)
     {
-        AddState(new WalkNode(manager));
-        AddState(new SprintNode(manager));
+        AddNode(new WalkNode(manager));
+        AddNode(new SprintNode(manager));
     }
 
     public override bool CheckState(bool parentActive) => parentActive && MyManager.moveKeyPressed;

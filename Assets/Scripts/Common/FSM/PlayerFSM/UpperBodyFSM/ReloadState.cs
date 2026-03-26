@@ -16,7 +16,6 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
             MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
-            MyManager.PlayAnimController.OpenIk = false;
         }
 
         public override void OnUpdateState()
@@ -25,7 +24,6 @@ namespace Common.FSM.PlayerFSM.UpperBodyFSM
 
         public override void OnExitState()
         {
-            MyManager.PlayAnimController.OpenIk = true;
         }
     }
 }

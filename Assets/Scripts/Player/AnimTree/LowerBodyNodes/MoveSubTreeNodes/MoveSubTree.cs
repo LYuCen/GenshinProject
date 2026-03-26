@@ -13,10 +13,13 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
     {
         public MoveSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new WalkSubTree(MyManager));
-            AddState(new SprintSubTree(MyManager));
+            AddNode(new WalkSubTree(MyManager));
+            AddNode(new SprintSubTree(MyManager));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.inputMove != Vector2.zero;
+        public override bool CheckState(bool parentActive)
+        { 
+            return parentActive && MyManager.inputMove != Vector2.zero && !MyManager.isSliding;
+        }
     }
 }

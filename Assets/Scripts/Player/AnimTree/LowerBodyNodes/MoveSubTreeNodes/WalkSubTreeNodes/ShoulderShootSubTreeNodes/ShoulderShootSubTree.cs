@@ -10,14 +10,14 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.Shoul
     {
         public ShoulderShootSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new ShoulderShootWalkF(MyManager));
-            AddState(new ShoulderShootWalkFL(MyManager));
-            AddState(new ShoulderShootWalkFR(MyManager));
-            AddState(new ShoulderShootWalkL(MyManager));
-            AddState(new ShoulderShootWalkR(MyManager));
-            AddState(new ShoulderShootWalkBL(MyManager));
-            AddState(new ShoulderShootWalkBR(MyManager));
-            AddState(new ShoulderShootWalkB(MyManager));
+            AddNode(new ShoulderShootWalkF(MyManager));
+            AddNode(new ShoulderShootWalkFL(MyManager));
+            AddNode(new ShoulderShootWalkFR(MyManager));
+            AddNode(new ShoulderShootWalkL(MyManager));
+            AddNode(new ShoulderShootWalkR(MyManager));
+            AddNode(new ShoulderShootWalkBL(MyManager));
+            AddNode(new ShoulderShootWalkBR(MyManager));
+            AddNode(new ShoulderShootWalkB(MyManager));
         }
 
         public override bool CheckState(bool parentActive) => parentActive && MyManager.isShoot;

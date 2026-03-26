@@ -14,7 +14,6 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
         public override void OnEnterState()
         {
             MyManager.speed = 0.4f;
-            MyManager.PlayAnimController.RightHandIk = 1;
             MyManager.aimIK.enabled = true;
             MyManager.stateName = "据枪待机";
         }
@@ -29,12 +28,11 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             MyManager.transform.rotation = Quaternion.Slerp(
                 MyManager.transform.rotation,
                 targetRot,
-                Time.deltaTime * 10f);
+                Time.deltaTime * 20f);
         }
 
         public override void OnExitState()
         {
-            MyManager.PlayAnimController.RightHandIk = 0;
             float targetYaw = MyManager.cameraController.Yaw;
             
             Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;

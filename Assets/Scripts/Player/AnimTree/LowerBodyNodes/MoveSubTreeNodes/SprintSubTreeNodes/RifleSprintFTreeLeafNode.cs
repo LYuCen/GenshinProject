@@ -13,7 +13,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive;
+            return parentActive && !MyManager.isThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

@@ -17,22 +17,20 @@ namespace Player.AnimPro
 
         public void AddLayer(AnimTreeNode<T> node, AvatarMask mask = null)
         {
-            AddState(node);
+            AddNode(node);
             ChildMasks.Add(mask);
         }
 
         /// <summary>
-        /// 针对 LayerMixer 优化的 Evaluate：
-        /// 解决跨层级蹲下：即便 LayerMixer 自身 TargetWeight 为 0，
-        /// 只要它还没淡出完（Weight > 0），就得让子层级保持 Evaluate，防止子层级瞬间坍缩。
+        /// 只要它还没淡出完 Weight > 0，就得让子层级保持 Evaluate，防止子层级瞬间坍缩。
         /// </summary>
         public override void Evaluate(bool parentActive = true)
         {
             bool selfActive = parentActive && CheckState(true);
             TargetWeight = selfActive ? 1f : 0f;
 
-            // 核心逻辑：即使自己不在 Target 激活状态，但只要还在淡出进度中（Weight > 0）
-            // 就需要允许子层级继续维持其姿态输出（Evaluate(true)），但 TargetWeight 为 0
+            // 即使自己不在 Target 激活状态，但只要还在淡出进度中 Weight > 0
+            // 就需要允许子层级继续维持其姿态输出 Evaluate(true)，但 TargetWeight 为 0
             bool shouldKeepEvaluatingChildren = selfActive || Weight > 0.001f;
 
             for (int i = 0; i < Children.Count; i++)
@@ -43,7 +41,7 @@ namespace Player.AnimPro
                 
                 // 如果当前层级需要维持（淡入或淡出中），则评估子节点
                 // 但是只有当 selfActive 和 childCondition 同时满足时，子节点目标权重才是 1
-                child.Evaluate(shouldKeepEvaluatingChildren && childCondition);
+                child.Evaluate(shouldKeepEvaluatingChildren);
                 child.TargetWeight = (selfActive && childCondition) ? 1f : 0f;
             }
         }

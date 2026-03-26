@@ -9,10 +9,13 @@ namespace Player.AnimTree.LowerBodyNodes
     {
         public LowerBodySubTree(PlayerManager myManager) : base(myManager)
         {
-            AddState(new IdleTreeLeafNode(MyManager));
-            AddState(new MoveSubTree(MyManager));
+            AddNode(new IdleTreeLeafNode(MyManager));
+            AddNode(new MoveSubTree(MyManager));
+            AddNode(new RifleSlidingTreeLeafNode(MyManager));
+            AddNode(new ThrowIdleTreeLeafNode(MyManager));
+            WeightSpeed = 3f;
         }
 
-        public override bool CheckState(bool parentActive) => parentActive;
+        public override bool CheckState(bool parentActive) => parentActive && !MyManager.isCrouch;
     }
 }

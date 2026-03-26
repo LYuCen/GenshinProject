@@ -52,6 +52,8 @@ namespace mSystem.InputSystem
             _keys.Add(state10);
             KeyState state11= new ThrowGrenadeKey(KeyCode.G);
             _keys.Add(state11);
+            KeyState state12= new CrouchKey(KeyCode.C);
+            _keys.Add(state12);
         }
     }
 }

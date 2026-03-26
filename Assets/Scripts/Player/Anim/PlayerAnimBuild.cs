@@ -1,6 +1,4 @@
 ﻿using Common.FSM.PlayerFSM;
-using Player.Anim.LowerBodyAnim;
-using Player.Anim.UpperBodyAnim;
 using Player.Ik;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -73,8 +71,8 @@ namespace Player.Anim
         private AvatarMask _avatarMask;
         public AnimRoot(PlayerManager myManager, AvatarMask avatarMask) : base(myManager)
         {
-            AddState(new LowerBodyAnimState(MyManager));
-            AddState(new UpperBodyAnimState(MyManager));
+            //AddState(new LowerBodyAnimState(MyManager));
+            //AddState(new UpperBodyAnimState(MyManager));
             _avatarMask = avatarMask;
         }
 

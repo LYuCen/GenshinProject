@@ -11,13 +11,12 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
             Conditions.Add(new IdleCondition(MyManager,"Idle"));
             Conditions.Add(new ShootWalkCondition(MyManager, "ShootWalk"));
             Conditions.Add(new WalkCondition(MyManager, "Walk"));
+            AddCondition(new SlidingCondition(MyManager,"Sliding"));
         }
 
         public override void OnEnterState()
         {
-            MyManager.speed = 4f;
-            MyManager.PlayAnimController.LeftHandIk = 1;
-            MyManager.PlayAnimController.RightHandIk = 0;
+            MyManager.speed = MyManager.isCrouch ? 3.5f : 4f;
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
             MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
@@ -27,6 +26,7 @@ namespace Common.FSM.PlayerFSM.LowerBodyFSM
 
         public override void OnUpdateState()
         {
+            MyManager.speed = MyManager.isCrouch ? 3.5f : 4f;
             float targetYaw = MyManager.cameraController.Yaw;
             
             // Quaternion.Euler 为旋转矩阵  Quaternion.Euler(0, targetYaw, 0) 是向量为 y轴旋转 targetYaw度

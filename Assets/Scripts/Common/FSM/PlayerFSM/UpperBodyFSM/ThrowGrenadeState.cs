@@ -10,7 +10,6 @@
         public override void OnEnterState()
         {
             MyManager.upperName = "投弹";
-            MyManager.PlayAnimController.OpenIk = false;
         }
 
         public override void OnUpdateState()
@@ -20,7 +19,6 @@
 
         public override void OnExitState()
         {
-            MyManager.PlayAnimController.OpenIk = true;
         }
     }
 }

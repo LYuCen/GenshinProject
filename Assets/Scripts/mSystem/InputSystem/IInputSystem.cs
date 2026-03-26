@@ -31,6 +31,7 @@ namespace mSystem.InputSystem
             _handlers.Add(new ChangeWeaponHandler());
             _handlers.Add(new RunHandler());
             _handlers.Add(new ThrowGrenadeHandler());
+            _handlers.Add(new CrouchHandler());
         }
 
         public void SetKeyCode()
