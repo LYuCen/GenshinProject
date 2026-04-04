@@ -39,6 +39,10 @@ namespace mSystem.EQSSystem
             _tests = tests;
         }
 
+        /// <summary>
+        /// 获取最优候选点
+        /// </summary>
+        /// <returns></returns>
         public EqsPoint GetBestPoint()
         {
             EqsPoint best = null;

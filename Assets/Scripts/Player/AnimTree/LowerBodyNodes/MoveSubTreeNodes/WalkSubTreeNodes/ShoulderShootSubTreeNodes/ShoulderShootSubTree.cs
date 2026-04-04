@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.ShoulderShootSubTreeNodes
@@ -20,6 +20,6 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.Shoul
             AddNode(new ShoulderShootWalkB(MyManager));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.isShoot;
+        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsShoot;
     }
 }

@@ -4,39 +4,28 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
 {
+    /// <summary> 元素反应类型：雷超导 (剧变) </summary>
     public class ElectSuperconduction : Reaction
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            if (haveElement[6] > 0)
+            if (targetGauges[6] > 0) // 遇到冰
             {
-                haveElement[6] = 0;
-                element = 0;
-                
-                
-                var component = new HitTextComponent()
-                {
-                    transform = transform,
-                    element = 4,
-                    Text = "超导",
-                    textType = 2,
-                };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                var scopeHitComponent = new ScopeHitComponent()
-                {
-                    Transform = transform,
-                    Element = 6,
-                    ElementMeasure = 0,
-                    Harm = 20,
-                    Pos = transform.position + Vector3.down * -0.5f,
-                    Radius = 2f,
-                    IsHurtSelf = true
-                };
-                ScopeHitSystem.ScopeHitSystem.Instance.EnQueue(scopeHitComponent);
-                return 1f;
-            }
+                targetGauges[6] = 0;
+                attackGauge = 0;
 
-            return -1;
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
+                    transform = target, element = 4, Text = "超导", textType = 2
+                });
+
+                ScopeHitSystem.ScopeHitSystem.Instance.EnQueue(new ScopeHitComponent {
+                    Transform = target, Element = 6, ElementMeasure = 0, Harm = 10,
+                    Pos = target.position, Radius = 2f, IsHurtSelf = true
+                });
+
+                return new ReactionResult { IsReaction = true, DamageMultiplier = 1f, BonusDamage = 10f };
+            }
+            return ReactionResult.None;
         }
     }
 }

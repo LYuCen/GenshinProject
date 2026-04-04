@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.SprintSubTreeNodes;
 using Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes;
@@ -17,6 +17,6 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes
             AddNode(new CrouchSprintSubTree(MyManager));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.inputMove != Vector2.zero;
+        public override bool CheckState(bool parentActive) => parentActive && MyManager.InputMove != Vector2.zero;
     }
 }

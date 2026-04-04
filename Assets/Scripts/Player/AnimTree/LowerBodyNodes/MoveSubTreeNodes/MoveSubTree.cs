@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes;
 using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes;
@@ -19,7 +19,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyManager.inputMove != Vector2.zero && !MyManager.isSliding;
+            return parentActive && MyManager.InputMove != Vector2.zero && !MyManager.IsSliding;
         }
     }
 }

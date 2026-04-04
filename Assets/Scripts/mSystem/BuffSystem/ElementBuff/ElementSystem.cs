@@ -1,7 +1,7 @@
 ﻿using BaseClass;
+using mInterface;
 using mModel;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace mSystem.BuffSystem.ElementBuff
 {
@@ -26,13 +26,16 @@ namespace mSystem.BuffSystem.ElementBuff
                 if (c.IsStart)
                 {
                     c.IsStart = false;
-                    GameObject obj = ElementUIObjectPool.Instance.GetObj();
-                    obj.transform.SetParent(c.Transform.Find("Canvas/ElementBox"));
-                    obj.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0, 0, 0);
-                    ElementUI ui = obj.GetComponent<ElementUI>();
-                    ui.Init(ElementModel.Instance.elementUI[c.Element]);
-                    ui.ShowOutUI();
-                    c.Controller.elementUI[c.Element] = obj;
+                    var status = c.Transform.GetComponent<IEntityIdentity>();
+                    if (status != null)
+                    {
+                        GameObject obj = ElementUIObjectPool.Instance.GetObj();
+                        status.EntityStatusUI.AddElement(obj.transform);
+                        ElementUI ui = obj.GetComponent<ElementUI>();
+                        ui.Init(ElementModel.Instance.elementUI[c.Element]);
+                        ui.ShowOutUI();
+                        c.Controller.elementUI[c.Element] = obj;
+                    }
                 }
 
             }
@@ -45,20 +48,25 @@ namespace mSystem.BuffSystem.ElementBuff
         {
             for (int i = Queue.Count; i > 0; i--)
             {
-                var component = Queue.Dequeue();
-                if(component.electStart) component.ElectrificationReaction();
-                component.electCd = Mathf.Max(0, component.electCd - Time.fixedDeltaTime);
-                component.electScopeCd = Mathf.Max(0, component.electScopeCd - Time.fixedDeltaTime);
-                if(!component.Decrease()) Object.Destroy(component);
-                else Queue.Enqueue(component);
+                var controller = Queue.Dequeue();
+                if (!controller) continue;
+
+                // 驱动控制器逻辑
+                controller.Tick(Time.fixedDeltaTime);
+
+                // 如果控制器还有附着元素或者还有运行中的 Effect，则继续保留在队列中
+                if (controller.IsAlive())
+                {
+                    Queue.Enqueue(controller);
+                } 
             }
         }
     }
     
     public class ElementSystem : AbstractSingleton<ElementSystem>
     {
-        private ElementComponentSystem _elementCS = new();
-        private ElementBuffControllerComponentSystem _controllerCS = new();
+        private ElementComponentSystem _elementCs = new();
+        private ElementBuffControllerComponentSystem _controllerCs = new();
         private void Start()
         {
             GameObject prefab = Resources.Load<GameObject>("Prefab/ElementUI");
@@ -67,18 +75,18 @@ namespace mSystem.BuffSystem.ElementBuff
 
         public void EnQueue(ElementComponent component)
         {
-            _elementCS.EnQueue(component);
+            _elementCs.EnQueue(component);
         }
 
         public void EnQueue(ElementBuffController component)
         {
-            _controllerCS.EnQueue(component);
+            _controllerCs.EnQueue(component);
         }
 
         private void FixedUpdate()
         {
-            _elementCS.FixedUpdate();
-            _controllerCS.FixedUpdate();
+            _elementCs.FixedUpdate();
+            _controllerCs.FixedUpdate();
         }
     }
 }

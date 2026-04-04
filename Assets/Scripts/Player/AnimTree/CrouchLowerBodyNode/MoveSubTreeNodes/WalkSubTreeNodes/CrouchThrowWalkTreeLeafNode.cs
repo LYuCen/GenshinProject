@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -13,7 +13,7 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && !MyManager.isShoot && MyManager.isThrow;
+            return parentActive && !MyManager.IsShoot && MyManager.IsThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

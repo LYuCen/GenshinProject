@@ -4,11 +4,11 @@ using mSystem.InputSystem.KeyHandlers.Handlers;
 using mSystem.InputSystem.mKey;
 using QFramework;
 
-
 namespace mSystem.InputSystem
 {
     public interface IInputSystem : ISystem
     {
+        public bool Enable { get; set; }
         void SetKeyCode();
     }
 
@@ -17,6 +17,7 @@ namespace mSystem.InputSystem
         private List<KeyHandler> _handlers;
         private List<KeyState> _keyStates;
         private IKeyModel _keyModel;
+        public bool Enable { get; set; }
         protected override void OnInit()
         {
             _keyModel = this.GetModel<IKeyModel>();
@@ -32,10 +33,12 @@ namespace mSystem.InputSystem
             _handlers.Add(new RunHandler());
             _handlers.Add(new ThrowGrenadeHandler());
             _handlers.Add(new CrouchHandler());
+            Enable = true;
         }
 
         public void SetKeyCode()
         {
+            if (!Enable) return;
             foreach (var key in _keyStates)
             {
                 key.UpdateState();

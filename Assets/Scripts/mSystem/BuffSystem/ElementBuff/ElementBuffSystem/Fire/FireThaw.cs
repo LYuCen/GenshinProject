@@ -3,41 +3,34 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Fire
 {
-    /// <summary>
-    /// 火融化
-    /// </summary>
+    /// <summary> 元素反应类型：火融化 (增幅) </summary>
     public class FireThaw : Reaction
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            element *= 2;
-            if (haveElement[6] > 0)
+            // 强火(1) 遇到 冰(6)
+            if (targetGauges[6] > 0)
             {
-                if (element > haveElement[6])
+                attackGauge *= 2; // 火打冰是强反应
+                if (attackGauge > targetGauges[6])
                 {
-                    element -= haveElement[6];
-                    haveElement[6] = 0;
+                    attackGauge -= targetGauges[6];
+                    targetGauges[6] = 0;
                 }
                 else
                 {
-                    haveElement[6] -= element;
-                    element = 0;
+                    targetGauges[6] -= attackGauge;
+                    attackGauge = 0;
                 }
+                attackGauge /= 2;
 
-                element /= 2;
-                
-                HitTextComponent component = new HitTextComponent()
-                {
-                    transform = transform,
-                    element = 1,
-                    Text = "融化",
-                    textType = 2,
-                };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                return 2f;
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
+                    transform = target, element = 1, Text = "融化", textType = 2
+                });
+
+                return new ReactionResult { IsReaction = true, DamageMultiplier = 2.0f };
             }
-
-            return -1;
+            return ReactionResult.None;
         }
     }
 }

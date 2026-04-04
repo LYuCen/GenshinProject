@@ -5,6 +5,7 @@ namespace Firearms.Bullet
     public class Bullet
     {
         public Transform Transform;
+        public int shooterId;
         public Vector3 moveNormalize;   // 移动方向（单位向量）
         public float speed;             // 子弹速度
         public float baseHit;           // 基础伤害

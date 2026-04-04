@@ -9,6 +9,7 @@ namespace AI.VisualRequest.VisualRequest
     public class PointVisualRequest : IVisualRequest
     {
         public Vector3 PointPos;
+        public float Radius = 0.2f;
         public Color PointColor = Color.yellow; // 圆球颜色
         public string Text = null; // 新增字段，用于显示数字或文字
         public bool Enable = true;

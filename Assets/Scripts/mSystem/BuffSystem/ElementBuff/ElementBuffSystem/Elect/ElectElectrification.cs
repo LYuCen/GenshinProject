@@ -1,32 +1,39 @@
-﻿using mSystem.BuffSystem.ElementBuff.Event;
+﻿using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.HitTextSystem;
 using QFramework;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
 {
+    /// <summary> 元素反应类型：雷感电 (持续/剧变) </summary>
     public class ElectElectrification : Reaction, ICanSendEvent
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            if (haveElement[2] != 0)
+            // 检测目标是否有水 (索引 2)
+            if (targetGauges[2] > 0)
             {
-                haveElement[4] += element * 0.8f;
-                var component = new HitTextComponent()
+                // 感电逻辑：雷水共存，通常会增加附着并触发持续伤害
+                targetGauges[4] += attackGauge * 0.8f;
+                
+                // 弹出 UI 文字
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent()
                 {
-                    transform = transform,
-                    element = 4,
-                    Text = "感电",
-                    textType = 2,
+                    transform = target, element = 4, Text = "感电", textType = 2,
+                });
+                
+                // 返回反应结果：挂载感电持续效果
+                return new ReactionResult
+                {
+                    IsReaction = true,
+                    DamageMultiplier = 1f,
+                    BonusDamage = 0,
+                    TriggeredEffect = new ElectrifyEffect() 
                 };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                this.SendEvent(new ElectrificationReaction(transform));
-                return -1;
             }
 
-            return -1;
+            return ReactionResult.None;
         }
-
 
         public IArchitecture GetArchitecture()
         {

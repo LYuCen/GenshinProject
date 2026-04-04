@@ -1,4 +1,4 @@
-using Common.FSM.PlayerFSM;
+using GameFSM.FSM.PlayerFSM;
 using QFramework;
 using UnityEngine;
 
@@ -13,7 +13,7 @@ namespace Player
 
         private void Start()
         {
-            manager.Init();
+            manager.Init(true);
             Debug.Log("PlayerController Start 被执行");
             Debug.Log($"manager 是否为空: {manager == null}");
             try

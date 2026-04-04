@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using mSystem.HaemalStrandSystem;
 using QFramework;
 using UnityEngine;
@@ -13,7 +13,6 @@ namespace mController
         [Header("相机碰撞白名单")] [SerializeField] private LayerMask obstacleMask;
         [Header("相机碰撞阈值")] [SerializeField] private float wallOffset = 0.1f;
         public Vector3 rayEnd; // 射击终点
-        public Transform aim;
         
         public PlayerManager manager;
         public float sensitivity = 2f;  // 灵敏度
@@ -33,6 +32,7 @@ namespace mController
         private IHaemalSystem _haemalSystem;
         private Ray _ray;
         private Camera _camera;
+        private int _targetMask;
         
         private void Start()
         {
@@ -45,6 +45,7 @@ namespace mController
             _nowDistance = distance;
             _haemalSystem = this.GetSystem<IHaemalSystem>();
             _camera = Camera.main;
+            _targetMask = LayerMask.GetMask("Default", "Hitbox", "Plane", "Wall"); 
         }
     
 
@@ -64,16 +65,18 @@ namespace mController
             if(_camera) _ray = _camera.ScreenPointToRay(screenCenter);
             rayEnd = _ray.origin + _ray.direction * rayLength;
             
-            if (Physics.Raycast(_ray, out RaycastHit hit, rayLength))
+            if (Physics.Raycast(_ray, out RaycastHit hit, rayLength, _targetMask))
             {
-                if (hit.collider.CompareTag("Plane") || hit.collider.CompareTag("Wall") ||
-                    hit.collider.CompareTag("Enemy"))
-                {
-                    rayEnd = hit.point;
-                }
+                // 只要射线撞到了 _targetMask 中包含的任何一层，就会进这里
+                rayEnd = hit.point;
+            }
+            else
+            {
+                // 如果什么都没撞到，通常让 rayEnd 指向射线最远端，防止准星指地
+                rayEnd = _ray.origin + _ray.direction * rayLength;
             }
 
-            aim.position = rayEnd;
+            manager.aim.position = rayEnd;
         }
         
         void LateUpdate()
@@ -85,7 +88,7 @@ namespace mController
 
             Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0);
 
-            _nowDistance += manager.isShoot ? -0.25f : 0.25f;
+            _nowDistance += manager.IsShoot ? -0.25f : 0.25f;
             _nowDistance = Mathf.Clamp(_nowDistance, aimDistance, distance);
             Vector3 targetPos = playerTransform.position + Vector3.up * height;
             Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;

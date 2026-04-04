@@ -1,4 +1,5 @@
 ﻿using BaseClass;
+using Connect;
 using mController;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BuffSystem.ElementBuff.ElementBuffSystem;
@@ -11,6 +12,7 @@ namespace mSystem.HurtSystem
 {
     public class HurtComponentSystem : ComponentSystem<HurtComponent>, ICanSendEvent
     {
+        // 使用重构后的元素反应系统
         private IElementBuffSystem _buffSystem = new ElementBuffSystem();
 
         protected override void UpdateComponent()
@@ -19,54 +21,82 @@ namespace mSystem.HurtSystem
             {
                 var component = Queue.Dequeue();
                 
+                // 受击对象为空或者对象正在被销毁
+                if (!component.Transform || component.Transform.IsDestroyed()) continue;
+
+                // 获取或添加元素控制器
                 var controller = component.Transform.GetComponent<ElementBuffController>();
-                int harm = component.Harm;
                 if (!controller)
                 {
                     controller = component.Transform.AddComponent<ElementBuffController>();
-                    ElementSystem.Instance.EnQueue(controller);
-                    controller.AddElement(component.Element, component.ElementMeasure * 0.8f, component);
-                    LoseHp(component, harm);
+                }
+
+                // 运行元素反应系统
+                var result = _buffSystem.Reaction(
+                    component.Transform, 
+                    component.Harm, 
+                    component.Element,
+                    ref component.ElementMeasure, 
+                    controller.elements
+                );
+
+                // 处理反应结果
+                if (result.IsReaction)
+                {
+                    // 计算最终伤害：(基础伤害 * 反应倍率) + 反应固定伤害
+                    component.Harm = (int)(component.Harm * result.DamageMultiplier + result.BonusDamage);
+
+                    // 如果反应产生了持续性效果（如感电、燃烧、冻结），挂载到控制器上
+                    if (result.TriggeredEffect != null)
+                    {
+                        controller.AddEffect(result.TriggeredEffect);
+                    }
                 }
                 else
                 {
-                    bool res;
-                    harm = (int)_buffSystem.Reaction(component.Transform, harm, component.Element,
-                        ref component.ElementMeasure, controller.elements,
-                        out res);
-
-                    if(!res)
+                    // 如果没有发生反应，则尝试进行元素附着
+                    // 只有攻击元素量大于0时才附着（某些反应可能会在无反应的情况下消耗掉元素量）
+                    if (component.ElementMeasure > 0)
                     {
                         controller.AddElement(component.Element, component.ElementMeasure * 0.8f, component);
                     }
-                    LoseHp(component, harm);
                 }
+                
+                ElementSystem.Instance.EnQueue(controller);
+                // 4. 最终执行扣血和伤害飘字
+                LoseHp(component);
             }
         }
 
-        private void LoseHp(HurtComponent component,int harm)
+        private void LoseHp(HurtComponent component)
         {
+            // 优先处理模型层面的伤害逻辑
+            if (PlayerPool.Instance && PlayerPool.Instance.Models.TryGetValue(component.victimId, out var model))
+            {
+                model.HurtHp(component);
+            }
+
+            // 飘字系统：显示最终计算后的伤害
             var textComponent = new HitTextComponent()
             {
                 transform = component.Transform,
                 element = component.Element,
-                Text = harm.ToString(),
-                textType = component.HitType
+                Text = component.Harm.ToString(),
+                textType = component.HitType // 可以根据 result.IsReaction 修改为不同的飘字类型
             };
             HitTextSystem.HitTextSystem.Instance.EnQueue(textComponent);
 
-            // 判断是否有 Manager接口 有就通过 Manager 接口进行血量更改否则就直接查找是否有 BodyController
+            // 兼容性逻辑：判断是否有 IManager 或 BodyController
             IManager im = component.Transform.GetComponent<IManager>();
             if (im != null)
             {
-                im.UpdateHp(harm);
+                im.UpdateHp(component.Harm);
             }
             else
             {
                 BodyController body = component.Transform.GetComponent<BodyController>();
-                if (body) body.LoseHp(harm);
+                if (body) body.LoseHp(component.Harm);
             }
-            
         }
 
         public IArchitecture GetArchitecture()
@@ -77,16 +107,16 @@ namespace mSystem.HurtSystem
     
     public class HurtSystem : AbstractSingleton<HurtSystem>
     {
-        private HurtComponentSystem _hurtCS = new HurtComponentSystem();
+        private HurtComponentSystem _hurtCs = new HurtComponentSystem();
 
         public void EnQueue(HurtComponent component)
         {
-            _hurtCS.EnQueue(component);
+            _hurtCs.EnQueue(component);
         }
 
         private void FixedUpdate()
         {
-            _hurtCS.FixedUpdate();
+            _hurtCs.FixedUpdate();
         }
     }
 }

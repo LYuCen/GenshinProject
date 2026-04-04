@@ -3,40 +3,25 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Water
 {
-    /// <summary>
-    /// 水蒸发
-    /// </summary>
+    /// <summary> 元素反应类型：水蒸发 (增幅) </summary>
     public class WaterEvaporation : Reaction
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            element *= 2;
-            if (haveElement[1] > 0)
+            if (targetGauges[1] > 0) // 强水打火
             {
-                if (element > haveElement[1])
-                {
-                    element -= haveElement[1];
-                    haveElement[1] = 0;
-                }
-                else
-                {
-                    haveElement[1] -= element;
-                    element = 0;
-                }
+                attackGauge *= 2;
+                if (attackGauge > targetGauges[1]) { attackGauge -= targetGauges[1]; targetGauges[1] = 0; }
+                else { targetGauges[1] -= attackGauge; attackGauge = 0; }
+                attackGauge /= 2;
 
-                element /= 2;
-                HitTextComponent component = new HitTextComponent()
-                {
-                    transform = transform,
-                    element = 2,
-                    Text = "蒸发",
-                    textType = 2,
-                };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                return 2f;
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
+                    transform = target, element = 2, Text = "蒸发", textType = 2
+                });
+
+                return new ReactionResult { IsReaction = true, DamageMultiplier = 2.0f };
             }
-
-            return -1;
+            return ReactionResult.None;
         }
     }
 }

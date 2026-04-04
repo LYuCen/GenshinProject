@@ -19,7 +19,7 @@ namespace AI.Visualizer
             {
                 // 绘制终点圆球
                 Gizmos.color = pvr.PointColor;
-                Gizmos.DrawSphere(pvr.PointPos, 0.2f);
+                Gizmos.DrawSphere(pvr.PointPos, pvr.Radius);
                 
                 // 绘制文字，编译环境下执行
                 #if UNITY_EDITOR

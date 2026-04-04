@@ -4,42 +4,28 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
 {
-    /// <summary>
-    /// 雷超载
-    /// </summary>
+    /// <summary> 元素反应类型：雷超载 (剧变) </summary>
     public class ElectOverLoad : Reaction
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            if (haveElement[1] > 0)
+            if (targetGauges[1] > 0) // 遇到火
             {
-                haveElement[1] = 0;
-                element = 0;
-                
-                
-                var component = new HitTextComponent()
-                {
-                    transform = transform,
-                    element = 4,
-                    Text = "超载",
-                    textType = 2,
-                };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                var scopeHitComponent = new ScopeHitComponent()
-                {
-                    Transform = transform,
-                    Element = 4,
-                    ElementMeasure = 0,
-                    Harm = 20,
-                    Pos = transform.position + Vector3.down * -0.5f,
-                    Radius = 2f,
-                    IsHurtSelf = true
-                };
-                ScopeHitSystem.ScopeHitSystem.Instance.EnQueue(scopeHitComponent);
-                return 1f;
-            }
+                targetGauges[1] = 0;
+                attackGauge = 0;
 
-            return -1;
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
+                    transform = target, element = 4, Text = "超载", textType = 2
+                });
+
+                ScopeHitSystem.ScopeHitSystem.Instance.EnQueue(new ScopeHitComponent {
+                    Transform = target, Element = 4, ElementMeasure = 0, Harm = 20,
+                    Pos = target.position + Vector3.up * 0.5f, Radius = 2f, IsHurtSelf = true
+                });
+
+                return new ReactionResult { IsReaction = true, DamageMultiplier = 1f, BonusDamage = 20f };
+            }
+            return ReactionResult.None;
         }
     }
 }

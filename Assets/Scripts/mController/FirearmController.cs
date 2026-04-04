@@ -1,8 +1,8 @@
-﻿using Common.FSM.PlayerFSM;
-using Firearms;
+﻿using Firearms;
 using Firearms.Gun;
 using Firearms.ThrowWeapon;
 using Firearms.WeaponInterface;
+using GameFSM.FSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
 using mSystem.InputSystem.mEvent;
@@ -19,7 +19,7 @@ namespace mController
         [SerializeField] private int[] bullets = new int[8];
         [SerializeField] private WeaponInfoView view;
         public IWeapon Weapon;
-        public int weaponIndex; // 当前武器下标
+        public int weaponIndex = -1; // 当前武器下标
         private IWeapon _mainWeapon1; // 主武器1
         private IWeapon _mainWeapon2; // 主武器2
         private IWeapon _throwWeapon; // 投掷武器
@@ -39,7 +39,7 @@ namespace mController
 
         private int _gunBulletIndex;
 
-        private void Start()
+        public void Init()
         {
             bulletIndex = 1;
             weaponIndex = -1;
@@ -51,8 +51,8 @@ namespace mController
             BulletGameObjectPool.Instance.Init(bulletPrefab);
             FireMuzzleObjectPool.Instance.Init(muzzlePrefab);
             GrenadeObjectPool.Instance.Init(grenadePrefab);
-            view.UpdateText(0, bullets[bulletIndex]);
-            view.Init(bullets);
+            view?.UpdateText(0, bullets[bulletIndex]);
+            view?.Init(bullets);
             
             // 初始化投掷物
             _grenade = new Grenade();
@@ -82,15 +82,15 @@ namespace mController
             int res = 0;
             if (scroll > 0) res = -1;
             else if (scroll < 0) res = 1;
-            view.UpdateElementBullets(res);
+            view?.UpdateElementBullets(res);
         }
         
         public void AwakeGun(IWeapon weapon)
         {
             Weapon = weapon;
             
-            view.UpdateText(Weapon.GetMagazine().GetBulletNumber(), bullets[bulletIndex]);
-            view.ElementImage(Weapon.GetMagazine().GetElementEnum());
+            view?.UpdateText(Weapon.GetMagazine().GetBulletNumber(), bullets[bulletIndex]);
+            view?.ElementImage(Weapon.GetMagazine().GetElementEnum());
         }
 
         public Transform GetWeapon(int index)
@@ -104,7 +104,7 @@ namespace mController
                     _mainWeapon1 = new FN_IWS();
                     _mainWeapon1.Init();
                 }
-                view.UpdateWeapon("FN IWS",0);
+                view?.UpdateWeapon("FN IWS",0);
                 Weapon?.OnWeaponSwitchExit();
                 AwakeGun(_mainWeapon1);
                 Weapon?.OnWeaponSwitchEnter();
@@ -117,7 +117,7 @@ namespace mController
                     _mainWeapon2 = new MK14();
                     _mainWeapon2.Init();
                 }
-                view.UpdateWeapon("MK14",1);
+                view?.UpdateWeapon("MK14",1);
                 Weapon?.OnWeaponSwitchExit();
                 AwakeGun(_mainWeapon2);
                 Weapon?.OnWeaponSwitchEnter();
@@ -155,7 +155,7 @@ namespace mController
             {
                 this.SendEvent(new ReloadEvent());
             }
-            view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
+            view?.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
         }
 
         public void UpPrimaryAction() // 抬起武器主功能键
@@ -171,7 +171,7 @@ namespace mController
 
         public bool TryReload()
         {
-            
+            if (!view) return false;
             if (Weapon is IReloadable reloadable)
             {
                 ElementEnum elementEnum = view.GetChose();
@@ -183,7 +183,7 @@ namespace mController
 
         public void Reload()
         {
-            
+            if (!view) return;
             if (Weapon is IReloadable reloadable)
             {
                 bulletIndex = (int)view.GetChose();

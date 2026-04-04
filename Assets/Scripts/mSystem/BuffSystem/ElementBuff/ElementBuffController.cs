@@ -1,7 +1,6 @@
-﻿using System;
-using mSystem.BuffSystem.ElementBuff.Event;
+﻿using System.Collections.Generic;
+using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.HurtSystem;
-using mSystem.ScopeHitSystem;
 using QFramework;
 using UnityEngine;
 
@@ -9,61 +8,77 @@ namespace mSystem.BuffSystem.ElementBuff
 {
     public class ElementBuffController : MonoBehaviour, ICanRegisterEvent
     {
+        // 元素附着量
         public float[] elements = new float[8];
+        // 用于记录每种元素反应的内部冷却
+        public float[] reactionCDs = new float[8]; 
+        // 元素 UI 引用
         public GameObject[] elementUI = new GameObject[8];
-        public float time;
-        private Action<ElectrificationReaction> _electrificationHandler;
         
-        public bool electStart; // 是否触发感电反应
-        public float electCd; // 感电触发 cd
-        public float electScopeCd; // 感电周围触发 cd
-        public int electStep; // 感电反应步数（第二步触发集体感电）
+        // 持续性效果列表 (感电、冻结、燃烧等)
+        private List<IStatusEffect> _activeEffects = new List<IStatusEffect>();
+        
+        private float _decayTimer;
+
         private void Awake()
         {
-            time = Time.time + 1f;
-
-            // 保存回调委托
-            _electrificationHandler = e =>
-            {
-                if (e.Transform == transform && !electStart)
-                {
-                    electStart = true;
-                    electStep = 0;
-                }
-            };
-
-            this.RegisterEvent(_electrificationHandler);
+            _decayTimer = Time.time + 1f;
         }
 
-        public bool Decrease()
+        /// <summary>
+        /// 每帧(或FixedUpdate)由 System 调用，驱动所有状态更新
+        /// </summary>
+        public void Tick(float deltaTime)
         {
-            if (time > Time.time) return true;
-            bool res = false;
+            // 1. 处理所有持续性效果
+            for (int i = _activeEffects.Count - 1; i >= 0; i--)
+            {
+                _activeEffects[i].OnUpdate(deltaTime, this);
+                if (_activeEffects[i].IsFinished)
+                {
+                    _activeEffects[i].OnRemove(this);
+                    _activeEffects.RemoveAt(i);
+                }
+            }
+            
             for (int i = 0; i < 8; i++)
             {
-                if (elementUI[i] && elements[i] == 0)
-                {
-                    ElementUIObjectPool.Instance.RemoveObj(elementUI[i]);
-                    elementUI[i] = null;
-                    continue;
-                }
-
-                if (elements[i] < 0)
-                {
-                    res = true;
-                    continue;
-                }
-                elements[i] = Mathf.Max(elements[i] - 0.16f, 0);
-                res = res || elements[i] > 0;
+                if (reactionCDs[i] > 0) reactionCDs[i] = Mathf.Max(0, reactionCDs[i] - deltaTime);
             }
 
-            time = Time.time + 1f;
-            return res;
+            // 2. 元素自然衰减 (逻辑保留，但整理到 Tick 中)
+            UpdateDecay();
         }
 
+        private void UpdateDecay()
+        {
+            if (Time.time < _decayTimer) return;
+
+            for (int i = 0; i < 8; i++)
+            {
+                // 每秒衰减 0.16 单位元素
+                elements[i] = Mathf.Max(elements[i] - 0.16f, 0);
+                
+                if (elements[i] <= 0)
+                {
+                    if (elementUI[i])
+                    {
+                        ElementUIObjectPool.Instance.RemoveObj(elementUI[i]);
+                        elementUI[i] = null;
+                    }
+                }
+            }
+            _decayTimer = Time.time + 1f;
+        }
+
+        /// <summary>
+        /// 添加元素附着
+        /// </summary>
         public void AddElement(int elementType, float elementMeasure, HurtComponent component)
         {
             elements[elementType] = Mathf.Min(elementMeasure + elements[elementType], 1.8f);
+            
+            // 如果该元素图标未显示，则触发 UI 逻辑
             if (!elementUI[elementType])
             {
                 var elementComponent = new ElementComponent
@@ -77,10 +92,30 @@ namespace mSystem.BuffSystem.ElementBuff
             }
         }
 
+        /// <summary>
+        /// 添加持续反应效果 (由 Reaction 系统调用)
+        /// </summary>
+        public void AddEffect(IStatusEffect effect)
+        {
+            // 如果已经有相同类型的 Effect，可以根据需要选择叠加或刷新（这里简单处理为直接添加）
+            _activeEffects.Add(effect);
+        }
+
+        /// <summary>
+        /// 判断是否还需要保留 Controller
+        /// </summary>
+        public bool IsAlive()
+        {
+            if (_activeEffects.Count > 0) return true;
+            for (int i = 0; i < 8; i++) if (elements[i] > 0) return true;
+            return false;
+        }
+
         private void OnDisable()
         {
             if (ElementUIObjectPool.Instance == null) return;
-            this.UnRegisterEvent(_electrificationHandler); // 结束监听
+            
+            // 清理 UI
             for (int i = 0; i < 8; i++)
             {
                 if (elementUI[i])
@@ -89,48 +124,12 @@ namespace mSystem.BuffSystem.ElementBuff
                     elementUI[i] = null;
                 }
             }
+            
+            // 清理效果
+            foreach (var effect in _activeEffects) effect.OnRemove(this);
+            _activeEffects.Clear();
         }
 
-        public void ElectrificationReaction()
-        {
-            if (elements[2] != 0 && elements[4] != 0)
-            {
-                if (electCd > 0) return;
-                electCd = 0.5f;
-                if(elements[2] > 0) elements[2] = Mathf.Max(0, elements[2] - 0.4f);
-                if(elements[4] > 0) elements[4] = Mathf.Max(0, elements[4] - 0.4f);
-                electStep++;
-                var hurtComponent = new HurtComponent()
-                {
-                    Element = 4,
-                    ElementMeasure = 0,
-                    Harm = 20,
-                    Transform = transform,
-                    HitType = 0
-                };
-                HurtSystem.HurtSystem.Instance.EnQueue(hurtComponent);
-                if (electStep > 1)
-                {
-                    var component = new ScopeHitComponent()
-                    {
-                        Element = 4,
-                        ElementMeasure = 0,
-                        Harm = 20,
-                        IsHurtSelf = false,
-                        Pos = transform.position + Vector3.down * -0.5f,
-                        Radius = 2,
-                        Transform = transform,
-                        ScopeType = 1
-                    };
-                    ScopeHitSystem.ScopeHitSystem.Instance.EnQueue(component);
-                }
-            }
-            else electStart = false;
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
-        }
+        public IArchitecture GetArchitecture() => GenshinArchitecture.Interface;
     }
 }

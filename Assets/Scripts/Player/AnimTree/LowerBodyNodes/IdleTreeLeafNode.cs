@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -17,9 +17,9 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyManager.isGround &&
-                   MyManager.inputMove == Vector2.zero &&
-                   !MyManager.isSliding && !MyManager.isThrow;
+            return parentActive && MyManager.IsGround &&
+                   MyManager.InputMove == Vector2.zero &&
+                   !MyManager.IsSliding && !MyManager.IsThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

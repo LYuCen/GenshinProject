@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using Player.AnimTree.CrouchLowerBodyNode;
 using Player.AnimTree.LowerBodyNodes;

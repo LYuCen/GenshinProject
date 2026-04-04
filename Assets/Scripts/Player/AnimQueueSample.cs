@@ -33,7 +33,7 @@ namespace Player
     {
         private AnimationMixerPlayable _mixer;
         
-        private int _currentIndex = 0;
+        private int _currentIndex;
         private float _currentLenght;
 
         public void Init(AnimationClip[] clips, Playable playable, PlayableGraph graph)

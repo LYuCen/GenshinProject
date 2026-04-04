@@ -1,10 +1,15 @@
 ﻿using AssetBundleFramework.Core.Resource;
+using Connect;
+using Connect.Converter;
+using Connect.Data;
+using Connect.DTO;
 using Firearms.Magazine;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
 using mSystem.SoundSystem;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Firearms.Gun
@@ -28,8 +33,8 @@ namespace Firearms.Gun
 
         public void InitTransform()
         {
-            Gun.localPosition = new Vector3(-3.56f, -0.42f, -0.14f);
-            Gun.localEulerAngles = Vector3.zero;
+            Gun.localPosition = new Vector3(-3.73f,-0.73f,-1.87f);
+            Gun.localEulerAngles = new Vector3(0.061f, -3.402f, -0.096f);
         }
 
         public void TryReload(int element)
@@ -46,35 +51,66 @@ namespace Firearms.Gun
             if (!IsCanShoot) return;
             IsCanShoot = false;
             PrevShootTime = Time.time;
-            
+
+            ShootData data = new ShootData
+            {
+                shooterId = NetworkService.Bridge.GetMyId(),
+                position = Muzzle.position,
+                forward = GunForward,
+                speed = Config.bulletSpeed,
+                baseHit = Magazine.BaseHurt * Config.hitMp,
+                headHit = Magazine.BaseHurt * Config.headshotMp,
+                element = (int)Magazine.Element,
+                elementMeasure = 1.5f,
+                moveTime = 3f,
+                serverTick = (long)Time.time,
+            };
+
+            var dto = ShootDataConverter.ToDto(data);
+            string json = JsonConvert.SerializeObject(dto);
+            NetworkService.Bridge.SendToServer(new Message("PlayerShoot", json));
+            ExecuteShoot(dto);
+        }
+        
+        // 新增：远程玩家执行开火的方法
+        public void RemoteShoot(ShootDto dto)
+        {
+            ExecuteShoot(dto);
+        }
+        
+        private void ExecuteShoot(ShootDto dto)
+        {
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
-            obj.transform.position = Muzzle.position;
-            obj.transform.forward = GunForward;
+            obj.transform.position = new Vector3(dto.px, dto.py, dto.pz);
+            Vector3 direction = new Vector3(dto.fx, dto.fy, dto.fz);
+            obj.transform.forward = direction;
+
             Bullet.Bullet bullet = new Bullet.Bullet()
             {
                 Transform = obj.transform,
-                baseHit = Magazine.BaseHurt * Config.hitMp,
-                element = (int)Magazine.Element,
-                headHit = Magazine.BaseHurt * Config.headshotMp,
-                elementMeasure = 1.5f,
-                moveNormalize = GunForward,
-                speed = Config.bulletSpeed,
-                MoveTime = 3f
+                shooterId = dto.shooterId,
+                baseHit = dto.baseHit,
+                element = dto.element,
+                headHit = dto.headHit,
+                elementMeasure = dto.elementMeasure,
+                moveNormalize = direction,
+                speed = dto.speed,
+                MoveTime = dto.moveTime
             };
+
+            // 设置粒子效果
             var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
             var main = ps.main;
             main.startColor = ElementModel.Instance.colors[bullet.element];
+
+            // 加入子弹系统移动（这一步所有客户端都会执行，子弹在各自本地飞）
             BulletSystem.Instance.EnQueue(bullet);
-            GameObject muzzleObj = FireMuzzleObjectPool.Instance.GetObj();
-            muzzleObj.transform.SetParent(Muzzle);
-            muzzleObj.gameObject.SetActive(true);
-            muzzleObj.transform.localPosition = Vector3.zero;
-            muzzleObj.transform.localEulerAngles = new Vector3(90, 0, 0);
-            muzzleObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-            Muzzle.Muzzle muzzle = muzzleObj.GetComponent<Muzzle.Muzzle>();
-            muzzle.UpdateColor(ElementModel.Instance.colors[(int)Magazine.Element]);
+            
             SoundSystem.Instance.PlaySound(Config.shootAudioClip);
-            Magazine.BulletNumber--;
+    
+            // 如果是本地玩家，减弹药
+            if(dto.shooterId == UserClient.MyId)
+                Magazine.BulletNumber--;
         }
 
         public void OnPrimaryAction()

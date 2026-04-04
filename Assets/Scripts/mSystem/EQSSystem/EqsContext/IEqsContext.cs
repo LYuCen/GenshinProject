@@ -7,7 +7,14 @@ namespace mSystem.EQSSystem.EqsContext
     /// </summary>
     public interface IEqsContext
     {
+        /// <summary>
+        /// eqs 判定者
+        /// </summary>
         Transform Querier { get; }
+        
+        /// <summary>
+        /// 玩家
+        /// </summary>
         Transform Target { get; }
     }
 }

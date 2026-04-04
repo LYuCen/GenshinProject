@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes;
 
@@ -16,6 +16,6 @@ namespace Player.AnimTree.LowerBodyNodes
             WeightSpeed = 3f;
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && !MyManager.isCrouch;
+        public override bool CheckState(bool parentActive) => parentActive && !MyManager.IsCrouch;
     }
 }

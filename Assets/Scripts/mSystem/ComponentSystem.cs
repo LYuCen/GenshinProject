@@ -7,6 +7,8 @@ namespace mSystem
     {
         protected Queue<T> Queue = new();
 
+        public virtual void Init() { }
+
         public virtual void EnQueue(T component)
         {
             Queue.Enqueue(component);

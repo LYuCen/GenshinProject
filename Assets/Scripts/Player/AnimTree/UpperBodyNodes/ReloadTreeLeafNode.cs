@@ -1,4 +1,4 @@
-﻿using Common.FSM.PlayerFSM;
+﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -16,7 +16,7 @@ namespace Player.AnimTree.UpperBodyNodes
 
         public ReloadTreeLeafNode(PlayerManager manager) : base(manager) { }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.isReload;
+        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsReload;
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
@@ -38,7 +38,7 @@ namespace Player.AnimTree.UpperBodyNodes
             float currentWeight = base.UpdateNode();
 
             // 逻辑：如果当前权重较大（已切入），且动画播放完毕，则重置状态
-            if (currentWeight > 0.5f && MyManager.isReload)
+            if (currentWeight > 0.5f && MyManager.IsReload)
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {

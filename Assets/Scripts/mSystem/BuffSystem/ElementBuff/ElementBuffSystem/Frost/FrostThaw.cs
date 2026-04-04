@@ -3,40 +3,25 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Frost
 {
-    /// <summary>
-    /// 冰融化
-    /// </summary>
+    /// <summary> 元素反应类型：冰融化 (增幅) </summary>
     public class FrostThaw : Reaction
     {
-        public override float MultiplyingPower(ref float element, float[] haveElement, Transform transform)
+        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
         {
-            element /= 2;
-            if (haveElement[1] > 0)
+            if (targetGauges[1] > 0) // 弱冰打火
             {
-                if (element > haveElement[1])
-                {
-                    element -= haveElement[1];
-                    haveElement[1] = 0;
-                }
-                else
-                {
-                    haveElement[1] -= element;
-                    element = 0;
-                }
+                attackGauge /= 2;
+                if (attackGauge > targetGauges[1]) { attackGauge -= targetGauges[1]; targetGauges[1] = 0; }
+                else { targetGauges[1] -= attackGauge; attackGauge = 0; }
+                attackGauge *= 2;
 
-                HitTextComponent component = new HitTextComponent()
-                {
-                    transform = transform,
-                    element = 6,
-                    Text = "融化",
-                    textType = 2,
-                };
-                HitTextSystem.HitTextSystem.Instance.EnQueue(component);
-                element *= 2;
-                return 1.5f;
+                HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
+                    transform = target, element = 6, Text = "融化", textType = 2
+                });
+
+                return new ReactionResult { IsReaction = true, DamageMultiplier = 1.5f };
             }
-
-            return -1;
+            return ReactionResult.None;
         }
     }
 }
