@@ -1,3 +1,4 @@
+using Connect.DTO;
 using Firearms.WeaponInterface;
 using mModel;
 using mModel.ScriptableConfig;
@@ -32,6 +33,8 @@ namespace Firearms
 
         
         public abstract void Shoot();
+
+        public virtual void RemoteShoot(ShootDto dto) { }
 
         public WeaponGunConfig GetWeaponConfig()
         {

@@ -30,6 +30,7 @@ namespace GameFSM.FSM.PlayerFSM
         public bool IsSliding { get => state.isSliding; set => state.isSliding = value; }
         public Vector2 InputMove { get => state.inputMove; set => state.inputMove = value; }
         public Vector2 PlayerMove { get => state.playerMove; set => state.playerMove = value; }
+        [Header("角色骨骼")] public Transform[] bones;
         [Header("移动速度")] public float speed;
         [Header("脚下判定框高度")] public float h;
         [Header("判定半径")] public float radius;
@@ -52,6 +53,7 @@ namespace GameFSM.FSM.PlayerFSM
         
         public void Init(bool isLocal)
         {
+            state.bRots = bones;
             animator.applyRootMotion = false;
             firearmController.Init();
             AnimController =

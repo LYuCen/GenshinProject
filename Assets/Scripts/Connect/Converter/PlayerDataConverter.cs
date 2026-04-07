@@ -42,6 +42,29 @@ namespace Connect.Converter
             data.maxHp = dto.maxHp;
             data.curShield = dto.curShield;
             data.maxShield = dto.maxShield;
+
+            // --- 骨骼旋转还原 ---
+            // 只有当 DTO 有数据 且 本地已初始化骨骼列表时才还原
+            if (dto.bRots != null && data.bRots != null)
+            {
+                data.bRots[1].localPosition = new Vector3(dto.hx, dto.hy, dto.hz);
+                
+                int boneCount = data.bRots.Length;
+                // 确保数据长度匹配 (每个骨骼 4 个 float)
+                if (dto.bRots.Length == boneCount * 4)
+                {
+                    for (int i = 0; i < boneCount; i++)
+                    {
+                        int offset = i * 4;
+                        data.bRots[i].localRotation = new Quaternion(
+                            dto.bRots[offset + 0],
+                            dto.bRots[offset + 1],
+                            dto.bRots[offset + 2],
+                            dto.bRots[offset + 3]
+                        );
+                    }
+                }
+            }
         }
         
         // 2. 从本地数据转为 DTO (Pack)
@@ -62,7 +85,7 @@ namespace Connect.Converter
             if (data.isSliding) s |= BIT_SLIDING;
             dto.allBoolState = s;
 
-            // 坐标赋值 (直接赋值 float，无 GC)
+            // 坐标赋值
             dto.px = data.position.x; dto.py = data.position.y; dto.pz = data.position.z;
             dto.rx = data.rotation.x; dto.ry = data.rotation.y; dto.rz = data.rotation.z; dto.rw = data.rotation.w;
             dto.ax = data.aimPosition.x; dto.ay = data.aimPosition.y; dto.az = data.aimPosition.z;
@@ -72,6 +95,28 @@ namespace Connect.Converter
             dto.maxHp = data.maxHp;
             dto.curShield = data.curShield;
             dto.maxShield = data.maxShield;
+            
+            // --- 骨骼旋转打包 ---
+            if (data.bRots != null && data.bRots.Length > 0)
+            {
+                // 同步重心
+                Vector3 hPos = data.bRots[1].localPosition;
+                dto.hx = hPos.x;
+                dto.hy = hPos.y;
+                dto.hz = hPos.z;
+                
+                int boneCount = data.bRots.Length;
+                dto.bRots = new float[boneCount * 4];
+                for (int i = 0; i < boneCount; i++)
+                {
+                    Quaternion q = data.bRots[i].localRotation;
+                    int offset = i * 4;
+                    dto.bRots[offset + 0] = q.x;
+                    dto.bRots[offset + 1] = q.y;
+                    dto.bRots[offset + 2] = q.z;
+                    dto.bRots[offset + 3] = q.w;
+                }
+            }
 
             return dto;
         }

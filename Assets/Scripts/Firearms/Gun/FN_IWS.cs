@@ -18,9 +18,31 @@ namespace Firearms.Gun
     {
         public void Init()
         {
-            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/Gun/FN IWS.prefab", false);
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/Gun/FN_IWS.prefab", false);
             GameObject prefab = ir.GetAsset<GameObject>();
+            if (prefab == null)
+            {
+                Debug.LogError("资源加载失败！路径可能不对或不在 AB 包里: Assets/AssetBundle/Model/Weapon/Gun/FN_IWS.prefab");
+                return;
+            }
+
+            Debug.Log("资源加载成功: " + prefab.name);
+            
             Gun = Object.Instantiate(prefab).transform;
+// 强制修复 URP Shader 丢失问题
+            var renderers = Gun.GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+            {
+                foreach (var mat in renderer.materials)
+                {
+                    if (mat.shader != null)
+                    {
+                        mat.shader = Shader.Find(mat.shader.name);
+                    }
+                }
+            }
+
+            //Gun = Object.Instantiate(prefab).transform;
             Muzzle = Gun.Find("Muzzle");
             MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 30, 30, ElementEnum.Fire);
@@ -29,6 +51,8 @@ namespace Firearms.Gun
             IsReload = false;
             ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FN_IWS.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
+
+            
         }
 
         public void InitTransform()
@@ -69,7 +93,7 @@ namespace Firearms.Gun
         }
         
         // 新增：远程玩家执行开火的方法
-        public void RemoteShoot(ShootDto dto)
+        public override void RemoteShoot(ShootDto dto)
         {
             ExecuteShoot(dto);
         }

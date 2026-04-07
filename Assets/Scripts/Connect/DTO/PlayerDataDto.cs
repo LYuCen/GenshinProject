@@ -18,5 +18,9 @@
         public float maxHp;     // 最大血量
         public float curShield; // 当前盾量
         public float maxShield; // 最大盾量
+        
+        // Hips 骨骼的局部坐标 (Local Position)
+        public float hx, hy, hz; 
+        public float[] bRots; // 骨骼旋转
     }
 }

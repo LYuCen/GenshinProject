@@ -15,6 +15,7 @@ namespace Server
     {
         public int PlayerId;
         public Socket ClientSocket;
+        public Transform[] bones;
         public PlayerStateData State = new PlayerStateData();
 
         public void Init(int id, Socket s)
@@ -22,6 +23,13 @@ namespace Server
             PlayerId = id;
             ClientSocket = s;
             State.playerId = id;
+            State.bRots = bones; 
+            
+            State.maxHp = 200f;
+            State.curHp = 200f;
+            State.maxShield = 100f;
+            State.curShield = 100f;
+            
             // 启动接收线程
             Thread t = new Thread(ReceiveLoop);
             t.IsBackground = true;
@@ -30,7 +38,7 @@ namespace Server
 
         private void ReceiveLoop()
         {
-            byte[] readbuff = new byte[2048];
+            byte[] readbuff = new byte[8192];
             StringBuilder sb = new StringBuilder();
 
             while (ClientSocket != null && ClientSocket.Connected)
@@ -53,8 +61,9 @@ namespace Server
 
                         // 1. 解析外层 Message
                         Message msg = JsonConvert.DeserializeObject<Message>(parts[i]);
+                        if (msg == null) continue;
                         
-                        if (msg != null && msg.type == "UpdatePosition")
+                        if (msg.type == "UpdatePosition")
                         {
                             // 2. 解析内层 DTO
                             PlayerDataDto dto = JsonConvert.DeserializeObject<PlayerDataDto>(msg.info);
@@ -68,6 +77,29 @@ namespace Server
                                     OnReceiveUpdate(dto); 
                                 });
                             }
+                        }
+                        else if (msg.type == "PlayerHitRequest")
+                        {
+                            // 【新增内容】：收到某个客户端发来的攻击请求
+                            // 我们直接将其转发给所有人，但把类型改为 "DamageConfirm"
+                            // 这样客户端的 Listener 就能识别并扣血了
+                            UnityServerManager.Instance.EnqueueTask(() => 
+                            {
+                                // 构造转发给全场的消息
+                                Message confirmMsg = new Message("DamageConfirm", msg.info);
+                                UnityServerManager.Instance.Broadcast(confirmMsg);
+                
+                                Debug.Log($"转发攻击请求: {msg.info}");
+                            });
+                        }
+                        else if (msg.type == "PlayerShoot")
+                        {
+                            UnityServerManager.Instance.EnqueueTask(() => 
+                            {
+                                // 构造转发给全场的消息
+                                Message confirmMsg = new Message("PlayerShoot", msg.info);
+                                UnityServerManager.Instance.Broadcast(confirmMsg);
+                            });
                         }
                     }
 

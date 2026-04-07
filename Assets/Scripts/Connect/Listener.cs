@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Threading;
 using Newtonsoft.Json;
 using Connect.DTO;
+using IUtility;
 using mSystem.HurtSystem;
 using UnityEngine;
 
@@ -63,7 +64,13 @@ namespace Connect
             switch (msg.type)
             {
                 case "AllocId":
-                    UserClient.MyId = int.Parse(msg.info);
+                    int newId = int.Parse(msg.info);
+                    UserClient.MyId = newId;
+                    // 如果你要在这里注册本地玩家，确保先判断是否存在
+                    if (!PlayerPool.Instance.Models.ContainsKey(newId))
+                    {
+                        PlayerPool.Instance.Models.Add(newId, UserClient.PlayerManager);
+                    }
                     break;
                 case "AllPlayerInfo":
                     List<PlayerDataDto> dtos = JsonConvert.DeserializeObject<List<PlayerDataDto>>(msg.info);
@@ -71,8 +78,13 @@ namespace Connect
                     break;
                 case "PlayerShoot": // 只有远程玩家发来的开火才在这里执行
                     ShootDto shootDto = JsonConvert.DeserializeObject<ShootDto>(msg.info);
+                    Debug.Log($"监听到{shootDto.shooterId}射击");
                     if (shootDto.shooterId != UserClient.MyId) {
                         // 找到对应的枪执行远程射击逻辑
+                        if (PlayerPool.Instance.Models.TryGetValue(shootDto.shooterId, out var m))
+                        {
+                            m.firearmController.PressPrimaryAction(true, shootDto);
+                        }
                     }
                     break;
                 case "DamageConfirm":
@@ -87,7 +99,7 @@ namespace Connect
         private static void ListenServer(object obj)
         {
             Socket sclisten = (Socket)obj;
-            byte[] readbuff = new byte[2048]; // 增大缓冲区防止长 JSON 截断
+            byte[] readbuff = new byte[8192]; // 增大缓冲区防止长 JSON 截断
             while (true)
             {
                 try
@@ -102,6 +114,12 @@ namespace Connect
                         try 
                         {
                             Message msg = JsonConvert.DeserializeObject<Message>(s);
+                            // 监听网络
+                            if (NetworkMonitor.Instance)
+                            {
+                                int bytes = System.Text.Encoding.UTF8.GetBytes(s).Length;
+                                NetworkMonitor.Instance.LogReceived(msg.type, bytes);
+                            }
                             lock (lockObj) { toDolist.Enqueue(msg); }
                         }
                         catch { /* 忽略损坏的包 */ }
@@ -116,9 +134,12 @@ namespace Connect
             // 1. 解析服务器发来的“伤害确认”
             HitDto dto = JsonConvert.DeserializeObject<HitDto>(msg.info);
             
+            Debug.Log("收到攻击指令");
+            
             // 查找 id 判断是否有该玩家
             if (PlayerPool.Instance.Models.TryGetValue(dto.victimId, out var model))
             {
+                Debug.Log($"{model.EntityId}被击中");
                 Transform target = model.transform;
                 HurtComponent component = new HurtComponent()
                 {

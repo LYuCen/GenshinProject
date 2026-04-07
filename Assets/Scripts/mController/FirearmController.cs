@@ -1,4 +1,5 @@
-﻿using Firearms;
+﻿using Connect.DTO;
+using Firearms;
 using Firearms.Gun;
 using Firearms.ThrowWeapon;
 using Firearms.WeaponInterface;
@@ -142,19 +143,30 @@ namespace mController
             //Debug.Log("按下武器主功能键");
             Weapon.OnPrimaryAction();
         }
-        
-        public void PressPrimaryAction() // 按住武器主功能键
+        public void PressPrimaryAction(bool isNetworkSync = false, ShootDto dto = null) 
         {
-            //Debug.Log("按住武器主功能键");
+            // 关键修复：如果是网络同步，无视子弹数量直接执行
+            if (isNetworkSync)
+            {
+                // 假设你的接口支持 SyncRemoteShoot 或者直接转调表现层
+                if (Weapon is AbstractGun fnGun && dto != null)
+                {
+                    fnGun.RemoteShoot(dto);
+                }
+                return; // 远程同步直接结束，不走下面的换弹逻辑
+            }
+
+            // 本地玩家逻辑
             if (Weapon.GetMagazine().BulletNumber > 0)
             {
                 firearmElement = Weapon.GetMagazine().Element;
-                Weapon.PressPrimaryAction();
+                Weapon.PressPrimaryAction(); // 此时执行本地的 Shoot()
             }
             else
             {
-                this.SendEvent(new ReloadEvent());
+                this.SendEvent(new ReloadEvent()); // 只有本地玩家子弹空了才换弹
             }
+    
             view?.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
         }
 
