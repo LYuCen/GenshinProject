@@ -12,12 +12,12 @@ namespace Player.AnimTree
         public PlayerAnimTreeRoot(PlayerManager myManager, AvatarMask upperBodyMask) : base(myManager)
         {
             // 第 0 层：全身层（通常放 Idle, Walk, Run）
-            AddLayer(new LowerBodySubTree(MyManager));
-            AddLayer(new CrouchLowerBodySubTree(MyManager));
+            AddLayer(new LowerBodySubTree(MyMessage));
+            AddLayer(new CrouchLowerBodySubTree(MyMessage));
             
             // 第 1 层：上半身叠加层（通常放 Reload, Attack, Aim）
             // 使用传入的 AvatarMask
-            AddLayer(new UpperBodySubTree(MyManager), upperBodyMask);
+            AddLayer(new UpperBodySubTree(MyMessage), upperBodyMask);
         }
 
         // 根节点始终保持激活

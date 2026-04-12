@@ -15,7 +15,7 @@ namespace Player.AnimTree.LowerBodyNodes
             WeightSpeed = 8.0f;
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsSliding;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsSliding;
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
@@ -36,12 +36,12 @@ namespace Player.AnimTree.LowerBodyNodes
             float currentWeight = base.UpdateNode();
 
             // 逻辑：如果当前权重较大（已切入），且动画播放完毕，则重置状态
-            if (currentWeight > 0.5f && MyManager.IsSliding)
+            if (currentWeight > 0.5f && MyMessage.IsSliding)
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {
-                    MyManager.slidingCd = 0.5f;
-                    MyManager.IsSliding = false;
+                    MyMessage.slidingCd = 0.5f;
+                    MyMessage.IsSliding = false;
                 }
             }
             return currentWeight;

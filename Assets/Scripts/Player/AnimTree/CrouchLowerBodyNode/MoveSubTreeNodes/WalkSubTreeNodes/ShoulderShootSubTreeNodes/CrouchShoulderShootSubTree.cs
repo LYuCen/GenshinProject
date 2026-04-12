@@ -7,16 +7,16 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes.
     {
         public CrouchShoulderShootSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new CrouchShoulderShootWalkF(MyManager));
-            AddNode(new CrouchShoulderShootWalkFL(MyManager));
-            AddNode(new CrouchShoulderShootWalkFR(MyManager));
-            AddNode(new CrouchShoulderShootWalkL(MyManager));
-            AddNode(new CrouchShoulderShootWalkR(MyManager));
-            AddNode(new CrouchShoulderShootWalkBL(MyManager));
-            AddNode(new CrouchShoulderShootWalkBR(MyManager));
-            AddNode(new CrouchShoulderShootWalkB(MyManager));
+            AddNode(new CrouchShoulderShootWalkF(MyMessage));
+            AddNode(new CrouchShoulderShootWalkFL(MyMessage));
+            AddNode(new CrouchShoulderShootWalkFR(MyMessage));
+            AddNode(new CrouchShoulderShootWalkL(MyMessage));
+            AddNode(new CrouchShoulderShootWalkR(MyMessage));
+            AddNode(new CrouchShoulderShootWalkBL(MyMessage));
+            AddNode(new CrouchShoulderShootWalkBR(MyMessage));
+            AddNode(new CrouchShoulderShootWalkB(MyMessage));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsShoot;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsShoot;
     }
 }

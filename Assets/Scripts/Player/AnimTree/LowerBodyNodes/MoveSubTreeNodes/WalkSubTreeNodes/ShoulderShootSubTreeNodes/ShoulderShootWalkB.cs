@@ -14,7 +14,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.Shoul
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && MyManager.InputMove == Vector2.down;
+            return parentActive && MyMessage.InputMove == Vector2.down;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

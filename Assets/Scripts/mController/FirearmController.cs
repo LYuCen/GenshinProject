@@ -30,9 +30,6 @@ namespace mController
         public bool isDownThrow;
 
         [SerializeField] private Transform hand;
-        [SerializeField] private GameObject bulletPrefab;
-        [SerializeField] private GameObject muzzlePrefab;
-        [SerializeField] private GameObject grenadePrefab;
         [SerializeField] private ElementEnum firearmElement;
         [SerializeField] private int bulletNum;
         [SerializeField] private float reloadTime;
@@ -49,9 +46,6 @@ namespace mController
             AddBullet(90, ElementEnum.Elect);
             AddBullet(90, ElementEnum.Water);
             
-            BulletGameObjectPool.Instance.Init(bulletPrefab);
-            FireMuzzleObjectPool.Instance.Init(muzzlePrefab);
-            GrenadeObjectPool.Instance.Init(grenadePrefab);
             view?.UpdateText(0, bullets[bulletIndex]);
             view?.Init(bullets);
             
@@ -145,17 +139,6 @@ namespace mController
         }
         public void PressPrimaryAction(bool isNetworkSync = false, ShootDto dto = null) 
         {
-            // 关键修复：如果是网络同步，无视子弹数量直接执行
-            if (isNetworkSync)
-            {
-                // 假设你的接口支持 SyncRemoteShoot 或者直接转调表现层
-                if (Weapon is AbstractGun fnGun && dto != null)
-                {
-                    fnGun.RemoteShoot(dto);
-                }
-                return; // 远程同步直接结束，不走下面的换弹逻辑
-            }
-
             // 本地玩家逻辑
             if (Weapon.GetMagazine().BulletNumber > 0)
             {

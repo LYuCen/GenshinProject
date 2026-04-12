@@ -34,7 +34,7 @@ namespace Firearms
         
         public abstract void Shoot();
 
-        public virtual void RemoteShoot(ShootDto dto) { }
+        public virtual void RemoteShoot(byte[] flatData) { }
 
         public WeaponGunConfig GetWeaponConfig()
         {

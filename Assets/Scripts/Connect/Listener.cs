@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
-using Newtonsoft.Json;
+using Connect.Converter;
 using Connect.DTO;
+using Connect.FlatDTO;
+using Connect.ShootDTO;
+using Firearms;
+using Google.FlatBuffers;
 using IUtility;
 using mSystem.HurtSystem;
 using UnityEngine;
@@ -34,7 +39,7 @@ namespace Connect
         
         public static void StartListen(Socket sc)
         {
-            Thread listen = new Thread(new ParameterizedThreadStart(ListenServer));
+            Thread listen = new Thread(ListenServer);
             listen.IsBackground = true;
             listen.Start(sc);
         }
@@ -61,37 +66,63 @@ namespace Connect
         /// </summary>
         private void Dispatch(Message msg)
         {
+            if (NetworkMonitor.Instance) // 监听数据包大小
+            {
+                // 计算全包大小 = 4(总长) + 4(Type长) + Type字符串字节数 + Data体大小
+                int typeBytesCount = System.Text.Encoding.UTF8.GetByteCount(msg.type);
+                int totalPacketSize = 4 + 4 + typeBytesCount + msg.data.Length;
+                
+                NetworkMonitor.Instance.LogReceived(msg.type, totalPacketSize);
+            }
+            
+            // 将 byte[] 包装成 ByteBuffer
+            ByteBuffer bb = new ByteBuffer(msg.data);
+            
             switch (msg.type)
             {
                 case "AllocId":
-                    int newId = int.Parse(msg.info);
+                    // 如果 AllocId 发的是 4 字节整数
+                    int newId = BitConverter.ToInt32(msg.data, 0);
                     UserClient.MyId = newId;
-                    // 如果你要在这里注册本地玩家，确保先判断是否存在
                     if (!PlayerPool.Instance.Models.ContainsKey(newId))
                     {
                         PlayerPool.Instance.Models.Add(newId, UserClient.PlayerManager);
                     }
                     break;
-                case "AllPlayerInfo":
-                    List<PlayerDataDto> dtos = JsonConvert.DeserializeObject<List<PlayerDataDto>>(msg.info);
-                    PlayerPool.Instance.UpdatePlayer(dtos);
-                    break;
-                case "PlayerShoot": // 只有远程玩家发来的开火才在这里执行
-                    ShootDto shootDto = JsonConvert.DeserializeObject<ShootDto>(msg.info);
-                    Debug.Log($"监听到{shootDto.shooterId}射击");
-                    if (shootDto.shooterId != UserClient.MyId) {
-                        // 找到对应的枪执行远程射击逻辑
-                        if (PlayerPool.Instance.Models.TryGetValue(shootDto.shooterId, out var m))
+                case "PlayerShoot":
+                    // 这里的 msg.data 已经是解包后的 byte[]
+                    if (NetworkService.Bridge.GetMyId() != -1) 
+                    {
+                        var tempFlat = ShootDataFlat.GetRootAsShootDataFlat(bb);
+        
+                        if (tempFlat.ShooterId != UserClient.MyId) 
                         {
-                            m.firearmController.PressPrimaryAction(true, shootDto);
+                            if (PlayerPool.Instance.Models.TryGetValue(tempFlat.ShooterId, out var m))
+                            {
+                                // 调用修改后的 RemoteShoot
+                                if (m.firearmController.Weapon is AbstractGun gun)
+                                {
+                                    gun.RemoteShoot(msg.data);
+                                }
+                            }
                         }
                     }
                     break;
+                case "AllPlayerInfo":
+                    // 解析全量玩家列表
+                    var playerListFlat = PlayerList.GetRootAsPlayerList(bb);
+                    // 这里你可以直接传这个对象给 PlayerPool，或者转成列表
+                    PlayerPool.Instance.UpdatePlayer(playerListFlat); 
+                    break;
+
                 case "DamageConfirm":
                     OnReceiveDamageConfirm(msg);
                     break;
+
                 case "PlayerExit":
-                    PlayerPool.Instance.DeletePlayer(int.Parse(msg.info));
+                    // 如果发的是 4 字节整数
+                    int exitId = BitConverter.ToInt32(msg.data, 0);
+                    PlayerPool.Instance.DeletePlayer(exitId);
                     break;
             }
         }
@@ -99,31 +130,29 @@ namespace Connect
         private static void ListenServer(object obj)
         {
             Socket sclisten = (Socket)obj;
-            byte[] readbuff = new byte[8192]; // 增大缓冲区防止长 JSON 截断
+            byte[] headerBuff = new byte[4]; // 用来读长度头
+
             while (true)
             {
                 try
                 {
-                    int len = sclisten.Receive(readbuff);
-                    if (len <= 0) break;
+                    // 先读 4 字节，确定接下来的包有多大
+                    int headLen = sclisten.Receive(headerBuff, 0, 4, SocketFlags.None);
+                    if (headLen < 4) break;
 
-                    string str = System.Text.Encoding.UTF8.GetString(readbuff, 0, len);
-                    foreach (string s in str.Split('&'))
+                    int bodySize = BitConverter.ToInt32(headerBuff, 0);
+                    byte[] bodyBuff = new byte[bodySize];
+            
+                    // 读取指定长度的内容
+                    int received = 0;
+                    while (received < bodySize)
                     {
-                        if (string.IsNullOrWhiteSpace(s)) continue;
-                        try 
-                        {
-                            Message msg = JsonConvert.DeserializeObject<Message>(s);
-                            // 监听网络
-                            if (NetworkMonitor.Instance)
-                            {
-                                int bytes = System.Text.Encoding.UTF8.GetBytes(s).Length;
-                                NetworkMonitor.Instance.LogReceived(msg.type, bytes);
-                            }
-                            lock (lockObj) { toDolist.Enqueue(msg); }
-                        }
-                        catch { /* 忽略损坏的包 */ }
+                        received += sclisten.Receive(bodyBuff, received, bodySize - received, SocketFlags.None);
                     }
+                    
+                    Message msg = UnpackMessage(bodyBuff); 
+            
+                    lock (lockObj) { toDolist.Enqueue(msg); }
                 }
                 catch { break; }
             }
@@ -131,32 +160,58 @@ namespace Connect
         
         public void OnReceiveDamageConfirm(Message msg)
         {
-            // 1. 解析服务器发来的“伤害确认”
-            HitDto dto = JsonConvert.DeserializeObject<HitDto>(msg.info);
-            
-            Debug.Log("收到攻击指令");
+            // 1. 获取 FlatBuffers 根对象
+            HitDto dto = new HitDto();
+            // 使用转换器解析二进制数据到 dto 对象中
+            HitDataConverter.FillData(msg.data, dto);
             
             // 查找 id 判断是否有该玩家
             if (PlayerPool.Instance.Models.TryGetValue(dto.victimId, out var model))
             {
-                Debug.Log($"{model.EntityId}被击中");
-                Transform target = model.transform;
+                Debug.Log($"{model.EntityId} 被击中 (数据源: FlatBuffers)");
+        
                 HurtComponent component = new HurtComponent()
                 {
                     attackerId = dto.attackerId,
                     victimId = dto.victimId,
-                    Element = dto.element,
-                    ElementMeasure = dto.elementMeasure, // 默认元素量
                     Harm = dto.damage,
-                    HitType = dto.hitType,
-                    Transform = target
+                    Element = dto.element, 
+                    ElementMeasure = dto.elementMeasure,
+                    HitType = dto.hitType, 
+                    Transform = model.transform
                 };
 
-                // 3. 进入 HurtSystem 进行逻辑判定（元素反应、弹出数字、减血）
+                // 进入 HurtSystem
                 HurtSystem.Instance.EnQueue(component);
             }
         }
 
+        private static Message UnpackMessage(byte[] bodyBuff)
+        {
+            // 读取 Type 字符串的长度 (前4位)
+            int typeLen = BitConverter.ToInt32(bodyBuff, 0);
+
+            // 解析 Type 字符串
+            string type = System.Text.Encoding.UTF8.GetString(bodyBuff, 4, typeLen);
+
+            // 提取剩余的二进制数据 (FlatBuffers)
+            int dataSize = bodyBuff.Length - 4 - typeLen;
+            byte[] data = new byte[dataSize];
+            Buffer.BlockCopy(bodyBuff, 4 + typeLen, data, 0, dataSize);
+
+            // 返回封装好的 Message 对象
+            return new Message(type, data);
+        }
         
+        public static int MessageQueueCount
+        {
+            get
+            {
+                lock (lockObj)
+                {
+                    return toDolist.Count;
+                }
+            }
+        }
     }
 }

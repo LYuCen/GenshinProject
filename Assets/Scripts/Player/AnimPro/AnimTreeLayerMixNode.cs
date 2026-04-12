@@ -10,7 +10,7 @@ namespace Player.AnimPro
         protected AnimationLayerMixerPlayable LayerMixer;
         protected List<AvatarMask> ChildMasks = new();
 
-        public AnimTreeLayerMixNode(T myManager) : base(myManager)
+        public AnimTreeLayerMixNode(T myMessage) : base(myMessage)
         {
             IsLeaf = false;
         }

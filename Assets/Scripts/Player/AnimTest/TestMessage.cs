@@ -6,7 +6,7 @@ using Player.AnimPro;
 // ==============================================
 // 1. 管理器更新
 // ==============================================
-public class TestManager : MonoBehaviour
+public class TestMessage : MonoBehaviour
 {
     public Animator animator;
     public AvatarMask upperBodyMask; // 在 Inspector 中赋值
@@ -48,30 +48,30 @@ public class TestManager : MonoBehaviour
 // ==============================================
 // 2. UpperBodyNode (LayerMixer)
 // ==============================================
-public class UpperBodyNode : AnimTreeLayerMixNode<TestManager>
+public class UpperBodyNode : AnimTreeLayerMixNode<TestMessage>
 {
-    public UpperBodyNode(TestManager manager, AvatarMask mask) : base(manager)
+    public UpperBodyNode(TestMessage message, AvatarMask mask) : base(message)
     {
         // Layer 0: 基础移动层 (不带Mask)
-        AddLayer(new BaseMovementMixer(manager), null);
+        AddLayer(new BaseMovementMixer(message), null);
         
         // Layer 1: 换弹层 (带上半身Mask)
-        AddLayer(new AnimTreeReloadNode(manager), mask);
+        AddLayer(new AnimTreeReloadNode(message), mask);
     }
 
     // 只要管理器没结束，LayerMixer 自身总是激活的
-    public override bool CheckState(bool parentActive) => parentActive && !MyManager.endAll;
+    public override bool CheckState(bool parentActive) => parentActive && !MyMessage.endAll;
 }
 
 // ==============================================
 // 3. 基础移动层 (Selector Mixer)
 // ==============================================
-public class BaseMovementMixer : AnimTreeMixNode<TestManager>
+public class BaseMovementMixer : AnimTreeMixNode<TestMessage>
 {
-    public BaseMovementMixer(TestManager manager) : base(manager)
+    public BaseMovementMixer(TestMessage message) : base(message)
     {
-        AddNode(new IdleNode(manager));
-        AddNode(new MoveSubMixer(manager));
+        AddNode(new IdleNode(message));
+        AddNode(new MoveSubMixer(message));
     }
 
     public override bool CheckState(bool parentActive) => parentActive;
@@ -80,28 +80,28 @@ public class BaseMovementMixer : AnimTreeMixNode<TestManager>
 // ==============================================
 // 4. 移动子树 (Selector Mixer)
 // ==============================================
-public class MoveSubMixer : AnimTreeMixNode<TestManager>
+public class MoveSubMixer : AnimTreeMixNode<TestMessage>
 {
-    public MoveSubMixer(TestManager manager) : base(manager)
+    public MoveSubMixer(TestMessage message) : base(message)
     {
-        AddNode(new WalkNode(manager));
-        AddNode(new SprintNode(manager));
+        AddNode(new WalkNode(message));
+        AddNode(new SprintNode(message));
     }
 
-    public override bool CheckState(bool parentActive) => parentActive && MyManager.moveKeyPressed;
+    public override bool CheckState(bool parentActive) => parentActive && MyMessage.moveKeyPressed;
 }
 
 // ==============================================
 // 5. 换弹节点 (Leaf)
 // ==============================================
-public class AnimTreeReloadNode : AnimTreeLeafNode<TestManager>
+public class AnimTreeReloadNode : AnimTreeLeafNode<TestMessage>
 {
     private AnimationClipPlayable _playable;
     private float _clipDuration;
 
-    public AnimTreeReloadNode(TestManager manager) : base(manager) { }
+    public AnimTreeReloadNode(TestMessage message) : base(message) { }
 
-    public override bool CheckState(bool parentActive) => parentActive && MyManager.isReload;
+    public override bool CheckState(bool parentActive) => parentActive && MyMessage.isReload;
 
     public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
     {
@@ -123,12 +123,12 @@ public class AnimTreeReloadNode : AnimTreeLeafNode<TestManager>
         float currentWeight = base.UpdateNode();
 
         // 逻辑：如果当前权重较大（已切入），且动画播放完毕，则重置状态
-        if (currentWeight > 0.5f && MyManager.isReload)
+        if (currentWeight > 0.5f && MyMessage.isReload)
         {
             if (_playable.GetTime() >= _clipDuration)
             {
                 Debug.Log("Reload Finished.");
-                MyManager.isReload = false; // 自动重置 Manager 状态
+                MyMessage.isReload = false; // 自动重置 Manager 状态
             }
         }
         return currentWeight;
@@ -141,10 +141,10 @@ public class AnimTreeReloadNode : AnimTreeLeafNode<TestManager>
 // 6. 其他叶子节点 (Idle, Walk, Sprint)
 // ==============================================
 
-public class IdleNode : AnimTreeLeafNode<TestManager>
+public class IdleNode : AnimTreeLeafNode<TestMessage>
 {
-    public IdleNode(TestManager manager) : base(manager) { }
-    public override bool CheckState(bool parentActive) => parentActive && !MyManager.moveKeyPressed;
+    public IdleNode(TestMessage message) : base(message) { }
+    public override bool CheckState(bool parentActive) => parentActive && !MyMessage.moveKeyPressed;
     public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
     {
         var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Idle/RifleAimingIdle.asset");
@@ -152,10 +152,10 @@ public class IdleNode : AnimTreeLeafNode<TestManager>
     }
 }
 
-public class WalkNode : AnimTreeLeafNode<TestManager>
+public class WalkNode : AnimTreeLeafNode<TestMessage>
 {
-    public WalkNode(TestManager manager) : base(manager) { }
-    public override bool CheckState(bool parentActive) => parentActive && !MyManager.isSprint;
+    public WalkNode(TestMessage message) : base(message) { }
+    public override bool CheckState(bool parentActive) => parentActive && !MyMessage.isSprint;
     public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
     {
         var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Walk/RifleWalkForward.asset");
@@ -163,10 +163,10 @@ public class WalkNode : AnimTreeLeafNode<TestManager>
     }
 }
 
-public class SprintNode : AnimTreeLeafNode<TestManager>
+public class SprintNode : AnimTreeLeafNode<TestMessage>
 {
-    public SprintNode(TestManager manager) : base(manager) { }
-    public override bool CheckState(bool parentActive) => parentActive && MyManager.isSprint;
+    public SprintNode(TestMessage message) : base(message) { }
+    public override bool CheckState(bool parentActive) => parentActive && MyMessage.isSprint;
     public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
     {
         var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Run/RifleRun.asset");

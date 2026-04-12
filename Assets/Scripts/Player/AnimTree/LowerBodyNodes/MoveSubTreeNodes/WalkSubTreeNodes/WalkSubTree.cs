@@ -11,13 +11,13 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
     {
         public WalkSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new RifleWalkTreeLeafNode(MyManager));
-            AddNode(new ShoulderShootSubTree(MyManager));
-            AddNode(new ThrowWalkTreeLeafNode(MyManager));
+            AddNode(new RifleWalkTreeLeafNode(MyMessage));
+            AddNode(new ShoulderShootSubTree(MyMessage));
+            AddNode(new ThrowWalkTreeLeafNode(MyMessage));
         }
         
         
 
-        public override bool CheckState(bool parentActive) => parentActive && !MyManager.IsSprint;
+        public override bool CheckState(bool parentActive) => parentActive && !MyMessage.IsSprint;
     }
 }

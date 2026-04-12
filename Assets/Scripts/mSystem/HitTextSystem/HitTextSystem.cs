@@ -38,12 +38,6 @@ namespace mSystem.HitTextSystem
     {
         private HitTextComponentSystem _hitTextCS = new HitTextComponentSystem();
 
-        private void Start()
-        {
-            GameObject prefab = Resources.Load<GameObject>("Prefab/HitText");
-            HitTextObjectPool.Instance.Init(prefab);
-        }
-
         public void EnQueue(HitTextComponent component)
         {
             _hitTextCS.EnQueue(component);

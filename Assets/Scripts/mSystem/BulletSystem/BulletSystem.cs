@@ -1,10 +1,9 @@
-﻿using System;
-using BaseClass;
+﻿using BaseClass;
 using Connect;
+using Connect.Converter;
 using Connect.DTO;
 using Firearms.Bullet;
 using mEnum;
-using Newtonsoft.Json;
 using Player;
 using UnityEngine;
 
@@ -73,8 +72,7 @@ namespace mSystem.BulletSystem
                                 
                                 Debug.Log($"玩家{hitDto.victimId} 被 玩家{hitDto.attackerId} 击中 {hitBox.part}");
                                 
-                                string json = JsonConvert.SerializeObject(hitDto);
-                                NetworkService.Bridge.SendToServer(new Message("PlayerHitRequest", json));
+                                NetworkService.Bridge.SendToServer(new Message("PlayerHitRequest", HitDataConverter.ToBinary(hitDto)));
                             }
                         }
                     }

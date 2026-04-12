@@ -53,7 +53,6 @@ namespace Common.LevelFSM.EnemyFSM
         [Header("持枪手")] public Transform head;
         [Header("枪械")] public Transform gun;
         private IWeapon _weapon;
-        [SerializeField] private GameObject diePrefab;
 
         public void Init()
         {
@@ -75,7 +74,6 @@ namespace Common.LevelFSM.EnemyFSM
             EnemyAnimController.LeftHandIk = 1;
             EnemyAnimController.RightHandIk = 0;
             
-            DieParticleObjectPool.Instance.Init(diePrefab);
         }
 
         private void Update()

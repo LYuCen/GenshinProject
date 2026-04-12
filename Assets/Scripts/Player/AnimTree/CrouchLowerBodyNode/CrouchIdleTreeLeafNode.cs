@@ -17,7 +17,7 @@ namespace Player.AnimTree.CrouchLowerBodyNode
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyManager.IsGround && MyManager.InputMove == Vector2.zero && !MyManager.IsThrow;
+            return parentActive && MyMessage.IsGround && MyMessage.InputMove == Vector2.zero && !MyMessage.IsThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

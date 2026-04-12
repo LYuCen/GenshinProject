@@ -1,54 +1,74 @@
 ﻿using Connect.Data;
-using Connect.DTO;
+using Connect.ShootDTO;
+using Google.FlatBuffers;
 using UnityEngine;
 
 namespace Connect.Converter
 {
     public static class ShootDataConverter
     {
-        // 1. DTO → Data（解包）
-        public static void FillData(ShootDto dto, ShootData data)
+        // 复用 Builder，避免每开一枪都 new 一个，减少 GC
+        private static FlatBufferBuilder _bulletBuilder = new FlatBufferBuilder(512);
+
+        public static byte[] ToDto(ShootData data)
         {
-            data.shooterId = dto.shooterId;
+            _bulletBuilder.Clear(); // 清空上次的数据，保留内存池
 
-            data.position = new Vector3(dto.px, dto.py, dto.pz);
-            data.forward  = new Vector3(dto.fx, dto.fy, dto.fz);
+            // 构建开始
+            ShootDataFlat.StartShootDataFlat(_bulletBuilder);
+            
+            ShootDataFlat.AddShooterId(_bulletBuilder, data.shooterId);
 
-            data.speed = dto.speed;
-            data.element = dto.element;
-            data.serverTick = dto.serverTick;
-            data.baseHit = dto.baseHit;
-            data.headHit = dto.headHit;
-            data.elementMeasure = dto.elementMeasure;
-            data.moveTime = dto.moveTime;
+            // Struct 是直接内联的，这种写法是正确的
+            ShootDataFlat.AddPosition(_bulletBuilder, 
+                Vec3.CreateVec3(_bulletBuilder, data.position.x, data.position.y, data.position.z));
+            
+            ShootDataFlat.AddForward(_bulletBuilder, 
+                Vec3.CreateVec3(_bulletBuilder, data.forward.x, data.forward.y, data.forward.z));
+            
+            ShootDataFlat.AddSpeed(_bulletBuilder, data.speed);
+            ShootDataFlat.AddElement(_bulletBuilder, data.element);
+            ShootDataFlat.AddBaseHit(_bulletBuilder, data.baseHit);
+            ShootDataFlat.AddHeadHit(_bulletBuilder, data.headHit);
+            ShootDataFlat.AddElementMeasure(_bulletBuilder, data.elementMeasure);
+            ShootDataFlat.AddMoveTime(_bulletBuilder, data.moveTime);
+            ShootDataFlat.AddServerTick(_bulletBuilder, data.serverTick);
+
+            var offset = ShootDataFlat.EndShootDataFlat(_bulletBuilder);
+            _bulletBuilder.Finish(offset.Value);
+
+            // 【优化建议】如果是高频射击，建议返回 ArraySegment<byte> 
+            // 而不是 SizedByteArray()，因为后者会 new 一个新的 byte[]
+            return _bulletBuilder.SizedByteArray();
         }
 
-        // 2. Data → DTO（打包）
-        public static ShootDto ToDto(ShootData data)
+        public static void FillData(byte[] buffer, ShootData data)
         {
-            ShootDto dto = new ShootDto();
+            var bb = new ByteBuffer(buffer);
+            var flat = ShootDataFlat.GetRootAsShootDataFlat(bb);
+            
+            data.shooterId = flat.ShooterId;
 
-            dto.shooterId = data.shooterId;
+            // FlatBuffers 的 Struct 访问会返回一个可空对象，使用 .Value 访问
+            if (flat.Position.HasValue)
+            {
+                var pos = flat.Position.Value;
+                data.position = new Vector3(pos.X, pos.Y, pos.Z);
+            }
 
-            // position
-            dto.px = data.position.x;
-            dto.py = data.position.y;
-            dto.pz = data.position.z;
-
-            // forward
-            dto.fx = data.forward.x;
-            dto.fy = data.forward.y;
-            dto.fz = data.forward.z;
-
-            dto.speed = data.speed;
-            dto.element = data.element;
-            dto.serverTick = data.serverTick;
-            dto.baseHit = data.baseHit;
-            dto.headHit = data.headHit;
-            dto.elementMeasure = data.elementMeasure;
-            dto.moveTime = data.moveTime;
-
-            return dto;
+            if (flat.Forward.HasValue)
+            {
+                var forw = flat.Forward.Value;
+                data.forward  = new Vector3(forw.X, forw.Y, forw.Z);
+            }
+            
+            data.speed = flat.Speed;
+            data.element = flat.Element;
+            data.serverTick = flat.ServerTick;
+            data.baseHit = flat.BaseHit;
+            data.headHit = flat.HeadHit;
+            data.elementMeasure = flat.ElementMeasure;
+            data.moveTime = flat.MoveTime;
         }
     }
 }

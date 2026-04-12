@@ -10,10 +10,10 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.SprintSubTreeNode
     {
         public CrouchSprintSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new CrouchRifleSprintTreeLeafNode(MyManager));
-            AddNode(new CrouchThrowSprintTreeLeafNode(MyManager));
+            AddNode(new CrouchRifleSprintTreeLeafNode(MyMessage));
+            AddNode(new CrouchThrowSprintTreeLeafNode(MyMessage));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsSprint;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsSprint;
     }
 }

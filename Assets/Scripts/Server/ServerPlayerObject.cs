@@ -5,8 +5,8 @@ using System.Threading;
 using Connect;
 using Connect.Converter;
 using Connect.Data;
-using Connect.DTO;
-using Newtonsoft.Json;
+using Connect.FlatDTO;
+using Google.FlatBuffers;
 using UnityEngine;
 
 namespace Server
@@ -38,74 +38,35 @@ namespace Server
 
         private void ReceiveLoop()
         {
-            byte[] readbuff = new byte[8192];
-            StringBuilder sb = new StringBuilder();
-
+            // 二进制下不再使用 StringBuilder
             while (ClientSocket != null && ClientSocket.Connected)
             {
                 try
                 {
-                    int len = ClientSocket.Receive(readbuff);
-                    if (len <= 0) break;
+                    // --- 1. 读取全包长度 (4字节) ---
+                    byte[] headBuff = new byte[4];
+                    if (!ReadExact(ClientSocket, headBuff, 4)) break;
+                    int totalSize = BitConverter.ToInt32(headBuff, 0);
 
-                    string str = Encoding.UTF8.GetString(readbuff, 0, len);
-                    sb.Append(str);
-                    
-                    string content = sb.ToString();
-                    string[] parts = content.Split('&');
+                    // --- 2. 读取后续全包内容 ---
+                    byte[] bodyBuff = new byte[totalSize];
+                    if (!ReadExact(ClientSocket, bodyBuff, totalSize)) break;
 
-                    // 处理完整消息
-                    for (int i = 0; i < parts.Length - 1; i++)
+                    // --- 3. 拆解二进制包 (对应客户端的 UnpackMessage) ---
+                    // 按照 [TypeLen(4)] [TypeStr] [Data] 格式拆分
+                    int typeLen = BitConverter.ToInt32(bodyBuff, 0);
+                    string type = Encoding.UTF8.GetString(bodyBuff, 4, typeLen);
+            
+                    int dataOffset = 4 + typeLen;
+                    byte[] flatData = new byte[totalSize - dataOffset];
+                    Buffer.BlockCopy(bodyBuff, dataOffset, flatData, 0, flatData.Length);
+
+                    // --- 4. 逻辑分发 ---
+                    string finalType = type; // 闭包捕获变量
+                    UnityServerManager.Instance.EnqueueTask(() => 
                     {
-                        if (string.IsNullOrWhiteSpace(parts[i])) continue;
-
-                        // 1. 解析外层 Message
-                        Message msg = JsonConvert.DeserializeObject<Message>(parts[i]);
-                        if (msg == null) continue;
-                        
-                        if (msg.type == "UpdatePosition")
-                        {
-                            // 2. 解析内层 DTO
-                            PlayerDataDto dto = JsonConvert.DeserializeObject<PlayerDataDto>(msg.info);
-                            
-                            if (dto != null)
-                            {
-                                // 3. 【核心修复】调用 Manager 暴露出的任务队列方法
-                                UnityServerManager.Instance.EnqueueTask(() => 
-                                {
-                                    // 这部分代码现在会安全地在主线程运行
-                                    OnReceiveUpdate(dto); 
-                                });
-                            }
-                        }
-                        else if (msg.type == "PlayerHitRequest")
-                        {
-                            // 【新增内容】：收到某个客户端发来的攻击请求
-                            // 我们直接将其转发给所有人，但把类型改为 "DamageConfirm"
-                            // 这样客户端的 Listener 就能识别并扣血了
-                            UnityServerManager.Instance.EnqueueTask(() => 
-                            {
-                                // 构造转发给全场的消息
-                                Message confirmMsg = new Message("DamageConfirm", msg.info);
-                                UnityServerManager.Instance.Broadcast(confirmMsg);
-                
-                                Debug.Log($"转发攻击请求: {msg.info}");
-                            });
-                        }
-                        else if (msg.type == "PlayerShoot")
-                        {
-                            UnityServerManager.Instance.EnqueueTask(() => 
-                            {
-                                // 构造转发给全场的消息
-                                Message confirmMsg = new Message("PlayerShoot", msg.info);
-                                UnityServerManager.Instance.Broadcast(confirmMsg);
-                            });
-                        }
-                    }
-
-                    // 保留残余字符串处理断包
-                    sb.Clear();
-                    sb.Append(parts[parts.Length - 1]);
+                        HandleBinaryMessage(finalType, flatData);
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -113,30 +74,58 @@ namespace Server
                     break;
                 }
             }
-            
-            // 如果循环跳出，说明断开了，让主线程清理自己
+    
             UnityServerManager.Instance.EnqueueTask(() => {
                 UnityServerManager.Instance.CloseClient(ClientSocket);
             });
         }
 
-        private void OnReceiveUpdate(PlayerDataDto dto)
+        // 辅助方法：确保读取完整字节
+        private bool ReadExact(Socket s, byte[] data, int size)
         {
-            // 更新服务器上的物理位置，以便射线检测和广播
-            transform.position = new Vector3(dto.px, dto.py, dto.pz);
-            transform.rotation = new Quaternion(dto.rx, dto.ry, dto.rz, dto.rw);
-            
-            // 如果你需要同步其他状态（如 isShoot），也要在这里更新
-            PlayerDataConverter.FillData(dto, State);
+            int received = 0;
+            while (received < size)
+            {
+                int count = s.Receive(data, received, size - received, SocketFlags.None);
+                if (count <= 0) return false;
+                received += count;
+            }
+            return true;
         }
         
-        // 获取当前玩家的 DTO 数据用于广播给其他人
-        public PlayerDataDto GetCurrentDto()
+        private void HandleBinaryMessage(string type, byte[] data)
         {
-            // 同步当前物体的物理坐标到 State，然后转为 DTO
+            switch (type)
+            {
+                case "UpdatePosition":
+                    PlayerDataConverter.FillData(data, State);
+                    transform.position = State.position;
+                    transform.rotation = State.rotation;
+                    break;
+
+                case "PlayerHitRequest":
+                    // 伤害转发：保持二进制透传，性能最高
+                    Message confirmMsg = new Message("DamageConfirm", data);
+                    UnityServerManager.Instance.Broadcast(confirmMsg);
+                    break;
+
+                case "PlayerShoot":
+                    // 开火转发：二进制透传
+                    Message shootMsg = new Message("PlayerShoot", data);
+                    UnityServerManager.Instance.Broadcast(shootMsg);
+                    break;
+            }
+        }
+        
+        // 获取当前玩家的 Offset (用于全量广播构建列表)
+        public Offset<PlayerDataFlat> GetCurrentOffset(FlatBufferBuilder builder)
+        {
+            // 注意：这里调用你之前在模拟器里写的那个 CreateSinglePlayerOffset 方法
+            // 同步物理引擎位置到 State
             State.position = transform.position;
             State.rotation = transform.rotation;
-            return PlayerDataConverter.ToDto(State);
+    
+            return PlayerDataConverter.CreateSinglePlayerOffset(builder, State);
         }
     }
 }

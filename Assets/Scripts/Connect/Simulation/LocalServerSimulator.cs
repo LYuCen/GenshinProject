@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Connect.Converter;
 using Connect.Data;
-using Connect.DTO;
+using Connect.FlatDTO;
 using GameFSM.FSM.PlayerFSM;
-using Newtonsoft.Json;
+using Google.FlatBuffers;
 using UnityEngine;
 
 namespace Connect.Simulation
@@ -15,7 +16,8 @@ namespace Connect.Simulation
         private int _nextBotId = 5000; // Bot 从 5000 开始编号，避免冲突
         
         // 全局玩家列表
-        private List<PlayerDataDto> _fakeWorldPlayers = new List<PlayerDataDto>();
+        private List<PlayerStateData> _fakeBots = new List<PlayerStateData>();
+        private FlatBufferBuilder _builder = new FlatBufferBuilder(1024);
         public int GetMyId() => _myId;
 
         // 模拟服务器的消息处理器
@@ -45,15 +47,6 @@ namespace Connect.Simulation
                     // 此处也可配置延迟
                     ReceiveAtClient(msg);
                     break;
-                    
-                case "UpdatePosition":
-                    // 单机模式下，位置更新通常不需要传回自己
-                    break;
-                
-                case "PlayerHitRequest":
-                    Message confim = new Message("DamageConfirm", msg.info);
-                    ReceiveAtClient(confim);
-                    break;
                 case "AddBot":
                     CreateFakeBot();
                     break;
@@ -69,21 +62,47 @@ namespace Connect.Simulation
                 isGround = true,
                 position = _playerManager.transform.position,
                 rotation = _playerManager.transform.rotation,
-                maxHp = 200,
-                curHp = 200,
-                maxShield = 100,
-                curShield = 100
+                maxHp = 200, curHp = 200,
+                maxShield = 100, curShield = 100,
+                bRots = Array.Empty<Transform>()
             };
 
             // 加入模拟服务器的列表
-            _fakeWorldPlayers.Add(PlayerDataConverter.ToDto(data));
+            _fakeBots.Add(data);
 
-            // 模拟服务器广播 AllPlayerInfo 给客户端
-            // 注意：真实服务器会发所有人，模拟器这里只要发包含所有 Bot 的列表即可
-            string json = JsonConvert.SerializeObject(_fakeWorldPlayers);
-            ReceiveAtClient(new Message("AllPlayerInfo", json));
-            
-            Debug.Log($"<color=green>模拟器：已生成 Bot {_nextBotId - 1}</color>");
+            // 2. 使用 FlatBuffers 打包全量玩家列表
+            byte[] listData = PackAllPlayers(_fakeBots);
+
+            // 3. 广播给客户端
+            ReceiveAtClient(new Message("AllPlayerInfo", listData));
+        
+            Debug.Log($"<color=green>模拟器：已生成 Bot {_nextBotId - 1}，总人数：{_fakeBots.Count}</color>");
+        }
+        
+        // 将玩家列表打包成二进制
+        private byte[] PackAllPlayers(List<PlayerStateData> playerList)
+        {
+            // 1. 初始化 Builder
+            _builder.Clear(); // 建议复用类成员变量，减少 GC
+
+            // 2. 创建所有玩家的 Offset 列表
+            Offset<PlayerDataFlat>[] playerOffsets = new Offset<PlayerDataFlat>[playerList.Count];
+            for (int i = 0; i < playerList.Count; i++)
+            {
+                playerOffsets[i] = PlayerDataConverter.CreateSinglePlayerOffset(_builder, playerList[i]);
+            }
+
+            // 3. 创建 Vector (玩家列表数组)
+            var playersVector = PlayerList.CreatePlayersVector(_builder, playerOffsets);
+
+            // 4. 创建 Root Table (PlayerList)
+            PlayerList.StartPlayerList(_builder);
+            PlayerList.AddPlayers(_builder, playersVector);
+            var root = PlayerList.EndPlayerList(_builder);
+
+            // 5. 结束构建
+            _builder.Finish(root.Value);
+            return _builder.SizedByteArray();
         }
 
         private void ReceiveAtClient(Message msg)

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Connect.DTO;
-using Newtonsoft.Json;
 using UnityEngine;
 using System.Collections.Concurrent;
 using Connect;
+using Connect.FlatDTO;
+using Google.FlatBuffers;
 
 namespace Server
 {
@@ -19,6 +19,7 @@ namespace Server
         private Socket _listener;
         private Dictionary<int, ServerPlayerObject> _players = new Dictionary<int, ServerPlayerObject>();
         private Dictionary<Socket, int> _socketToId = new Dictionary<Socket, int>();
+        private FlatBufferBuilder _builder = new FlatBufferBuilder(2048);
         private int _nextId = 1000;
 
         // 主线程任务队列 
@@ -58,11 +59,13 @@ namespace Server
             try
             {
                 Socket client = _listener.EndAccept(ar);
+                client.NoDelay = true;         // 禁用 Nagle 算法，解决 TCP 延迟合并包的问题
+                client.SendBufferSize = 65536; // 调大发送缓冲区
+                client.ReceiveBufferSize = 65536; // 调大接收缓冲区
+                
                 int id = _nextId++;
 
-                // 将创建物体的逻辑丢进主线程队列
                 _mainThreadTasks.Enqueue(() => {
-                    // 实例化角色并将其初始化
                     GameObject go = Instantiate(serverPlayerPrefab);
                     ServerPlayerObject spo = go.GetComponent<ServerPlayerObject>();
                     spo.Init(id, client);
@@ -70,11 +73,10 @@ namespace Server
                     _players.Add(id, spo);
                     _socketToId.Add(client, id);
                     
-                    SendToClient(client, new Message("AllocId", id.ToString()));
-                    Debug.Log($"玩家 {id} 已连接并生成物理实体");
+                    // 发送二进制 ID
+                    SendToClient(client, new Message("AllocId", BitConverter.GetBytes(id)));
                 });
 
-                // 继续异步监听下一个玩家连接
                 _listener.BeginAccept(OnAccept, null);
             }
             catch (Exception ex) { Debug.LogError("Accept Error: " + ex.Message); }
@@ -87,17 +89,31 @@ namespace Server
         {
             if (_players.Count == 0) return;
 
-            List<PlayerDataDto> dtos = new List<PlayerDataDto>();
+            // 1. 准备 Builder
+            _builder.Clear();
+            List<Offset<PlayerDataFlat>> playerOffsets = new List<Offset<PlayerDataFlat>>();
+
+            // 2. 收集所有玩家当前的 Offset
             foreach (var p in _players.Values)
             {
-                dtos.Add(p.GetCurrentDto());
+                // 调用我们之前在 ServerPlayerObject 中定义的 GetCurrentOffset
+                playerOffsets.Add(p.GetCurrentOffset(_builder));
             }
 
-            string json = JsonConvert.SerializeObject(dtos);
-            Message msg = new Message("AllPlayerInfo", json);
+            // 3. 构建 PlayerList 数组
+            var vectorOffset = PlayerList.CreatePlayersVector(_builder, playerOffsets.ToArray());
 
-            // 广播给所有人
-            Broadcast(msg);
+            // 4. 构建 Root Table
+            PlayerList.StartPlayerList(_builder);
+            PlayerList.AddPlayers(_builder, vectorOffset);
+            var root = PlayerList.EndPlayerList(_builder);
+
+            // 5. 完成构建并获取字节流
+            _builder.Finish(root.Value);
+            byte[] finalBytes = _builder.SizedByteArray();
+
+            // 6. 广播二进制消息
+            Broadcast(new Message("AllPlayerInfo", finalBytes));
         }
 
         /// <summary>
@@ -110,11 +126,31 @@ namespace Server
             try
             {
                 if (s == null || !s.Connected) return;
-                string str = JsonConvert.SerializeObject(m);
-                byte[] bytes = Encoding.UTF8.GetBytes(str + '&');
-                s.Send(bytes);
+
+                // 1. 准备 Type 字符串
+                byte[] typeBytes = Encoding.UTF8.GetBytes(m.type);
+                // 2. 准备数据内容
+                byte[] dataBytes = m.data;
+
+                // 包体大小 = 4字节(typeLen) + Type长度 + 数据长度
+                int bodySize = 4 + typeBytes.Length + dataBytes.Length;
+                // 总长度 = 4字节(全包长度头) + 包体大小
+                byte[] fullPacket = new byte[4 + bodySize];
+
+                // 写入全包长度
+                Buffer.BlockCopy(BitConverter.GetBytes(bodySize), 0, fullPacket, 0, 4);
+                // 写入 Type 长度
+                Buffer.BlockCopy(BitConverter.GetBytes(typeBytes.Length), 0, fullPacket, 4, 4);
+                // 写入 Type 字符串内容
+                Buffer.BlockCopy(typeBytes, 0, fullPacket, 8, typeBytes.Length);
+                // 写入 FlatBuffers 数据
+                Buffer.BlockCopy(dataBytes, 0, fullPacket, 8 + typeBytes.Length, dataBytes.Length);
+
+                s.BeginSend(fullPacket, 0, fullPacket.Length, SocketFlags.None, (ar) => {
+                    try { s.EndSend(ar); } catch { /* 处理掉线 */ }
+                }, null);
             }
-            catch { CloseClient(s); } 
+            catch { CloseClient(s); }
         }
 
         /// <summary>
@@ -136,14 +172,19 @@ namespace Server
                     _socketToId.Remove(sclient);
                     
                     Debug.Log($"客户端 {playerId} 断开连接，已清理物体.");
-                    Broadcast(new Message("PlayerExit", playerId.ToString()));
+                    byte[] exitIdBytes = BitConverter.GetBytes(playerId);
+                    Broadcast(new Message("PlayerExit", exitIdBytes));
                 }
 
                 try 
                 { 
                     if(sclient.Connected) sclient.Shutdown(SocketShutdown.Both); 
                     sclient.Close(); 
-                } catch { }
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             });
         }
 

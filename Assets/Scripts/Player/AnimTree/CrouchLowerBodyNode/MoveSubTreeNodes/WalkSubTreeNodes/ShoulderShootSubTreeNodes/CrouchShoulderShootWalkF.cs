@@ -14,7 +14,7 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes.
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && MyManager.InputMove == Vector2.up;
+            return parentActive && MyMessage.InputMove == Vector2.up;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

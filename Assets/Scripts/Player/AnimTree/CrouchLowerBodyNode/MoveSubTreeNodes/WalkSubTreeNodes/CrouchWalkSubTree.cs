@@ -11,13 +11,13 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
     {
         public CrouchWalkSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new CrouchRifleWalkTreeLeafNode(MyManager));
-            AddNode(new CrouchShoulderShootSubTree(MyManager));
-            AddNode(new CrouchThrowWalkTreeLeafNode(MyManager));
+            AddNode(new CrouchRifleWalkTreeLeafNode(MyMessage));
+            AddNode(new CrouchShoulderShootSubTree(MyMessage));
+            AddNode(new CrouchThrowWalkTreeLeafNode(MyMessage));
         }
         
         
 
-        public override bool CheckState(bool parentActive) => parentActive && !MyManager.IsSprint;
+        public override bool CheckState(bool parentActive) => parentActive && !MyMessage.IsSprint;
     }
 }

@@ -21,6 +21,6 @@
         
         // Hips 骨骼的局部坐标 (Local Position)
         public float hx, hy, hz; 
-        public float[] bRots; // 骨骼旋转
+        public ushort[] bRots; // 骨骼旋转
     }
 }

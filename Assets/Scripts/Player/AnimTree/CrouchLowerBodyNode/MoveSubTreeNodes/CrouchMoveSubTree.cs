@@ -13,10 +13,10 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes
     {
         public CrouchMoveSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new CrouchWalkSubTree(MyManager));
-            AddNode(new CrouchSprintSubTree(MyManager));
+            AddNode(new CrouchWalkSubTree(MyMessage));
+            AddNode(new CrouchSprintSubTree(MyMessage));
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.InputMove != Vector2.zero;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.InputMove != Vector2.zero;
     }
 }

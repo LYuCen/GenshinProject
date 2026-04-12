@@ -10,7 +10,7 @@ namespace Player.AnimTree.UpperBodyNodes
     {
         public UpperBodySubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new ReloadTreeLeafNode(MyManager));
+            AddNode(new ReloadTreeLeafNode(MyMessage));
             //AddNode(new ThrowSubTree(MyManager));
         }
 

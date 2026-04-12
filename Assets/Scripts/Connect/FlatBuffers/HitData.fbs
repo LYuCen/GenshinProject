@@ -1,0 +1,12 @@
+﻿namespace Connect.HitDTO;
+
+table HitDataFlat {
+  attacker_id:int;
+  victim_id:int;
+  damage:int;
+  hit_type:int;
+  element:int;
+  element_measure:float;
+}
+
+root_type HitDataFlat;

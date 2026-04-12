@@ -2,12 +2,10 @@
 using AI.VisualRequest.VisualRequest;
 using Connect;
 using Connect.Converter;
-using Connect.DTO;
 using Connect.Simulation;
 using GameFSM.FSM.PlayerFSM;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
-using Newtonsoft.Json;
 using QFramework;
 using UnityEngine;
 
@@ -164,15 +162,8 @@ namespace Player.ManagerLogic
             _m.state.position = _m.transform.position;
             _m.state.rotation = _m.transform.rotation;
 
-            // 打包 DTO
-            PlayerDataDto dto = PlayerDataConverter.ToDto(_m.state);
-            string json = JsonConvert.SerializeObject(dto);
+            NetworkService.Bridge.SendToServer(new Message("UpdatePosition", PlayerDataConverter.ToDto(_m.state)));
 
-            // 通过 Bridge 发送，而不是直接通过 UserClient
-            // 这样如果是在 LocalServerSimulator 模式下，这个包会被模拟器直接拦截或丢弃
-            // 不会产生真实的 Socket 流量
-            NetworkService.Bridge.SendToServer(new Message("UpdatePosition", json));
-            
         }
         
         void PlayerMoveAnimContro() // 角色输入移动间隔控制

@@ -14,11 +14,11 @@ namespace Player.AnimPro
         public float TargetWeight;      // 目标权重
         public int MixIndex;            // 在父节点下所处下标       
         protected List<AnimTreeNode<T>> Children = new(); 
-        protected T MyManager;                 
+        protected T MyMessage;                 
         public AnimTreeNode<T> Parent;
         protected AnimTreeNode<T> LastActiveChild; 
 
-        public AnimTreeNode(T myManager) => MyManager = myManager;
+        public AnimTreeNode(T myMessage) => MyMessage = myMessage;
 
         protected void AddNode(AnimTreeNode<T> node)
         {

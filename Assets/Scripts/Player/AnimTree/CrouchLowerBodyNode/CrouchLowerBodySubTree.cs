@@ -11,12 +11,12 @@ namespace Player.AnimTree.CrouchLowerBodyNode
     {
         public CrouchLowerBodySubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new CrouchIdleTreeLeafNode(MyManager));
-            AddNode(new CrouchThrowIdleTreeLeafNode(MyManager));
-            AddNode(new CrouchMoveSubTree(MyManager));
+            AddNode(new CrouchIdleTreeLeafNode(MyMessage));
+            AddNode(new CrouchThrowIdleTreeLeafNode(MyMessage));
+            AddNode(new CrouchMoveSubTree(MyMessage));
             WeightSpeed = 3f;
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.IsCrouch;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsCrouch;
     }
 }

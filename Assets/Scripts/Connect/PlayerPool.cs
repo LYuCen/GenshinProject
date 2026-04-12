@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
-using Connect.DTO;
+using Connect.FlatDTO;
 using GameFSM.FSM.PlayerFSM;
 using Player.ManagerLogic;
 using UnityEngine;
@@ -19,59 +19,66 @@ namespace Connect
             Instance = this;
         }
 
-        public void UpdatePlayer(List<PlayerDataDto> dtos)
+        public void UpdatePlayer(PlayerList list)
         {
-            // 如果还没领到 ID，先不处理同步逻辑，避免分不清谁是谁
             if (UserClient.MyId == -1) return;
 
-            foreach (PlayerDataDto dto in dtos)
+            // FlatBuffers 的数组遍历方式：使用 Length 和索引器
+            for (int i = 0; i < list.PlayersLength; i++)
             {
-                if (_models.ContainsKey(dto.playerId))
+                // 获取单个玩家数据，注意加上 .Value，因为返回的是可空类型
+                var dto = list.Players(i).Value;
+                int pid = dto.PlayerId;
+
+                if (_models.ContainsKey(pid))
                 {
-                    PlayerManager pm = _models[dto.playerId];
-                    pm.SyncStatus(dto); // 同步血量、护盾等数值
+                    PlayerManager pm = _models[pid];
+                    
+                    pm.SyncStatus(dto); 
 
-                    // 如果是本地玩家，更新完数值就够了，位移由本地控制
-                    if (dto.playerId == UserClient.MyId) continue;
+                    if (pid == UserClient.MyId) continue;
 
-                    // 如果是远程玩家，同步位移和动画
                     if (pm.GetLogic() is RemotePlayerLogic remoteLogic)
                     {
+                        // --- 重要：你需要修改 remoteLogic.SyncFromServer 让其支持 PlayerDataFlat ---
                         remoteLogic.SyncFromServer(dto);
                     }
                 }
                 else
                 {
-                    if (dto.playerId == UserClient.MyId)
-                    {
-                        continue; 
-                    }
+                    if (pid == UserClient.MyId) continue;
 
-                    // 3. 创建远程玩家
+                    // 创建远程玩家
                     CreateRemotePlayer(dto);
                 }
             }
         }
 
         // 提取创建逻辑
-        private void CreateRemotePlayer(PlayerDataDto dto)
+        private void CreateRemotePlayer(PlayerDataFlat dto)
         {
             IResource ir = ResourceManager.instance.Load(
-                "Assets/AssetBundle/Model/Weapon/Player/RemoteLumine.prefab", false);
+                "Assets/AssetBundle/Model/Player/RemoteLumine.prefab", false);
 
             GameObject prefab = ir.GetAsset<GameObject>();
             GameObject instance = Instantiate(prefab);
 
-            instance.transform.position = new Vector3(dto.px, dto.py, dto.pz);
-            instance.name = "RemotePlayer_" + dto.playerId;
+            // 访问坐标方式：dto.Position.Value.X
+            if (dto.Position != null)
+            {
+                var pos = dto.Position.Value;
+                instance.transform.position = new Vector3(pos.X, pos.Y, pos.Z);
+            }
+
+            instance.name = "RemotePlayer_" + dto.PlayerId;
             
             PlayerManager pm = instance.GetComponent<PlayerManager>();
-            pm.state.curHp = dto.curHp;
-            pm.state.maxHp = dto.maxHp;
-            pm.Init(false); // 远程模式
+            pm.state.curHp = dto.CurHp;
+            pm.state.maxHp = dto.MaxHp;
+            pm.Init(false); 
             
-            _models.Add(dto.playerId, pm);
-            Debug.Log($"检测到新玩家加入，生成实体: {dto.playerId}");
+            _models.Add(dto.PlayerId, pm);
+            Debug.Log($"检测到新玩家加入，生成实体: {dto.PlayerId}");
         }
 
         /// <summary>

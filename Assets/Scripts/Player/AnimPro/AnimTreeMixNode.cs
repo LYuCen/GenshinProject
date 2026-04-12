@@ -7,7 +7,7 @@ namespace Player.AnimPro
     {
         protected AnimationMixerPlayable Mixer;
 
-        public AnimTreeMixNode(T myManager) : base(myManager)
+        public AnimTreeMixNode(T myMessage) : base(myMessage)
         {
             IsLeaf = false;
         }

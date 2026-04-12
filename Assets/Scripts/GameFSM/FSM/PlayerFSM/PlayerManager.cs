@@ -1,6 +1,5 @@
-﻿using Connect.Converter;
-using Connect.Data;
-using Connect.DTO;
+﻿using Connect.Data;
+using Connect.FlatDTO;
 using mController;
 using mInterface;
 using mSystem.HurtSystem;
@@ -86,18 +85,18 @@ namespace GameFSM.FSM.PlayerFSM
             );
         }
         
-        public void SyncStatus(PlayerDataDto dto)
+        public void SyncStatus(PlayerDataFlat dto)
         {
-            // 1. 同步逻辑层数据
-            state.curHp = dto.curHp;
-            state.maxHp = dto.maxHp;
-            state.curShield = dto.curShield;
-            state.maxShield = dto.maxShield;
+            // FlatBuffers 生成的属性是 PascalCase（首字母大写）
+            state.curHp = dto.CurHp;
+            state.maxHp = dto.MaxHp;
+            state.curShield = dto.CurShield;
+            state.maxShield = dto.MaxShield;
 
             // 2. 更新 UI 表现
             if (entityStatusUI)
             {
-                entityStatusUI.SyncValues(dto.curHp, dto.maxHp, dto.curShield, dto.maxShield);
+                entityStatusUI.SyncValues(dto.CurHp, dto.MaxHp, dto.CurShield, dto.MaxShield);
             }
         }
 
@@ -114,7 +113,6 @@ namespace GameFSM.FSM.PlayerFSM
                 state.curShield = 0;
                 state.curHp = Mathf.Clamp(state.curHp - hurt, 0, state.maxHp);
             }
-            SyncStatus(PlayerDataConverter.ToDto(state));
         }
 
         public void ReloadEnd()

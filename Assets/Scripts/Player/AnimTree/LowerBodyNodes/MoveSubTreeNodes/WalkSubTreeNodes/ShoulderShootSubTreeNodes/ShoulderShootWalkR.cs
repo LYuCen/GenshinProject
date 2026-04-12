@@ -11,7 +11,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.Shoul
         private AnimationClipPlayable _playable;
         public ShoulderShootWalkR(PlayerManager myManager) : base(myManager){}
 
-        public override bool CheckState(bool parentActive) => parentActive && MyManager.InputMove == Vector2.right;
+        public override bool CheckState(bool parentActive) => parentActive && MyMessage.InputMove == Vector2.right;
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {

@@ -2,7 +2,7 @@
 {
     public abstract class AnimTreeLeafNode<T> : AnimTreeNode<T>
     {
-        protected AnimTreeLeafNode(T myManager) : base(myManager)
+        protected AnimTreeLeafNode(T myMessage) : base(myMessage)
         {
             IsLeaf = true;
         }

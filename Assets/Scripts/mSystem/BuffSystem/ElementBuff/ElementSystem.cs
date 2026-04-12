@@ -67,11 +67,6 @@ namespace mSystem.BuffSystem.ElementBuff
     {
         private ElementComponentSystem _elementCs = new();
         private ElementBuffControllerComponentSystem _controllerCs = new();
-        private void Start()
-        {
-            GameObject prefab = Resources.Load<GameObject>("Prefab/ElementUI");
-            ElementUIObjectPool.Instance.Init(prefab);
-        }
 
         public void EnQueue(ElementComponent component)
         {

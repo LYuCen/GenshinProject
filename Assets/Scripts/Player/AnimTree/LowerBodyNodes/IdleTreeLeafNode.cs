@@ -17,9 +17,9 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyManager.IsGround &&
-                   MyManager.InputMove == Vector2.zero &&
-                   !MyManager.IsSliding && !MyManager.IsThrow;
+            return parentActive && MyMessage.IsGround &&
+                   MyMessage.InputMove == Vector2.zero &&
+                   !MyMessage.IsSliding && !MyMessage.IsThrow;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
