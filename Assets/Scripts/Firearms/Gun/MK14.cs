@@ -18,21 +18,19 @@ namespace Firearms.Gun
     {
         public void Init()
         {
-            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/MK14.prefab", false);
-            GameObject prefab = ir.GetAsset<GameObject>();
-            Gun = Object.Instantiate(prefab).transform;
-            Muzzle = Gun.Find("Muzzle");
-            MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 45, 30, ElementEnum.Fire);
             PrevShootTime = 0;
             IsCanShoot = true;
             IsReload = false;
-            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/MK14.asset", false);
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/MK14.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
         }
 
         public void InitTransform()
         {
+            if (!Gun) Gun = GetWeapon();
+            Muzzle = Gun.Find("Muzzle");
+            MagazineTransform = Gun.Find("Magazine");
             Gun.localPosition = new Vector3(-3.73f,-0.73f,-1.87f);
             Gun.localEulerAngles = new Vector3(0.061f, -3.402f, -0.096f);
         }
@@ -174,6 +172,12 @@ namespace Firearms.Gun
 
         public Transform GetWeapon()
         {
+            if (!Gun)
+            {
+                IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/MK14.prefab", false);
+                GameObject prefab = ir.GetAsset<GameObject>();
+                Gun = Object.Instantiate(prefab).transform;
+            }
             return Gun;
         }
         

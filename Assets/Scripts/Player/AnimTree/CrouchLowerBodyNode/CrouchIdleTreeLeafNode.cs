@@ -12,18 +12,31 @@ namespace Player.AnimTree.CrouchLowerBodyNode
     public class CrouchIdleTreeLeafNode : AnimTreeLeafNode<PlayerManager>
     {
         private AnimationClipPlayable _playable;
-        
-        public CrouchIdleTreeLeafNode(PlayerManager myManager) : base(myManager){}
+        private string _animPath;
+
+        // 修改后的构造函数：支持动态传入动画配置路径
+        public CrouchIdleTreeLeafNode(PlayerManager myManager, string animPath) : base(myManager)
+        {
+            _animPath = animPath;
+        }
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyMessage.IsGround && MyMessage.InputMove == Vector2.zero && !MyMessage.IsThrow;
+            return parentActive && MyMessage.IsGround && MyMessage.InputMove == Vector2.zero;
         }
 
+        // 修改后的 BuildNode：使用传入路径加载配置
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Crouch/CrouchIdle.asset");
+            var cfg = GetAnimConfig(_animPath);
+
+            if (!cfg || !cfg.animClip)
+            {
+                Debug.LogError($"CrouchIdleTreeLeafNode: 无法加载配置，路径: {_animPath}");
+                return Playable.Null;
+            }
+
             _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
             _playable.SetSpeed(cfg.animSpeed);
             return _playable;

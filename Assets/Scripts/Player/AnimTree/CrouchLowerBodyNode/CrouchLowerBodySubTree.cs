@@ -9,11 +9,12 @@ namespace Player.AnimTree.CrouchLowerBodyNode
     /// </summary>
     public class CrouchLowerBodySubTree : AnimTreeMixNode<PlayerManager>
     {
-        public CrouchLowerBodySubTree(PlayerManager myManager) : base(myManager)
+        public CrouchLowerBodySubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
         {
-            AddNode(new CrouchIdleTreeLeafNode(MyMessage));
-            AddNode(new CrouchThrowIdleTreeLeafNode(MyMessage));
-            AddNode(new CrouchMoveSubTree(MyMessage));
+            CrouchIdleSlotTreeNode node = new CrouchIdleSlotTreeNode(MyMessage);
+            slot.CIdleSlot = node;
+            AddNode(node);
+            AddNode(new CrouchMoveSubTree(MyMessage, slot));
             WeightSpeed = 3f;
         }
 

@@ -9,11 +9,12 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
     /// </summary>
     public class WalkSubTree : AnimTreeMixNode<PlayerManager>
     {
-        public WalkSubTree(PlayerManager myManager) : base(myManager)
+        public WalkSubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
         {
-            AddNode(new RifleWalkTreeLeafNode(MyMessage));
+            WalkSlotTreeNode node = new WalkSlotTreeNode(MyMessage);
+            slot.WalkSlot = node;
+            AddNode(node);
             AddNode(new ShoulderShootSubTree(MyMessage));
-            AddNode(new ThrowWalkTreeLeafNode(MyMessage));
         }
         
         

@@ -9,11 +9,12 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
     /// </summary>
     public class CrouchWalkSubTree : AnimTreeMixNode<PlayerManager>
     {
-        public CrouchWalkSubTree(PlayerManager myManager) : base(myManager)
+        public CrouchWalkSubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
         {
-            AddNode(new CrouchRifleWalkTreeLeafNode(MyMessage));
+            CrouchWalkSlotTreeNode node = new CrouchWalkSlotTreeNode(MyMessage);
+            slot.CWalkSlot = node;
+            AddNode(node);
             AddNode(new CrouchShoulderShootSubTree(MyMessage));
-            AddNode(new CrouchThrowWalkTreeLeafNode(MyMessage));
         }
         
         

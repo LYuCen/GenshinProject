@@ -18,23 +18,19 @@ namespace Firearms.Gun
     {
         public void Init()
         {
-            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/FN_IWS.prefab", false);
-            GameObject prefab = ir.GetAsset<GameObject>();
-            Gun = Object.Instantiate(prefab).transform;
-            Muzzle = Gun.Find("Muzzle");
-            MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 30, 30, ElementEnum.Fire);
             PrevShootTime = 0;
             IsCanShoot = true;
             IsReload = false;
-            ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FN_IWS.asset", false);
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FN_IWS.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
-
-            
         }
 
         public void InitTransform()
         {
+            if (!Gun) Gun = GetWeapon();
+            Muzzle = Gun.Find("Muzzle");
+            MagazineTransform = Gun.Find("Magazine");
             Gun.transform.localPosition = new Vector3(-0.03f, -1.74f, -2.83f);
             Gun.transform.localEulerAngles = new Vector3(274.814636f, 70.0597076f, 286.340332f);
         }
@@ -172,6 +168,12 @@ namespace Firearms.Gun
 
         public Transform GetWeapon()
         {
+            if (!Gun)
+            {
+                IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/FN_IWS.prefab", false);
+                GameObject prefab = ir.GetAsset<GameObject>();
+                Gun = Object.Instantiate(prefab).transform;
+            }
             return Gun;
         }
         

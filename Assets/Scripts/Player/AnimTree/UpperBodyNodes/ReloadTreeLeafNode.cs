@@ -13,14 +13,25 @@ namespace Player.AnimTree.UpperBodyNodes
     {
         private AnimationClipPlayable _playable;
         private float _clipDuration;
+        private string _animPath;
 
-        public ReloadTreeLeafNode(PlayerManager manager) : base(manager) { }
+        public ReloadTreeLeafNode(PlayerManager manager, string animPath) : base(manager) 
+        {
+            _animPath = animPath;
+        }
 
         public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsReload;
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset");
+            // 使用传入的路径加载配置
+            var cfg = GetAnimConfig(_animPath);
+            if (!cfg || !cfg.animClip)
+            {
+                Debug.LogError($"ReloadTreeLeafNode: 找不到动画配置 { _animPath}");
+                return Playable.Null;
+            }
+
             _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
             _playable.SetSpeed(cfg.animSpeed);
             _clipDuration = cfg.animClip.length;

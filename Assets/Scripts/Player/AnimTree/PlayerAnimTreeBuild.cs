@@ -13,13 +13,13 @@ namespace Player.AnimTree
         private AnimationScriptPlayable _jobPlayable;
 
         public PlayerAnimTreeBuild(Animator animator, PlayerManager manager, AvatarMask upperBodyMask, Transform leftHand,
-            Transform rightHand)
+            Transform rightHand, PlayerAnimSlot slot)
         {
             _graph = PlayableGraph.Create("PlayerPlayablePro");
             
 
             // 1. 构建动画树逻辑
-            _rootNode = new PlayerAnimTreeRoot(manager, upperBodyMask);
+            _rootNode = new PlayerAnimTreeRoot(manager, upperBodyMask, slot);
             Playable animTreeOutput = _rootNode.BuildNode(_graph);
 
             // 2. 构建 IK Job

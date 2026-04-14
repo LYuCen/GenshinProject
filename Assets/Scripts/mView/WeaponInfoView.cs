@@ -77,7 +77,7 @@ namespace mView
         /// <param name="index">武器下标</param>
         public void UpdateWeapon(string str,int index)
         {
-            if (index == _useWeaponIndex) return;
+            if (index == _useWeaponIndex || index > 1) return;
             gunName.text = str;
 
             RectTransform prevRt = weapon[_useWeaponIndex];

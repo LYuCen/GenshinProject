@@ -43,7 +43,6 @@ namespace Firearms.ThrowWeapon
             };
             ScopeHitSystem.Instance.EnQueue(scopeHitComponent);
             GrenadeObjectPool.Instance.RemoveObj(gameObject);
-            SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/Grenade/Boom.mp3",0.8f);
         }
         
         

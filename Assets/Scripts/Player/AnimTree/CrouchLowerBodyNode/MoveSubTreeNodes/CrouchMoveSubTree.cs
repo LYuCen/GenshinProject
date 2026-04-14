@@ -11,10 +11,12 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes
     /// </summary>
     public class CrouchMoveSubTree : AnimTreeMixNode<PlayerManager>
     {
-        public CrouchMoveSubTree(PlayerManager myManager) : base(myManager)
+        public CrouchMoveSubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
         {
-            AddNode(new CrouchWalkSubTree(MyMessage));
-            AddNode(new CrouchSprintSubTree(MyMessage));
+            AddNode(new CrouchWalkSubTree(MyMessage, slot));
+            CrouchSprintSlotTreeNode node = new CrouchSprintSlotTreeNode(MyMessage);
+            slot.CSprintSlot = node;
+            AddNode(node);
         }
 
         public override bool CheckState(bool parentActive) => parentActive && MyMessage.InputMove != Vector2.zero;

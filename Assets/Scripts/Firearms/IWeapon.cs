@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using mModel.ScriptableConfig;
+using UnityEngine;
 
 namespace Firearms
 {
@@ -86,5 +87,11 @@ namespace Firearms
         /// 切换到其他武器时调用
         /// </summary>
         void OnWeaponSwitchExit();
+        
+        /// <summary>
+        /// 获取武器信息
+        /// </summary>
+        /// <returns></returns>
+        WeaponGunConfig GetWeaponConfig();
     }
 }

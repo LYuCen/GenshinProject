@@ -1,12 +1,13 @@
-﻿using Connect.DTO;
+﻿using Connect.Data;
+using Connect.DTO;
+using Factory;
 using Firearms;
-using Firearms.Gun;
 using Firearms.ThrowWeapon;
 using Firearms.WeaponInterface;
 using GameFSM.FSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
-using mSystem.BulletSystem;
 using mSystem.InputSystem.mEvent;
+using mSystem.SoundSystem;
 using mView;
 using QFramework;
 using UnityEngine;
@@ -21,9 +22,8 @@ namespace mController
         [SerializeField] private WeaponInfoView view;
         public IWeapon Weapon;
         public int weaponIndex = -1; // 当前武器下标
-        private IWeapon _mainWeapon1; // 主武器1
-        private IWeapon _mainWeapon2; // 主武器2
-        private IWeapon _throwWeapon; // 投掷武器
+        private IWeapon[] _weaponSlots = new IWeapon[3]; // 三个武器槽： 主武器1， 主武器2， 道具
+        private WeaponStateData[] _weaponStates = new WeaponStateData[3];
         private Grenade _grenade;
         public bool weaponChangeEnable;
         public bool isReadyThrow;
@@ -36,9 +36,12 @@ namespace mController
         [SerializeField] private PlayerManager myManager;
 
         private int _gunBulletIndex;
+        private WeaponFactory _factory;
 
         public void Init()
         {
+            _factory = new WeaponFactory(myManager);
+            
             bulletIndex = 1;
             weaponIndex = -1;
             weaponChangeEnable = true;
@@ -46,25 +49,19 @@ namespace mController
             AddBullet(90, ElementEnum.Elect);
             AddBullet(90, ElementEnum.Water);
             
+            
+            _weaponSlots[2] = _factory.GetWeapon("Grenade");
+            _weaponSlots[2].GetWeapon().SetParent(hand);
+            _weaponSlots[2].InitTransform();
+            _weaponSlots[2].GetWeapon().gameObject.SetActive(false);
+            
             view?.UpdateText(0, bullets[bulletIndex]);
             view?.Init(bullets);
-            
-            // 初始化投掷物
-            _grenade = new Grenade();
-            _throwWeapon = _grenade;
-            _throwWeapon.Init();
-            Transform trans = _throwWeapon.GetWeapon();
-            trans.SetParent(hand);
-            _throwWeapon.InitTransform();
-            trans.gameObject.SetActive(false);
         }
 
         public void UserThrow()
         {
-            Weapon.GetWeapon().gameObject.SetActive(false);
-            _throwWeapon.GetWeapon().gameObject.SetActive(true);
-            weaponIndex = -1;
-            Weapon = _throwWeapon;
+            GetWeapon(2); 
         }
 
         public void UpdateForward(Vector3 forward)
@@ -79,52 +76,36 @@ namespace mController
             else if (scroll < 0) res = 1;
             view?.UpdateElementBullets(res);
         }
-        
-        public void AwakeGun(IWeapon weapon)
-        {
-            Weapon = weapon;
-            
-            view?.UpdateText(Weapon.GetMagazine().GetBulletNumber(), bullets[bulletIndex]);
-            view?.ElementImage(Weapon.GetMagazine().GetElementEnum());
-        }
 
         public Transform GetWeapon(int index)
         {
-            Transform trans = null;
+            if (weaponIndex == index) return null;
+            
+            // 旧武器退出
+            Weapon?.OnWeaponSwitchExit();
+            Weapon?.GetWeapon().gameObject.SetActive(false);
+            
+            if (_weaponSlots[index] == null)
+            {
+                // 这里可以根据 index 决定默认给什么枪，或者通过外部捡枪逻辑传入 Data
+                string defaultName = (index == 0) ? "FN_IWS" : "MK14";
+                _weaponSlots[index] = _factory.GetWeapon(defaultName);
+                _weaponSlots[index].GetWeapon().SetParent(hand);
+            }
+            
+            Weapon = _weaponSlots[index];
+            _factory.SyncWeaponAnimation(Weapon); // 同步动画
 
-            if (index == 0 && weaponIndex != index)
-            {
-                if (_mainWeapon1 == null)
-                {
-                    _mainWeapon1 = new FN_IWS();
-                    _mainWeapon1.Init();
-                }
-                view?.UpdateWeapon("FN IWS",0);
-                Weapon?.OnWeaponSwitchExit();
-                AwakeGun(_mainWeapon1);
-                Weapon?.OnWeaponSwitchEnter();
-                trans = _mainWeapon1.GetWeapon();
-            }
-            else if(index == 1 && weaponIndex != index)
-            {
-                if (_mainWeapon2 == null)
-                {
-                    _mainWeapon2 = new MK14();
-                    _mainWeapon2.Init();
-                }
-                view?.UpdateWeapon("MK14",1);
-                Weapon?.OnWeaponSwitchExit();
-                AwakeGun(_mainWeapon2);
-                Weapon?.OnWeaponSwitchEnter();
-                trans = _mainWeapon2.GetWeapon();
-            }
+            Weapon.OnWeaponSwitchEnter();
+            Weapon.GetWeapon().gameObject.SetActive(true);
+            weaponIndex = index;
 
-            if (trans)
-            {
-                weaponIndex = index;
-                _throwWeapon.GetWeapon().gameObject.SetActive(false);
-            }
-            return trans;
+            var config = Weapon.GetWeaponConfig();
+            view?.UpdateWeapon(config.weaponName, index);
+            view?.UpdateText(Weapon.GetMagazine().GetBulletNumber(), bullets[bulletIndex]);
+            view?.ElementImage(Weapon.GetMagazine().GetElementEnum());
+
+            return Weapon.GetWeapon();
         }
 
         public void AddBullet(int bulletNumber, ElementEnum element)

@@ -12,20 +12,30 @@ namespace Player.AnimTree.LowerBodyNodes
     public class IdleTreeLeafNode : AnimTreeLeafNode<PlayerManager>
     {
         private AnimationClipPlayable _playable;
-        
-        public IdleTreeLeafNode(PlayerManager myManager) : base(myManager){}
+        private string _animPath;
+
+        public IdleTreeLeafNode(PlayerManager myManager, string animPath) : base(myManager)
+        {
+            _animPath = animPath;
+        }
 
         public override bool CheckState(bool parentActive)
         { 
             return parentActive && MyMessage.IsGround &&
                    MyMessage.InputMove == Vector2.zero &&
-                   !MyMessage.IsSliding && !MyMessage.IsThrow;
+                   !MyMessage.IsSliding;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Idle/RifleIdle.asset");
+            // 使用传入的路径加载配置
+            var cfg = GetAnimConfig(_animPath);
+            if (!cfg || !cfg.animClip)
+            {
+                Debug.LogError($"ReloadTreeLeafNode: 找不到动画配置 { _animPath}");
+                return Playable.Null;
+            }
             _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
             _playable.SetSpeed(cfg.animSpeed);
             return _playable;

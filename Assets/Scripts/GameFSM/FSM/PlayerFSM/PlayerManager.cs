@@ -54,9 +54,8 @@ namespace GameFSM.FSM.PlayerFSM
         {
             state.bRots = bones;
             animator.applyRootMotion = false;
+            AnimController = new PlayerAnimController(animator, this, avatarMask, leftHandIk, rightHandIk);
             firearmController.Init();
-            AnimController =
-                new PlayerAnimController(animator, this, avatarMask, leftHandIk, rightHandIk);
             playerGun = firearmController.GetWeapon(0);
             playerGun.SetParent(gunCube, true); // 保持世界位置/旋转/缩放
             firearmController.Weapon.InitTransform();

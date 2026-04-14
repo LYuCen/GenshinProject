@@ -40,7 +40,7 @@ namespace Player.ManagerLogic
             _m.RegisterEvent<WeaponPrimaryActionEvent>(e =>
             {
                 _m.IsSprint = false;
-                _m.IsShoot = true;
+                _m.IsShoot = true && !_m.IsThrow;
                 if(e.IsDown) _m.firearmController.DownPrimaryAction();
                 if(e.IsPress) _m.firearmController.PressPrimaryAction();
                 if(e.IsUp) _m.firearmController.UpPrimaryAction();
@@ -70,7 +70,6 @@ namespace Player.ManagerLogic
                         _m.playerGun = _m.firearmController.GetWeapon(1);
                         Debug.Log("切换为主武器2");
                     }
-                    _m.IsShoot = false;
                     if(!_m.playerGun) Debug.Log("武器为空");
                     _m.playerGun.gameObject.SetActive(true);
                     _m.SetParent(_m.playerGun,_m.gunCube);
@@ -88,7 +87,7 @@ namespace Player.ManagerLogic
             _m.RegisterEvent<GetGrenade>(_ =>
             {
                 _m.IsThrow = true;
-                SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/Grenade/Get.mp3");
+                _m.IsShoot = false;
                 _m.firearmController.UserThrow();
             });
             _m.RegisterEvent<CrouchEvent>(_ =>

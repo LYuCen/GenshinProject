@@ -1,6 +1,8 @@
-﻿using Firearms.Magazine;
+﻿using AssetBundleFramework.Core.Resource;
+using Firearms.Magazine;
 using mEvent;
 using mModel;
+using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.SoundSystem;
 using QFramework;
@@ -16,8 +18,11 @@ namespace Firearms.ThrowWeapon
         private float _pointDistance = 0.02f;
         private Vector3 _yOffset = new Vector3(0, 0.04f, 0);
         private ThrowEvent _event;
+        private WeaponGunConfig _config;
 
         private bool _isOnPrimaryAction; // 检查是否执行过 OnPrimaryAction
+        
+        
         public void OnPrimaryAction()
         {
             // 点击投掷时默认高抛
@@ -25,7 +30,6 @@ namespace Firearms.ThrowWeapon
             _isOnPrimaryAction = true;
             _force = 10f;
             _throwLine.enabled = true;
-            SoundSystem.Instance.PlaySound("Assets/Resources/Sound/SoundEffect/Grenade/PullOut.mp3");
         }
 
         public void PressPrimaryAction()
@@ -104,24 +108,33 @@ namespace Firearms.ThrowWeapon
 
         public Transform GetWeapon()
         {
+            if (!Transform)
+            {
+                IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Grenade/GrenadeWeapon.prefab", false);
+                GameObject prefab = ir.GetAsset<GameObject>();
+                Transform = Object.Instantiate(prefab).transform;
+            }
             return Transform;
         }
 
         public void Init()
         {
-            Transform = Object.Instantiate(Resources.Load<Transform>("Prefab/G"));
-            _throwLine = Transform.gameObject.GetComponent<LineRenderer>();
-            MagazineTransform = Transform.Find("Magazine");
             Magazine = new BaseMagazine(0, 1, 100, ElementEnum.Fire);
             MainRadius = 2f;
             OtherRadius = 5f;
             BoomCountDown = 3f;
             IsReadyThrow = false;
             IsThrow = false;
+            IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/Grenade.asset", false);
+            _config = ir.GetAsset<WeaponGunConfig>();
+            
         }
 
         public void InitTransform()
         {
+            if (!Transform) Transform = GetWeapon();
+            _throwLine = Transform.gameObject.GetComponent<LineRenderer>();
+            MagazineTransform = Transform.Find("Magazine");
             Transform.localPosition = new Vector3(0.000238f, 0.000363f, -0.00034f);
             Transform.localEulerAngles = new Vector3(27.714f, 174.281f, 182.487f);
             Transform.localScale = new Vector3(0.0015f, 0.0015f, 0.0015f);
@@ -145,7 +158,6 @@ namespace Firearms.ThrowWeapon
             g.transform.position = Transform.position;
             // ForceMode.VelocityChange 忽略物体密度，防止影响力度对物体移动的控制
             g.GetComponent<Rigidbody>().AddForce(Forward * _force, ForceMode.VelocityChange);
-            
         }
 
         public IArchitecture GetArchitecture()
@@ -165,12 +177,17 @@ namespace Firearms.ThrowWeapon
         
         public void OnWeaponSwitchEnter()
         {
-            
+            SoundSystem.Instance.PlaySound(_config.getWeaponAudioClip);
         }
 
         public void OnWeaponSwitchExit()
         {
             
+        }
+
+        public WeaponGunConfig GetWeaponConfig()
+        {
+            return _config;
         }
     }
 }

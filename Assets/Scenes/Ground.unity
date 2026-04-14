@@ -9779,7 +9779,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lumine
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 8344988132934287821, guid: cd92859cba75e414ab407c5eab2fdbd5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 775722304068079934, guid: cd92859cba75e414ab407c5eab2fdbd5, type: 3}
+    - {fileID: 1549712122434073107, guid: cd92859cba75e414ab407c5eab2fdbd5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

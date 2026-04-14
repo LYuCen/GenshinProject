@@ -8,9 +8,11 @@ namespace Player.AnimTree.UpperBodyNodes
     /// </summary>
     public class UpperBodySubTree : AnimTreeMixNode<PlayerManager>
     {
-        public UpperBodySubTree(PlayerManager myManager) : base(myManager)
+        public UpperBodySubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
         {
-            AddNode(new ReloadTreeLeafNode(MyMessage));
+            UpperSlotTreeNode node = new UpperSlotTreeNode(myManager);
+            slot.UpperSlot = node;
+            AddNode(node);
             //AddNode(new ThrowSubTree(MyManager));
         }
 
