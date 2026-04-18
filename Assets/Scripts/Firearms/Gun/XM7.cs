@@ -1,5 +1,6 @@
 ﻿using AssetBundleFramework.Core.Resource;
 using Firearms.Magazine;
+using GameFSM.FSM.PlayerFSM;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -11,6 +12,7 @@ namespace Firearms.Gun
 {
     public class XM7 : AbstractGun, IWeapon
     {
+        public PlayerManager Manager { get; set; }
         public void Init()
         {
             IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/Gun/XM7.prefab", false);
@@ -144,6 +146,11 @@ namespace Firearms.Gun
         public void OnWeaponSwitchExit()
         {
             Gun.gameObject.SetActive(false);
+        }
+
+        public AnimationClip GetClipByTag(string tag)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

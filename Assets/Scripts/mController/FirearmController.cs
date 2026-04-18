@@ -7,7 +7,6 @@ using Firearms.WeaponInterface;
 using GameFSM.FSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.InputSystem.mEvent;
-using mSystem.SoundSystem;
 using mView;
 using QFramework;
 using UnityEngine;
@@ -28,12 +27,16 @@ namespace mController
         public bool weaponChangeEnable;
         public bool isReadyThrow;
         public bool isDownThrow;
+        public bool isThrow;
+        public bool isOnPrimaryAction;
+        public float currentActionNormalizedTime = 0f;
 
         [SerializeField] private Transform hand;
         [SerializeField] private ElementEnum firearmElement;
         [SerializeField] private int bulletNum;
         [SerializeField] private float reloadTime;
         [SerializeField] private PlayerManager myManager;
+        [SerializeField] private Transform muzzle;
 
         private int _gunBulletIndex;
         private WeaponFactory _factory;
@@ -51,6 +54,7 @@ namespace mController
             
             
             _weaponSlots[2] = _factory.GetWeapon("Grenade");
+            _weaponSlots[2].Manager = myManager;
             _weaponSlots[2].GetWeapon().SetParent(hand);
             _weaponSlots[2].InitTransform();
             _weaponSlots[2].GetWeapon().gameObject.SetActive(false);
@@ -88,12 +92,19 @@ namespace mController
             if (_weaponSlots[index] == null)
             {
                 // 这里可以根据 index 决定默认给什么枪，或者通过外部捡枪逻辑传入 Data
-                string defaultName = (index == 0) ? "FN_IWS" : "MK14";
+                string defaultName = (index == 0) ? "HK416" : "MK14";
                 _weaponSlots[index] = _factory.GetWeapon(defaultName);
                 _weaponSlots[index].GetWeapon().SetParent(hand);
+                _weaponSlots[index].InitTransform();
             }
             
             Weapon = _weaponSlots[index];
+            if (Weapon is AbstractGun gun)
+            {
+                //myManager.aimIK.solver.transform = gun.GetMuzzle();
+                myManager.aimIK.solver.axis = Vector3.forward; 
+                myManager.aimIK.solver.Initiate(myManager.aimIK.transform); 
+            }
             _factory.SyncWeaponAnimation(Weapon); // 同步动画
 
             Weapon.OnWeaponSwitchEnter();
@@ -120,6 +131,11 @@ namespace mController
         }
         public void PressPrimaryAction(bool isNetworkSync = false, ShootDto dto = null) 
         {
+            if (Weapon is AbstractThrow)
+            {
+                Weapon.PressPrimaryAction(); // 此时执行本地的 Shoot()
+                return;
+            }
             // 本地玩家逻辑
             if (Weapon.GetMagazine().BulletNumber > 0)
             {
@@ -182,11 +198,26 @@ namespace mController
             Weapon.UpdateWeapon();
             
                         
-            if (weaponIndex == -1)
+            if (weaponIndex == 2 && _weaponSlots[2] != null)
             {
-                isDownThrow = _grenade.GetIsDownThrow();
-                isReadyThrow = _grenade.GetIsReadyThrow();
+                if (_weaponSlots[2] is AbstractThrow t)
+                {
+                    isDownThrow = t.GetIsDownThrow();
+                    isReadyThrow = t.GetIsReadyThrow();
+                    isThrow = t.GetIsThrow();
+                    isOnPrimaryAction = t.GetIsOnPrimaryAction();
+                }
             }
+        }
+
+        public Grenade GetGrenade()
+        {
+            if (_weaponSlots[2] is Grenade g)
+            {
+                return g;
+            }
+
+            return null;
         }
 
         public IArchitecture GetArchitecture()

@@ -169,21 +169,22 @@ namespace Connect
             if (PlayerPool.Instance.Models.TryGetValue(dto.victimId, out var model))
             {
                 Debug.Log($"{model.EntityId} 被击中 (数据源: FlatBuffers)");
-        
+
                 HurtComponent component = new HurtComponent()
                 {
                     attackerId = dto.attackerId,
                     victimId = dto.victimId,
                     Harm = dto.damage,
-                    Element = dto.element, 
+                    Element = dto.element,
                     ElementMeasure = dto.elementMeasure,
-                    HitType = dto.hitType, 
+                    HitType = dto.hitType,
                     Transform = model.transform
                 };
 
                 // 进入 HurtSystem
                 HurtSystem.Instance.EnQueue(component);
             }
+            else Debug.Log($"[Hurt] 未找到该玩家{dto.victimId}");
         }
 
         private static Message UnpackMessage(byte[] bodyBuff)

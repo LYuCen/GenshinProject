@@ -12,11 +12,9 @@ namespace Player.AnimTree.LowerBodyNodes
     public class IdleTreeLeafNode : AnimTreeLeafNode<PlayerManager>
     {
         private AnimationClipPlayable _playable;
-        private string _animPath;
 
-        public IdleTreeLeafNode(PlayerManager myManager, string animPath) : base(myManager)
+        public IdleTreeLeafNode(PlayerManager myManager) : base(myManager)
         {
-            _animPath = animPath;
         }
 
         public override bool CheckState(bool parentActive)
@@ -28,17 +26,18 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            MixIndex = mixIndex;
-            // 使用传入的路径加载配置
-            var cfg = GetAnimConfig(_animPath);
-            if (!cfg || !cfg.animClip)
+            // 直接使用基类里被解析器注入的变量
+            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
+
+            if (!clipToUse && !string.IsNullOrEmpty(Tag))
             {
-                Debug.LogError($"ReloadTreeLeafNode: 找不到动画配置 { _animPath}");
-                return Playable.Null;
+                // 去武器表里找
+                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
             }
-            _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
-            _playable.SetSpeed(cfg.animSpeed);
-            return _playable;
+
+            var playable = AnimationClipPlayable.Create(graph, clipToUse);
+            playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
+            return playable;
         }
     }
 }

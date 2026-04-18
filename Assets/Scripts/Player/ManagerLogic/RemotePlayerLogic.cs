@@ -25,6 +25,7 @@ namespace Player.ManagerLogic
             GameObject go = new GameObject("Aim");
             _m.aim = go.transform;
             _m.aimIK.solver.target = _m.aim;
+            _m.aimIK.enabled = _m.IsShoot;
         }
 
         // 修改参数为 PlayerDataFlat

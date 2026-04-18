@@ -72,7 +72,7 @@ namespace mSystem.BulletSystem
                                 
                                 Debug.Log($"玩家{hitDto.victimId} 被 玩家{hitDto.attackerId} 击中 {hitBox.part}");
                                 
-                                NetworkService.Bridge.SendToServer(new Message("PlayerHitRequest", HitDataConverter.ToBinary(hitDto)));
+                                NetworkService.Bridge.SendToServer(new Message("DamageConfirm", HitDataConverter.ToBinary(hitDto)));
                             }
                         }
                     }

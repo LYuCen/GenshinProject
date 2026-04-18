@@ -1,6 +1,5 @@
 ﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
-using Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes.ShoulderShootSubTreeNodes;
 
 namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
 {
@@ -9,15 +8,7 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
     /// </summary>
     public class CrouchWalkSubTree : AnimTreeMixNode<PlayerManager>
     {
-        public CrouchWalkSubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
-        {
-            CrouchWalkSlotTreeNode node = new CrouchWalkSlotTreeNode(MyMessage);
-            slot.CWalkSlot = node;
-            AddNode(node);
-            AddNode(new CrouchShoulderShootSubTree(MyMessage));
-        }
-        
-        
+        public CrouchWalkSubTree(PlayerManager myManager) : base(myManager) { }
 
         public override bool CheckState(bool parentActive) => parentActive && !MyMessage.IsSprint;
     }

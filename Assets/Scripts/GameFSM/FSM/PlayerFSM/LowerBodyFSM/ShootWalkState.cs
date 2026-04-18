@@ -14,7 +14,7 @@ namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
         public override void OnEnterState()  
         {
             MyManager.speed = 1.6f;
-            MyManager.aimIK.enabled = true;
+            MyManager.aimIK.enabled = !MyManager.IsThrow;
             MyManager.stateName = "据枪移动";
         }
 

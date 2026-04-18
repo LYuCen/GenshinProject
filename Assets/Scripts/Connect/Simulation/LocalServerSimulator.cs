@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Connect.Converter;
 using Connect.Data;
+using Connect.DTO;
 using Connect.FlatDTO;
 using GameFSM.FSM.PlayerFSM;
 using Google.FlatBuffers;
@@ -50,7 +51,13 @@ namespace Connect.Simulation
                 case "AddBot":
                     CreateFakeBot();
                     break;
+                case "DamageConfirm":
+                    UpdateInternalBotState(msg.data);
+                    ReceiveAtClient(msg);
+                    break;
             }
+            byte[] listData = PackAllPlayers(_fakeBots);
+            ReceiveAtClient(new Message("AllPlayerInfo", listData));
         }
         
         private void CreateFakeBot()
@@ -62,20 +69,14 @@ namespace Connect.Simulation
                 isGround = true,
                 position = _playerManager.transform.position,
                 rotation = _playerManager.transform.rotation,
-                maxHp = 200, curHp = 200,
-                maxShield = 100, curShield = 100,
+                maxHp = 100, curHp = 100,
+                maxShield = 150, curShield = 150,
                 bRots = Array.Empty<Transform>()
             };
 
             // 加入模拟服务器的列表
             _fakeBots.Add(data);
-
-            // 2. 使用 FlatBuffers 打包全量玩家列表
-            byte[] listData = PackAllPlayers(_fakeBots);
-
-            // 3. 广播给客户端
-            ReceiveAtClient(new Message("AllPlayerInfo", listData));
-        
+            
             Debug.Log($"<color=green>模拟器：已生成 Bot {_nextBotId - 1}，总人数：{_fakeBots.Count}</color>");
         }
         
@@ -103,6 +104,35 @@ namespace Connect.Simulation
             // 5. 结束构建
             _builder.Finish(root.Value);
             return _builder.SizedByteArray();
+        }
+        
+        private void UpdateInternalBotState(byte[] data)
+        {
+            // 模拟服务器解析伤害包
+            // 这里建议使用你的 HitDataConverter 来获取 DTO
+            HitDto dto = new HitDto();
+            HitDataConverter.FillData(data, dto);
+
+            // 在服务器的列表中找到对应的 Bot
+            foreach (var bot in _fakeBots)
+            {
+                if (bot.playerId == dto.victimId)
+                {
+                    // 执行扣血逻辑（服务器侧）
+                    float hurt = dto.damage;
+                    if (hurt <= bot.curShield)
+                    {
+                        bot.curShield -= hurt;
+                    }
+                    else
+                    {
+                        hurt -= bot.curShield;
+                        bot.curShield = 0;
+                        bot.curHp = Mathf.Max(0, bot.curHp - hurt);
+                    }
+                    break;
+                }
+            }
         }
 
         private void ReceiveAtClient(Message msg)

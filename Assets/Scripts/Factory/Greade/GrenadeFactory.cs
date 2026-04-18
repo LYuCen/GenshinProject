@@ -29,7 +29,7 @@ namespace Factory.Greade
         public WeaponGunConfig GetConfig() => _config;
         public AnimTreeNode<PlayerManager> CreateActionNode()
         {
-            return new GrenadeThrowSubTree(_manager);
+            return null;
         }
 
         public WeaponType GetWeaponType() => WeaponType.Grenade;

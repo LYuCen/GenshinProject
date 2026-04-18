@@ -26,7 +26,6 @@ namespace mSystem.ScopeHitSystem
                     
                     // 1. 基础过滤
                     if (target == component.Transform && !component.IsHurtSelf) continue; 
-                    if (!target.CompareTag("Enemy")) continue; 
 
                     // 2. 反应过滤逻辑 (例如：感电只会弹射到有水元素的敌人身上)
                     var controller = target.GetComponent<ElementBuffController>();

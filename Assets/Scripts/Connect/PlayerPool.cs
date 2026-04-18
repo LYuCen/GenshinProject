@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
+using Connect.Converter;
 using Connect.FlatDTO;
 using GameFSM.FSM.PlayerFSM;
 using Player.ManagerLogic;
@@ -73,6 +74,7 @@ namespace Connect
             instance.name = "RemotePlayer_" + dto.PlayerId;
             
             PlayerManager pm = instance.GetComponent<PlayerManager>();
+            pm.state.playerId = dto.PlayerId;
             pm.state.curHp = dto.CurHp;
             pm.state.maxHp = dto.MaxHp;
             pm.Init(false); 

@@ -51,28 +51,25 @@ namespace Editor
         public bool OnSelectEntry(SearchTreeEntry entry, SearchWindowContext context)
         {
             var type = (Type)entry.userData;
-    
-            // 1. 计算鼠标位置
+
             var mousePosition = _window.rootVisualElement.ChangeCoordinatesTo(
                 _window.rootVisualElement.parent, context.screenMousePosition - _window.position.position);
             var graphMousePosition = _graphView.contentViewContainer.WorldToLocal(mousePosition);
 
-            // 2. 创建一个全新的 NodeData 对象来存储数据
             var nodeData = new NodeData
             {
                 GUID = Guid.NewGuid().ToString(),
-                NodeType = type.AssemblyQualifiedName, // 存储类的全名，方便以后反射加载
+                NodeType = type.AssemblyQualifiedName,
                 Position = graphMousePosition,
-                AnimSpeed = 1f,   // 默认值
-                WeightSpeed = 5f  // 默认值
+                AnimSpeed = 1f,
+                WeightSpeed = 5f
             };
 
-            // 3. 创建 UI 节点并传入数据对象
-            var node = new AnimGraphNode(type, nodeData); // 这样改！
+            // --- 修正点：传入第三个参数 _graphView.CurrentAsset ---
+            var node = new AnimGraphNode(type, nodeData, _graphView.CurrentAsset); 
             node.SetPosition(new Rect(graphMousePosition, Vector2.zero));
-    
-            _graphView.AddElement(node);
 
+            _graphView.AddElement(node);
             return true;
         }
     }

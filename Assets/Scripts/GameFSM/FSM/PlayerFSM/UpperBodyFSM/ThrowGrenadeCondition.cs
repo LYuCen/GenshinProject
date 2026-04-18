@@ -1,4 +1,6 @@
-﻿namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
+﻿using Firearms.ThrowWeapon;
+
+namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
 {
     public class ThrowGrenadeCondition : AbstractCondition<PlayerManager>
     {
@@ -9,7 +11,8 @@
         public override bool CheckCondition(out string nextState)
         {
             nextState = "ThrowGrenade";
-            return MyManager.IsThrow;
+            var grenade = MyManager.firearmController.Weapon as Grenade;
+            return grenade?.CurrentState != GrenadeState.Idle;
         }
     }
 }

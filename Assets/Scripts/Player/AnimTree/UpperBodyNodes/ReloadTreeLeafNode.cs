@@ -13,28 +13,45 @@ namespace Player.AnimTree.UpperBodyNodes
     {
         private AnimationClipPlayable _playable;
         private float _clipDuration;
-        private string _animPath;
 
-        public ReloadTreeLeafNode(PlayerManager manager, string animPath) : base(manager) 
-        {
-            _animPath = animPath;
-        }
-
-        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsReload;
+        public ReloadTreeLeafNode(PlayerManager manager) : base(manager) { }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            // 使用传入的路径加载配置
-            var cfg = GetAnimConfig(_animPath);
-            if (!cfg || !cfg.animClip)
+            MixIndex = mixIndex;
+            AnimationClip clipToUse = null;
+
+            // 根据编辑器里的配置决定使用哪个 Clip
+            if (UseTagOnly)
             {
-                Debug.LogError($"ReloadTreeLeafNode: 找不到动画配置 { _animPath}");
-                return Playable.Null;
+                // 严格 Tag 模式：去当前武器里找
+                if (MyMessage.firearmController.Weapon != null && !string.IsNullOrEmpty(Tag))
+                {
+                    clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
+                }
+            }
+            else
+            {
+                // 混合模式：优先用图中拖进去的，没拖再用 Tag 找
+                clipToUse = DefaultClip;
+                if (!clipToUse && !string.IsNullOrEmpty(Tag))
+                {
+                    clipToUse = MyMessage.firearmController.Weapon?.GetClipByTag(Tag);
+                }
             }
 
-            _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
-            _playable.SetSpeed(cfg.animSpeed);
-            _clipDuration = cfg.animClip.length;
+            if (!clipToUse)
+            {
+                Debug.LogError($"[ReloadNode] 找不到有效的动画剪辑！Tag: {Tag}");
+                return Playable.Null;
+            }
+            
+            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            
+            _playable.SetSpeed(AnimSpeed);
+            
+            _clipDuration = clipToUse.length;
+
             return _playable;
         }
 
@@ -43,18 +60,22 @@ namespace Player.AnimTree.UpperBodyNodes
             Debug.Log("Start Reloading...");
             _playable.SetTime(0); // 每次进入时重置时间
         }
+        
+        public override bool CheckState(bool parentActive)
+        {
+            return (parentActive && MyMessage.IsReload) || Weight > 0.001f;
+        }
 
         public override float UpdateNode()
         {
+            TargetWeight = MyMessage.IsReload ? 1f : 0f;
+            
             float currentWeight = base.UpdateNode();
-
-            // 逻辑：如果当前权重较大（已切入），且动画播放完毕，则重置状态
-            if (currentWeight > 0.5f && MyMessage.IsReload)
+            if (currentWeight > 0.9f && MyMessage.IsReload)
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {
-                    Debug.Log("Reload Finished.");
-                    MyMessage.ReloadEnd();
+                    MyMessage.ReloadEnd(); // 这里会让 IsReload 变 false，触发上面的 TargetWeight = 0
                 }
             }
             return currentWeight;

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
 using Connect;
 using Connect.Converter;
 using Connect.Data;
 using Firearms.Magazine;
+using GameFSM.FSM.PlayerFSM;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -16,6 +18,8 @@ namespace Firearms.Gun
 {
     public class MK14 : AbstractGun, IWeapon
     {
+        private Dictionary<string, AnimationClip> _animDict = new();
+        public PlayerManager Manager { get; set; }
         public void Init()
         {
             Magazine = new BaseMagazine(0, 45, 30, ElementEnum.Fire);
@@ -24,6 +28,11 @@ namespace Firearms.Gun
             IsReload = false;
             IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/MK14.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
+            foreach (var pair in Config.animMappings)
+            {
+                if (!_animDict.ContainsKey(pair.tag))
+                    _animDict.Add(pair.tag, pair.clip);
+            }
         }
 
         public void InitTransform()
@@ -199,6 +208,17 @@ namespace Firearms.Gun
         public void OnWeaponSwitchExit()
         {
             Gun.gameObject.SetActive(false);
+        }
+
+        public AnimationClip GetClipByTag(string tag)
+        {
+            if (_animDict.TryGetValue(tag, out var clip))
+            {
+                return clip;
+            }
+        
+            Debug.LogWarning($"武器 {Config.weaponName} 未配置 Tag 为 {tag} 的动画");
+            return null;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace BaseClass
         public virtual GameObject GetObj()
         {
             if (!_isBuild) Init();
-            
+            if (!Prefab) return null;
             GameObject res;
             if (Pool.Count > 0)
             {

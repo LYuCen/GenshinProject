@@ -100,5 +100,7 @@ namespace Firearms
                 meshRenderer.materials = materials;
             }
         }
+
+        public Transform GetMuzzle() => Muzzle;
     }
 }

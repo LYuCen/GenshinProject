@@ -3,7 +3,8 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.Experimental.GraphView;
-using Player.AnimPro; // 确保引用了你的逻辑节点命名空间
+using Player.AnimPro;
+using UnityEditor;
 
 namespace Editor
 {
@@ -11,57 +12,77 @@ namespace Editor
     {
         public NodeData Data;
         public Type LogicType;
+        private AnimGraphData _owner; // 增加对资源的引用
 
-        public AnimGraphNode(Type type, NodeData data)
+        public AnimGraphNode(Type type, NodeData data, AnimGraphData owner)
         {
             LogicType = type;
             Data = data;
+            _owner = owner; // 记录所属资源，用于 Undo
             title = type.Name;
 
-            // --- 所有节点共有的：Weight Speed ---
+            // --- Weight Speed ---
             var wSpeedField = new FloatField("Weight Speed");
             wSpeedField.value = Data.WeightSpeed;
-            wSpeedField.RegisterValueChangedCallback(evt => Data.WeightSpeed = evt.newValue);
+            wSpeedField.RegisterValueChangedCallback(evt => {
+                Undo.RecordObject(_owner, "Change Weight Speed"); // 使用 _owner
+                Data.WeightSpeed = evt.newValue;
+            });
             mainContainer.Add(wSpeedField);
 
-            // --- 条件判断：只有叶子节点才显示动画相关参数 ---
-            // 判断 logicType 是否是 AnimTreeLeafNode<PlayerManager> 的子类
             if (IsLeafNode(type))
             {
-                // 1. 是否仅使用 Tag 的开关
                 var toggle = new Toggle("Use Tag Only");
                 toggle.value = Data.useTagOnly;
+                toggle.RegisterValueChangedCallback(evt => {
+                    Undo.RecordObject(_owner, "Toggle Use Tag");
+                    Data.useTagOnly = evt.newValue;
+                });
                 mainContainer.Add(toggle);
 
-                // 2. 动画拖拽框 (Default Clip)
                 var clipField = new ObjectField("Default Clip") {
                     objectType = typeof(AnimationClip),
                     value = Data.DefaultClip
                 };
-                clipField.RegisterValueChangedCallback(evt => Data.DefaultClip = evt.newValue as AnimationClip);
+                clipField.RegisterValueChangedCallback(evt => {
+                    Undo.RecordObject(_owner, "Change Clip");
+                    Data.DefaultClip = evt.newValue as AnimationClip;
+                });
                 mainContainer.Add(clipField);
 
-                // 3. 播放速度 (Anim Speed)
                 var animSpeedField = new FloatField("Anim Speed");
                 animSpeedField.value = Data.AnimSpeed;
-                animSpeedField.RegisterValueChangedCallback(evt => Data.AnimSpeed = evt.newValue);
+                animSpeedField.RegisterValueChangedCallback(evt => {
+                    Undo.RecordObject(_owner, "Change Anim Speed"); // 修正变量名
+                    Data.AnimSpeed = evt.newValue;
+                });
                 mainContainer.Add(animSpeedField);
 
-                // 4. 标签输入框 (Tag)
-                var tagField = new TextField("Lookup Tag");
-                tagField.value = Data.Tag;
-                tagField.RegisterValueChangedCallback(evt => Data.Tag = evt.newValue);
-                mainContainer.Add(tagField);
-
-                // 初始显示逻辑
                 clipField.SetEnabled(!Data.useTagOnly);
-                toggle.RegisterValueChangedCallback(evt => {
-                    Data.useTagOnly = evt.newValue;
-                    clipField.SetEnabled(!evt.newValue);
-                });
+                toggle.RegisterValueChangedCallback(evt => clipField.SetEnabled(!evt.newValue));
             }
+            
+            // --- Tag ---
+            var tagField = new TextField("Lookup Tag");
+            tagField.value = Data.Tag;
+            tagField.RegisterValueChangedCallback(evt => {
+                Undo.RecordObject(_owner, "Change Tag");
+                Data.Tag = evt.newValue;
+            });
+            mainContainer.Add(tagField);
+            
+            // --- Mask ---
+            var maskField = new ObjectField("Avatar Mask") {
+                objectType = typeof(AvatarMask),
+                value = Data.Mask
+            };
+            maskField.RegisterValueChangedCallback(evt => {
+                Undo.RecordObject(_owner, "Change Mask");
+                Data.Mask = evt.newValue as AvatarMask;
+            });
+            mainContainer.Add(maskField);
 
-            // --- 端口设置 ---
+            // 端口设置保持不变...
             var inputPort = InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(bool));
             inputPort.portName = "Parent";
             inputContainer.Add(inputPort);
@@ -77,20 +98,13 @@ namespace Editor
             RefreshPorts();
         }
 
-        /// <summary>
-        /// 判断一个类型是否为叶子节点逻辑
-        /// </summary>
         private bool IsLeafNode(Type type)
         {
-            // 检查该类型是否继承自 AnimTreeLeafNode<PlayerManager>
-            // 因为 AnimTreeLeafNode 是泛型的，我们需要这样判断：
             Type baseType = type;
             while (baseType != null && baseType != typeof(object))
             {
                 if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(AnimTreeLeafNode<>))
-                {
                     return true;
-                }
                 baseType = baseType.BaseType;
             }
             return false;

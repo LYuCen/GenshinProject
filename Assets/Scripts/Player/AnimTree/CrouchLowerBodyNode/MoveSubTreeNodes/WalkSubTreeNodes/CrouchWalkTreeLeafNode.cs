@@ -9,34 +9,31 @@ namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes
     public class CrouchWalkTreeLeafNode : AnimTreeLeafNode<PlayerManager>
     {
         private AnimationClipPlayable _playable;
-        private string _animPath;
         
         // 修改后的构造函数
-        public CrouchWalkTreeLeafNode(PlayerManager myManager, string animPath) : base(myManager)
+        public CrouchWalkTreeLeafNode(PlayerManager myManager) : base(myManager)
         {
-            _animPath = animPath;
         }
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && !MyMessage.IsShoot;
+            return parentActive && !MyMessage.IsShoot && !MyMessage.IsSprint;
         }
 
-        // 修改后的 BuildNode
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            MixIndex = mixIndex;
-            var cfg = GetAnimConfig(_animPath);
-            
-            if (!cfg || !cfg.animClip)
+            // 直接使用基类里被解析器注入的变量
+            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
+
+            if (!clipToUse && !string.IsNullOrEmpty(Tag))
             {
-                Debug.LogError($"CrouchRifleWalkTreeLeafNode: 无法加载配置，路径: {_animPath}");
-                return Playable.Null;
+                // 去武器表里找
+                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
             }
 
-            _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
-            _playable.SetSpeed(cfg.animSpeed);
-            return _playable;
+            var playable = AnimationClipPlayable.Create(graph, clipToUse);
+            playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
+            return playable;
         }
     }
 }

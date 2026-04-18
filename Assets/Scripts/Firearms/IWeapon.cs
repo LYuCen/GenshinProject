@@ -1,4 +1,5 @@
-﻿using mModel.ScriptableConfig;
+﻿using GameFSM.FSM.PlayerFSM;
+using mModel.ScriptableConfig;
 using UnityEngine;
 
 namespace Firearms
@@ -8,6 +9,8 @@ namespace Firearms
     /// </summary>
     public interface IWeapon
     {
+        public PlayerManager Manager { get; set; }
+
         /// <summary>
         /// 按下主功能键 （默认左键）
         /// </summary>
@@ -93,5 +96,12 @@ namespace Firearms
         /// </summary>
         /// <returns></returns>
         WeaponGunConfig GetWeaponConfig();
+        
+        /// <summary>
+        /// 通过标签查询特殊武器动画
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        AnimationClip GetClipByTag(string tag);
     }
 }

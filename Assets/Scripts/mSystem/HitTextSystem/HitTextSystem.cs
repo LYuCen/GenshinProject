@@ -13,6 +13,7 @@ namespace mSystem.HitTextSystem
             while (Queue.Count > 0)
             {
                 var component = Queue.Dequeue();
+                return;
                 Transform t = component.transform.Find("Canvas");
                 GameObject obj = HitTextObjectPool.Instance.GetObj();
                 obj.transform.SetParent(t);

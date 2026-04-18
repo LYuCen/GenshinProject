@@ -1,0 +1,39 @@
+﻿using Firearms.ThrowWeapon;
+using GameFSM.FSM.PlayerFSM;
+using Player.AnimPro;
+using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
+
+namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
+{
+    public class HighThrowLoopTreeLeafNode : AnimTreeLeafNode<PlayerManager>
+    {
+        private AnimationClipPlayable _playable;
+        public HighThrowLoopTreeLeafNode(PlayerManager myMessage) : base(myMessage)
+        {
+        }
+
+        public override bool CheckState(bool parentActive)
+        {
+            var grenade = MyMessage.firearmController.Weapon as Grenade;
+            return parentActive && grenade != null && grenade.IsReady;
+        }
+
+        public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
+        {
+            // 直接使用基类里被解析器注入的变量
+            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
+
+            if (!clipToUse && !string.IsNullOrEmpty(Tag))
+            {
+                // 去武器表里找
+                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
+            }
+
+            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            _playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
+            return _playable;
+        }
+    }
+}

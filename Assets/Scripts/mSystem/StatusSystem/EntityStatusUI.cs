@@ -20,13 +20,15 @@ namespace mSystem.StatusSystem
 
         private StatusBar _hpStatusBar;
         private StatusBar _shieldStatusBar;
+        private Transform _mainCavas;
 
         [Header("元素图标")] [SerializeField] private Transform elementBox;
 
         public void Start()
         {
             Canvas canvas = GetComponent<Canvas>();
-            canvas.worldCamera = Camera.main; 
+            canvas.worldCamera = Camera.main;
+            if (Camera.main != null) _mainCavas = Camera.main.transform;
             canvas.planeDistance = 1.0f; // 贴近相机
         }
 
@@ -58,13 +60,13 @@ namespace mSystem.StatusSystem
         {
             
             ui.SetParent(elementBox);
-            
         }
 
         public void Update()
         {
             _hpStatusBar.OnUpdate();
             _shieldStatusBar.OnUpdate();
+            transform.LookAt(_mainCavas);
         }
 
         public void SetHp(float newHp)

@@ -21,6 +21,7 @@ namespace mSystem.BuffSystem.ElementBuff
             outUI.gameObject.SetActive(false);
             baseRt.localScale = Vector3.one;
             baseRt.localPosition = Vector3.zero;
+            baseRt.localRotation = new Quaternion(0, 0, 0, 0);
         }
 
         public void ShowOutUI()

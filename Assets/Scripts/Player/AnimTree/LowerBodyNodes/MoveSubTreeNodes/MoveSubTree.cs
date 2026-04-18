@@ -11,12 +11,8 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
     /// </summary>
     public class MoveSubTree : AnimTreeMixNode<PlayerManager>
     {
-        public MoveSubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
+        public MoveSubTree(PlayerManager myManager) : base(myManager)
         {
-            AddNode(new WalkSubTree(MyMessage, slot));
-            SprintSlotTreeNode node = new SprintSlotTreeNode(MyMessage);
-            slot.SprintSlot = node;
-            AddNode(node);
         }
 
         public override bool CheckState(bool parentActive)

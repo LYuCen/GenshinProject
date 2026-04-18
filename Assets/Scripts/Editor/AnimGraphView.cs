@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Player.AnimPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -11,8 +13,11 @@ namespace Editor
     public class AnimGraphView : GraphView
     {
         private NodeSearchWindow _searchWindow;
+        private AnimGraphData _currentAsset; // 增加字段记录当前资源
+        
+        public AnimGraphData CurrentAsset => _currentAsset;
 
-        public AnimGraphView(EditorWindow window) // 传入窗口引用
+        public AnimGraphView(EditorWindow window)
         {
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
@@ -22,10 +27,56 @@ namespace Editor
             var grid = new GridBackground();
             Insert(0, grid);
             grid.StretchToParentSize();
-
+            
             AddSearchWindow(window);
-        }
+            
+            this.graphViewChanged = (changes) =>
+            {
+                if (_currentAsset != null && (changes.movedElements != null || changes.elementsToRemove != null || changes.edgesToCreate != null))
+                {
+                    Undo.RecordObject(_currentAsset, "Anim Tree Change");
+                }
+                return changes;
+            };
+            
+            serializeGraphElements = (elements) =>
+            {
+                var selectedNodes = elements.OfType<AnimGraphNode>().Select(x => x.Data).ToList();
+                if (selectedNodes.Count == 0) return string.Empty;
 
+                return JsonUtility.ToJson(new CopyPasteData { nodes = selectedNodes });
+            };
+
+            // 2. 定义哪些数据可以被粘贴
+            canPasteSerializedData = (data) =>
+            {
+                // 这里简单判断一下字符串是否包含我们的数据结构特征
+                return data.Contains("NodeType") && data.Contains("GUID");
+            };
+
+            // 3. 定义粘贴时的具体逻辑
+            unserializeAndPaste = (operationName, data) =>
+            {
+                if (string.IsNullOrEmpty(data)) return;
+
+                var copyData = JsonUtility.FromJson<CopyPasteData>(data);
+                foreach (var nodeData in copyData.nodes)
+                {
+                    // 生成新 GUID 并偏移位置
+                    nodeData.GUID = Guid.NewGuid().ToString();
+                    nodeData.Position += new Vector2(50, 50);
+
+                    Type type = Type.GetType(nodeData.NodeType);
+                    if (type == null) continue;
+
+                    // 创建新节点
+                    var newNode = new AnimGraphNode(type, nodeData, _currentAsset);
+                    newNode.SetPosition(new Rect(nodeData.Position, Vector2.zero));
+                    AddElement(newNode);
+                }
+            };
+        }
+        
         private void AddSearchWindow(EditorWindow window)
         {
             _searchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
@@ -86,35 +137,36 @@ namespace Editor
         
         public void LoadGraph(AnimGraphData dataAsset)
         {
-            // 1. 清空当前画布
+            _currentAsset = dataAsset; 
             DeleteElements(graphElements);
 
-            // 2. 重新生成所有节点
             Dictionary<string, AnimGraphNode> nodeMap = new();
             foreach (var nData in dataAsset.Nodes)
             {
-                // 这里需要通过反射根据 NodeType 字符串还原 Type
                 System.Type type = System.Type.GetType(nData.NodeType);
-                var node = new AnimGraphNode(type, nData);
+                // 传入 _currentAsset
+                var node = new AnimGraphNode(type, nData, _currentAsset); 
                 node.SetPosition(new Rect(nData.Position, Vector2.zero));
-        
                 AddElement(node);
                 nodeMap.Add(nData.GUID, node);
             }
 
-            // 3. 重新建立连线
             foreach (var eData in dataAsset.Edges)
             {
-                var parent = nodeMap[eData.ParentGUID];
-                var child = nodeMap[eData.ChildGUID];
-
-                // 这里的 input 和 output 对应你在 AnimGraphNode 里定义的顺序
-                var parentOutput = parent.outputContainer[0] as Port;
-                var childInput = child.inputContainer[0] as Port;
-
-                var edge = parentOutput.ConnectTo(childInput);
-                AddElement(edge);
+                if (nodeMap.TryGetValue(eData.ParentGUID, out var parent) && nodeMap.TryGetValue(eData.ChildGUID, out var child))
+                {
+                    var parentOutput = parent.outputContainer[0] as Port;
+                    var childInput = child.inputContainer[0] as Port;
+                    var edge = parentOutput.ConnectTo(childInput);
+                    AddElement(edge);
+                }
             }
+        }
+
+        [Serializable]
+        public class CopyPasteData 
+        { 
+            public List<NodeData> nodes; 
         }
     }
 }

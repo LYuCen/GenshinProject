@@ -3,6 +3,8 @@ using AI.VisualRequest.VisualRequest;
 using Connect;
 using Connect.Converter;
 using Connect.Simulation;
+using Firearms;
+using Firearms.ThrowWeapon;
 using GameFSM.FSM.PlayerFSM;
 using mSystem.InputSystem.mEvent;
 using mSystem.SoundSystem;
@@ -24,6 +26,7 @@ namespace Player.ManagerLogic
         private float _gravity = -15.0f; // 重力加速度（通常比现实大一点，手感更好）
         private float _terminalVelocity = -30f; // 终端速度（防止无限加速掉落导致穿模）
         
+        
         public void Init(PlayerManager manager)
         {
             _m = manager;
@@ -40,7 +43,7 @@ namespace Player.ManagerLogic
             _m.RegisterEvent<WeaponPrimaryActionEvent>(e =>
             {
                 _m.IsSprint = false;
-                _m.IsShoot = true && !_m.IsThrow;
+                _m.IsShoot = true;
                 if(e.IsDown) _m.firearmController.DownPrimaryAction();
                 if(e.IsPress) _m.firearmController.PressPrimaryAction();
                 if(e.IsUp) _m.firearmController.UpPrimaryAction();
@@ -86,6 +89,15 @@ namespace Player.ManagerLogic
             });
             _m.RegisterEvent<GetGrenade>(_ =>
             {
+                if (manager.IsSliding)
+                {
+                    if (_m.isSlidingThrow)
+                    {
+                        _m.firearmController.GetGrenade().ThrowGrenade(false);
+                        _m.isSlidingThrow = false;
+                    }
+                    return;
+                }
                 _m.IsThrow = true;
                 _m.IsShoot = false;
                 _m.firearmController.UserThrow();

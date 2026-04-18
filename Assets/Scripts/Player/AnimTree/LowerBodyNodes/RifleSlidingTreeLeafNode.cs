@@ -1,5 +1,6 @@
 ﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -12,17 +13,30 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public RifleSlidingTreeLeafNode(PlayerManager manager) : base(manager)
         {
-            WeightSpeed = 8.0f;
         }
 
         public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsSliding;
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Rifle/Sliding.asset");
-            _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
-            _playable.SetSpeed(cfg.animSpeed);
-            _clipDuration = cfg.animClip.length;
+            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
+
+            if (!clipToUse && !string.IsNullOrEmpty(Tag))
+            {
+                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
+            }
+
+            if (!clipToUse)
+            {
+                Debug.LogError($"[RifleSlidingNode] 找不到动画剪辑！Tag: {Tag}");
+                return Playable.Null;
+            }
+            
+            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            _playable.SetSpeed(this.AnimSpeed);
+            
+            _clipDuration = clipToUse.length; 
+
             return _playable;
         }
 

@@ -1,4 +1,5 @@
-﻿using BaseClass;
+﻿using AssetBundleFramework.Core.Resource;
+using BaseClass;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff
@@ -7,7 +8,8 @@ namespace mSystem.BuffSystem.ElementBuff
     {
         protected override GameObject InitPrefab()
         {
-            throw new System.NotImplementedException();
+            var ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/ElementUI.prefab", false);
+            return ir.GetAsset<GameObject>();
         }
     }
 }

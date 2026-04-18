@@ -17,11 +17,19 @@ namespace Player.AnimPro
         protected T MyMessage;                 
         public AnimTreeNode<T> Parent;
         protected AnimTreeNode<T> LastActiveChild; 
+        
+        
+        public string Tag;                // 对应编辑器里的 Lookup Tag
+        public float AnimSpeed = 1f;      // 对应编辑器里的 Anim Speed (主要用于叶子节点)
+        public bool UseTagOnly;           // 对应编辑器里的 Use Tag Only 开关
+        public AnimationClip DefaultClip; // 对应编辑器里的 Default Clip 拖拽框
+        public AvatarMask Mask;           // 对应编辑器的 mask
 
         public AnimTreeNode(T myMessage) => MyMessage = myMessage;
 
-        protected void AddNode(AnimTreeNode<T> node)
+        public virtual void AddNode(AnimTreeNode<T> node)
         {
+            if (node == null) return;
             node.Parent = this;
             Children.Add(node);
         }

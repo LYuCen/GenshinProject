@@ -14,10 +14,16 @@ namespace Player.AnimPro
         {
             IsLeaf = false;
         }
+        
+        public override void AddNode(AnimTreeNode<T> node)
+        {
+            AddLayer(node, node.Mask);
+        }
 
         public void AddLayer(AnimTreeNode<T> node, AvatarMask mask = null)
         {
-            AddNode(node);
+            node.Parent = this;
+            Children.Add(node);
             ChildMasks.Add(mask);
         }
 
@@ -61,7 +67,15 @@ namespace Player.AnimPro
                 if (prevW > 0f && newW <= 0f) child.OnExitState();
 
                 // LayerMixer 不做归一化，直接应用子层逻辑权重
-                SetInputWeight(i, newW);
+                if (i == 0)
+                {
+                    SetInputWeight(i, 1.0f); 
+                }
+                else
+                {
+                    // 其他叠加层使用其逻辑权重
+                    SetInputWeight(i, newW);
+                }
             }
 
             return Weight;
@@ -76,7 +90,7 @@ namespace Player.AnimPro
                 Playable childPlayable = Children[i].BuildNode(graph, i);
                 graph.Connect(childPlayable, 0, LayerMixer, i);
                 LayerMixer.SetInputWeight(i, 0f);
-                if (ChildMasks[i] != null)
+                if (ChildMasks[i])
                     LayerMixer.SetLayerMaskFromAvatarMask((uint)i, ChildMasks[i]);
             }
             return LayerMixer;

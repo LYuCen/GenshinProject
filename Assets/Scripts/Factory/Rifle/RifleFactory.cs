@@ -3,12 +3,6 @@ using Firearms;
 using GameFSM.FSM.PlayerFSM;
 using mEnum;
 using Player.AnimPro;
-using Player.AnimTree.CrouchLowerBodyNode;
-using Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.SprintSubTreeNodes;
-using Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes;
-using Player.AnimTree.LowerBodyNodes;
-using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes;
-using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes;
 using UnityEngine;
 
 namespace Factory.Rifle
@@ -22,7 +16,7 @@ namespace Factory.Rifle
         {
             _myManager = manager;
             // 注册具体步枪生产线
-            _gunFactories.Add("FN_IWS", new FN_IWSFactory(manager));
+            _gunFactories.Add("HK416", new HK416Factory(manager));
             _gunFactories.Add("MK14", new MK14Factory(manager));
         }
 
@@ -46,12 +40,6 @@ namespace Factory.Rifle
             Debug.Log($"[RifleFactory] 检测到类型切换，更新移动动画集");
             
             var slots = _myManager.AnimController.Slot;
-            slots.IdleSlot.InstallSubtree(new IdleTreeLeafNode(_myManager, cfg.idleAnimPath));
-            slots.WalkSlot.InstallSubtree(new WalkTreeLeafNode(_myManager, cfg.walkAnimPath));
-            slots.SprintSlot.InstallSubtree(new SprintTreeLeafNode(_myManager, cfg.sprintAnimPath));
-            slots.CIdleSlot.InstallSubtree(new CrouchIdleTreeLeafNode(_myManager, cfg.cIdleAnimPath));
-            slots.CWalkSlot.InstallSubtree(new CrouchWalkTreeLeafNode(_myManager, cfg.cWalkAnimPath));
-            slots.CSprintSlot.InstallSubtree(new CrouchSprintTreeLeafNode(_myManager, cfg.cSprintAnimPath));
         }
         
         public AnimTreeNode<PlayerManager> CreateSpecialActionNode(string name)

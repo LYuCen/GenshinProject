@@ -23472,9 +23472,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 8478526350046033388}
   idleAnim: {fileID: 7400000, guid: 3178c3f83305a3a46b97a4a0cb839bcc, type: 2}
-  walkAnim: {fileID: 7400000, guid: 7e61fb8c8eb24ec44b4588650d52af5d, type: 2}
-  reloadAnim: {fileID: 7400000, guid: e376f97b12a8a9042a9aae3bdd0b0f88, type: 2}
-  avatarMask: {fileID: 31900000, guid: 5c33c58049a599e448099941cc53b271, type: 2}
+  walkAnim: {fileID: 7400000, guid: aacaf6dcbfbc84243a9fe93ec4ed5aed, type: 2}
+  reloadAnim: {fileID: 7400000, guid: 456966df347e16f46a1846a289305e70, type: 2}
+  avatarMask: {fileID: 31900000, guid: 3e1659d10c9a7e7419c73dcec424885c, type: 2}
   layerWeight: 0
   mixerWeight: 0
 --- !u!114 &9178966053510755835

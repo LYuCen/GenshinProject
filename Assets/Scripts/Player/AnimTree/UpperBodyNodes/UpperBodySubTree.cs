@@ -1,5 +1,6 @@
 ﻿using GameFSM.FSM.PlayerFSM;
 using Player.AnimPro;
+using UnityEngine;
 
 namespace Player.AnimTree.UpperBodyNodes
 {
@@ -8,12 +9,8 @@ namespace Player.AnimTree.UpperBodyNodes
     /// </summary>
     public class UpperBodySubTree : AnimTreeMixNode<PlayerManager>
     {
-        public UpperBodySubTree(PlayerManager myManager, PlayerAnimSlot slot) : base(myManager)
+        public UpperBodySubTree(PlayerManager myManager) : base(myManager)
         {
-            UpperSlotTreeNode node = new UpperSlotTreeNode(myManager);
-            slot.UpperSlot = node;
-            AddNode(node);
-            //AddNode(new ThrowSubTree(MyManager));
         }
 
         /// <summary>

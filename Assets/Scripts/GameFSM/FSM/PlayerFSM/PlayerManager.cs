@@ -1,14 +1,17 @@
 ﻿using Connect.Data;
 using Connect.FlatDTO;
+using Enemy;
 using mController;
 using mInterface;
 using mSystem.HurtSystem;
 using mSystem.StatusSystem;
+using Player.AnimPro;
 using Player.AnimTree;
 using Player.ManagerLogic;
 using QFramework;
 using RootMotion.FinalIK;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace GameFSM.FSM.PlayerFSM
 {
@@ -38,6 +41,7 @@ namespace GameFSM.FSM.PlayerFSM
         [Header("目标")] public Transform aim;
         
         [Header("组件引用")]
+        public Material pureMaterial;
         public CharacterController characterController;
         public Animator animator;
         public CameraController cameraController;
@@ -47,14 +51,17 @@ namespace GameFSM.FSM.PlayerFSM
         public AvatarMask avatarMask;
         public AimIK aimIK;
         public Transform leftHandIk, rightHandIk, gunCube, hand, gunStock;
+        public AnimGraphData graphData;
+        public CharacterEffectManager characterEffectManager;
         
         private IPlayerLogic _logic;
+        public bool isSlidingThrow; // 滑铲时投掷手雷
         
         public void Init(bool isLocal)
         {
             state.bRots = bones;
             animator.applyRootMotion = false;
-            AnimController = new PlayerAnimController(animator, this, avatarMask, leftHandIk, rightHandIk);
+            AnimController = new PlayerAnimController(this, graphData);
             firearmController.Init();
             playerGun = firearmController.GetWeapon(0);
             playerGun.SetParent(gunCube, true); // 保持世界位置/旋转/缩放
@@ -96,22 +103,35 @@ namespace GameFSM.FSM.PlayerFSM
             if (entityStatusUI)
             {
                 entityStatusUI.SyncValues(dto.CurHp, dto.MaxHp, dto.CurShield, dto.MaxShield);
+                
+            }
+            if (state.curHp == 0 && gameObject.activeSelf)
+            {
+                Debug.Log($"[PlayerManager] {state.playerId} 玩家死亡");
+                gameObject.SetActive(false);
+                CreateSnapshot();
             }
         }
 
         public void HurtHp(HurtComponent component)
         {
             float hurt = component.Harm;
+            Debug.Log($"玩家受伤： 剩余盾量 {state.curShield - hurt}");
+            if(state.curShield > 0) characterEffectManager.PlayAuraAnimation(Color.cyan);
+            else if(state.curHp > 0) characterEffectManager.PlayAuraAnimation(Color.red);
             if (hurt <= state.curShield)
             {
                 state.curShield = Mathf.Clamp(state.curShield - hurt, 0, state.maxShield);
+                
             }
             else
             {
                 hurt -= state.curShield;
                 state.curShield = 0;
                 state.curHp = Mathf.Clamp(state.curHp - hurt, 0, state.maxHp);
+                
             }
+            
         }
 
         public void ReloadEnd()
@@ -131,6 +151,54 @@ namespace GameFSM.FSM.PlayerFSM
         private void OnDisable()
         {
             AnimController.Destroy();
+        }
+        
+        public void CreateSnapshot()
+        {
+            GameObject root = new GameObject("Snapshot");
+            ShowDieParticle sdp = root.AddComponent<ShowDieParticle>();
+            sdp.Action = _ =>
+            {
+                root.gameObject.SetActive(false);
+                GameObject obj = DieParticleObjectPool.Instance.GetObj();
+                obj.transform.position = root.transform.position + Vector3.up;
+                obj.SetActive(true);
+            };
+
+            root.transform.SetPositionAndRotation(transform.position, transform.rotation);
+
+            var smrs = GetComponentsInChildren<SkinnedMeshRenderer>();
+
+            foreach (var smr in smrs)
+            {
+                Mesh mesh = new Mesh();
+                mesh.indexFormat = IndexFormat.UInt32;
+
+                smr.BakeMesh(mesh);
+
+                GameObject go = new GameObject(smr.name);
+                go.transform.SetParent(root.transform);
+
+                go.transform.SetPositionAndRotation(smr.transform.position, smr.transform.rotation);
+                go.transform.localScale = Vector3.one;
+
+                var mf = go.AddComponent<MeshFilter>();
+                var mr = go.AddComponent<MeshRenderer>();
+
+                mf.sharedMesh = mesh;
+
+                // 关键：处理多个SubMesh
+                int subMeshCount = mesh.subMeshCount;
+
+                Material[] mats = new Material[subMeshCount];
+
+                for (int i = 0; i < subMeshCount; i++)
+                {
+                    mats[i] = pureMaterial;
+                }
+
+                mr.materials = mats;
+            }
         }
 
         public IArchitecture GetArchitecture()

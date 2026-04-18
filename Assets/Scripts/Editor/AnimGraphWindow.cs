@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Player.AnimPro;
+using UnityEditor;
 using UnityEditor.Callbacks; // 必须引用
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -99,6 +100,26 @@ namespace Editor
                 graphView.SaveGraph(newData);
                 AssetDatabase.CreateAsset(newData, path);
                 _currentAsset = newData;
+            }
+        }
+        
+        private void OnEnable()
+        {
+            // 只有在这里注册，按下 Ctrl+Z 时 UI 才会刷新
+            Undo.undoRedoPerformed += OnUndoRedo;
+        }
+
+        private void OnDisable()
+        {
+            Undo.undoRedoPerformed -= OnUndoRedo;
+        }
+
+        private void OnUndoRedo()
+        {
+            if (_currentAsset != null && _graphView != null)
+            {
+                // 撤销后，数据变了，UI 方块没变，所以必须重新加载一次
+                _graphView.LoadGraph(_currentAsset);
             }
         }
     }

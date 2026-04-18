@@ -5,6 +5,8 @@ using Factory.Rifle;
 using Firearms;
 using GameFSM.FSM.PlayerFSM;
 using mEnum;
+using mModel.ScriptableConfig;
+using Player.AnimTree;
 using UnityEngine;
 
 namespace Factory
@@ -62,24 +64,45 @@ namespace Factory
         public void SyncWeaponAnimation(IWeapon weapon)
         {
             var config = weapon.GetWeaponConfig();
-            
-            if(config == null)Debug.LogWarning("config 为空");
+            if (config == null) return;
+
             if (_nameToTypeFactory.TryGetValue(config.weaponName, out var factory))
             {
-                // 1. 下放给工厂创建特殊动画树 (不管是 Reload 还是 Throw)
-                var actionNode = factory.CreateSpecialActionNode(config.weaponName);
-        
-                if (actionNode != null)
-                {
-                    _myManager.AnimController.Slot.UpperSlot.InstallSubtree(actionNode);
-                }
-
-                // 2. 同步移动动作 (下半身 - 内部有类型检查)
                 WeaponType newType = factory.GetWeaponType();
+                var animCtrl = _myManager.AnimController;
+
+                // 1. 架构级切换 (比如：步枪 -> 手雷)
                 if (_lastType != newType)
                 {
-                    factory.UpdateTypeAnimations();
+                    // 清空旧的插槽字典，准备迎接新架构
+                    animCtrl.Slot.Clear();
+
+                    // 构建新树，解析器会自动填充新的 slot 引用
+                    var newFullTree = AnimGraphRuntimeBuilder.Build(
+                        config.wholeTreeGraph, 
+                        _myManager, 
+                        animCtrl.Slot
+                    );
+
+                    // 根节点平滑切换
+                    animCtrl.Root.InstallSubtree(newFullTree);
                     _lastType = newType;
+                }
+
+                // 3. 特殊插槽处理
+                var actionNode = factory.CreateSpecialActionNode(config.weaponName);
+                if (actionNode != null)
+                {
+                    var targetSlot = animCtrl.Slot.Get("UpperSlot"); 
+        
+                    if (targetSlot != null)
+                    {
+                        targetSlot.InstallSubtree(actionNode);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("在当前的动画树中找不到名为 UpperSlot 的插槽节点");
+                    }
                 }
             }
         }
