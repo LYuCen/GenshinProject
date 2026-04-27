@@ -8,6 +8,7 @@ using GameFSM.FSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.InputSystem.mEvent;
 using mView;
+using Player.ManagerLogic;
 using QFramework;
 using UnityEngine;
 
@@ -37,8 +38,8 @@ namespace mController
         [SerializeField] private float reloadTime;
         [SerializeField] private PlayerManager myManager;
         [SerializeField] private Transform muzzle;
-
-        private int _gunBulletIndex;
+        public Transform weaponPivot;
+        
         private WeaponFactory _factory;
 
         public void Init()
@@ -94,16 +95,22 @@ namespace mController
                 // 这里可以根据 index 决定默认给什么枪，或者通过外部捡枪逻辑传入 Data
                 string defaultName = (index == 0) ? "HK416" : "MK14";
                 _weaponSlots[index] = _factory.GetWeapon(defaultName);
-                _weaponSlots[index].GetWeapon().SetParent(hand);
+                _weaponSlots[index].GetWeapon().SetParent(myManager.gunCube, false);
                 _weaponSlots[index].InitTransform();
+                _weaponSlots[index].Manager = myManager;
             }
             
             Weapon = _weaponSlots[index];
             if (Weapon is AbstractGun gun)
             {
-                //myManager.aimIK.solver.transform = gun.GetMuzzle();
+                myManager.aimIK.solver.transform = gun.GetMuzzle();
                 myManager.aimIK.solver.axis = Vector3.forward; 
-                myManager.aimIK.solver.Initiate(myManager.aimIK.transform); 
+                myManager.aimIK.solver.Initiate(myManager.aimIK.transform);
+                myManager.bodyIk.solver.leftHandEffector.target = gun.Hand;
+                if (myManager.cameraController && myManager.GetLogic() is LocalPlayerLogic)
+                {
+                    myManager.cameraController.scopeCamera = gun.Camera.transform;
+                }
             }
             _factory.SyncWeaponAnimation(Weapon); // 同步动画
 
@@ -128,12 +135,15 @@ namespace mController
         {
             //Debug.Log("按下武器主功能键");
             Weapon.OnPrimaryAction();
+
         }
         public void PressPrimaryAction(bool isNetworkSync = false, ShootDto dto = null) 
         {
+            
             if (Weapon is AbstractThrow)
             {
                 Weapon.PressPrimaryAction(); // 此时执行本地的 Shoot()
+                
                 return;
             }
             // 本地玩家逻辑
@@ -159,6 +169,19 @@ namespace mController
         public void DownSecondaryAction(ref bool isShoot)
         {
             Weapon.OnSecondaryAction(ref isShoot);
+            view.EnableFrontSight(!isShoot);
+        }
+
+        public void PressSecondaryAction()
+        {
+            myManager.isShoulder = true;
+            view.EnableFrontSight(true);
+        }
+
+        public void UpSecondaryAction()
+        {
+            if (myManager.isShoulder) myManager.IsShoot = false;
+            myManager.isShoulder = false;
         }
 
         public bool TryReload()
@@ -180,8 +203,6 @@ namespace mController
             {
                 bulletIndex = (int)view.GetChose();
                 reloadable.ReloadEnd((ElementEnum)bulletIndex, ref bullets);
-                
-                _gunBulletIndex = bulletIndex;
             
                 // 更新子弹面板数据
                 view.UpdateText(Weapon.GetMagazine().BulletNumber, bullets[bulletIndex]);
@@ -196,7 +217,6 @@ namespace mController
             bulletNum = Weapon.GetMagazine().BulletNumber;
             reloadTime = Weapon.ReloadTime();
             Weapon.UpdateWeapon();
-            
                         
             if (weaponIndex == 2 && _weaponSlots[2] != null)
             {

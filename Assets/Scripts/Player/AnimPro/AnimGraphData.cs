@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Firearms;
 using UnityEngine;
 
 namespace Player.AnimPro
@@ -30,7 +31,8 @@ namespace Player.AnimPro
         public string Tag;                // 匹配标签（如 "Reload"）
         public AnimationClip DefaultClip; // 直接拖入的默认动画
         public AvatarMask Mask;
-
+        public WeaponClipAsset weaponAsset;
+        
         public float AnimSpeed = 1f; 
         public float WeightSpeed = 5f;
     }

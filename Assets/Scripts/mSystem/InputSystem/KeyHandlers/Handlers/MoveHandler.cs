@@ -19,7 +19,7 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
             _move = Vector2.zero;
             foreach (var key in states)
             {
-                if (!key.GetIsPress()) continue;
+                if (!key.GetIsPress() && !key.GetIsDown()) continue;
                 if (key.GetKeyName() == "MoveUp") _move.y += 1;
                 else if (key.GetKeyName() == "MoveDown") _move.y -= 1;
                 else if (key.GetKeyName() == "MoveLeft") _move.x -= 1;

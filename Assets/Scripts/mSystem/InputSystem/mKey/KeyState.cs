@@ -13,9 +13,10 @@ namespace mSystem.InputSystem.mKey
         private bool _isDown;
         private bool _isPress;
         private bool _isUp;
+        private bool _isLongPress;
         
 
-        public float LongPressInterval = 0.5f; // 长按判定间隔
+        public float LongPressInterval = 0.2f; // 长按判定间隔
         public float DoubleClickInterval = 0.3f; // 双击时间间隔
 
         public void UpdateState()
@@ -38,12 +39,14 @@ namespace mSystem.InputSystem.mKey
                 // 长按
                 if (Time.time - _prevDown >= LongPressInterval)
                 {
+                    _isLongPress = true;
                     KeyLongPress();
                 }
             }
             else
             {
                 _isPress = false;
+                _isLongPress = false;
             }
 
             if (Input.GetKeyUp(Key))
@@ -117,6 +120,11 @@ namespace mSystem.InputSystem.mKey
         public bool GetIsUp()
         {
             return _isUp;
+        }
+
+        public bool GetIsLongPress()
+        {
+            return _isLongPress;
         }
     }
 }

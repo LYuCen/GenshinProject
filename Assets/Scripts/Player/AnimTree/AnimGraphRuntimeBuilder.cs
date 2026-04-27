@@ -44,6 +44,11 @@ namespace Player.AnimTree
                     slotContainer.Register(instance.Tag, slotNode);
                 }
                 
+                if (instance is AnimTreeLeafNode<PlayerManager> leafNode)
+                {
+                    leafNode.CurrentData = nodeData.weaponAsset; 
+                }
+                
                 nodeInstances.Add(nodeData.GUID, instance);
             }
 

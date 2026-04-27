@@ -40,8 +40,10 @@ namespace Firearms.Gun
             if (!Gun) Gun = GetWeapon();
             Muzzle = Gun.Find("Muzzle");
             MagazineTransform = Gun.Find("Magazine");
-            Gun.localPosition = new Vector3(-3.73f,-0.73f,-1.87f);
-            Gun.localEulerAngles = new Vector3(0.061f, -3.402f, -0.096f);
+            if (!Camera) Camera = Gun.Find("Camera");
+            if (!Hand) Hand = Gun.Find("hand");
+            Gun.localPosition = new Vector3(0.1048f, -0.0836f, -0.0257f);
+            Gun.localEulerAngles = new Vector3(20.5317f, 82.8146f, 203.6820f);
         }
 
         public void TryReload(int element)
@@ -55,7 +57,7 @@ namespace Firearms.Gun
 
         public override void Shoot()
         {
-            if (!IsCanShoot) return;
+            if (!IsCanShoot || Magazine.BulletNumber == 0) return;
             IsCanShoot = false;
             PrevShootTime = Time.time;
 
@@ -64,7 +66,7 @@ namespace Firearms.Gun
             {
                 shooterId = NetworkService.Bridge.GetMyId(),
                 position = Muzzle.position,
-                forward = GunForward,
+                forward = (Manager.aim.position - Muzzle.position).normalized,
                 speed = Config.bulletSpeed,
                 baseHit = Magazine.BaseHurt * Config.hitMp,
                 headHit = Magazine.BaseHurt * Config.headshotMp,
@@ -96,7 +98,7 @@ namespace Firearms.Gun
         private void ExecuteShoot(ShootData data)
         {
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
-            obj.transform.position = data.position;
+            obj.transform.position = data.position - data.forward * 0.7f;
             obj.transform.forward = data.forward;
 
             Bullet.Bullet bullet = new Bullet.Bullet()
@@ -111,7 +113,7 @@ namespace Firearms.Gun
                 speed = data.speed,
                 MoveTime = data.moveTime
             };
-
+            
             // 设置粒子和枪焰
             var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
             var main = ps.main;
@@ -121,8 +123,7 @@ namespace Firearms.Gun
             muzzleObj.transform.SetParent(Muzzle);
             muzzleObj.gameObject.SetActive(true);
             muzzleObj.transform.localPosition = Vector3.zero;
-            muzzleObj.transform.localEulerAngles = new Vector3(90, 0, 0);
-            muzzleObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            muzzleObj.transform.localEulerAngles = new Vector3(0, 0, 0);
             Muzzle.Muzzle muzzle = muzzleObj.GetComponent<Muzzle.Muzzle>();
             muzzle.UpdateColor(ElementModel.Instance.colors[data.element]);
 
@@ -151,7 +152,7 @@ namespace Firearms.Gun
 
         public void OnSecondaryAction(ref bool isShoot)
         {
-            isShoot = !isShoot;
+            isShoot = !isShoot && !Manager.IsReload;
         }
 
         public void ReloadAction(AbstractMagazine magazine)

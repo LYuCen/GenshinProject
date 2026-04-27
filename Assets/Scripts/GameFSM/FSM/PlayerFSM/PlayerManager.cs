@@ -48,14 +48,17 @@ namespace GameFSM.FSM.PlayerFSM
         public FirearmController firearmController;
         public PlayerAnimController AnimController;
         public EntityStatusUI entityStatusUI;
-        public AvatarMask avatarMask;
         public AimIK aimIK;
-        public Transform leftHandIk, rightHandIk, gunCube, hand, gunStock;
+        public Transform gunCube, hand, gunStock;
         public AnimGraphData graphData;
         public CharacterEffectManager characterEffectManager;
+        public FullBodyBipedIK bodyIk;
         
         private IPlayerLogic _logic;
         public bool isSlidingThrow; // 滑铲时投掷手雷
+        public bool isShoulder; // 是否肩射
+        public int aimIkWeight;
+        public float rHeadIkWeight; // 左手 ik 权重
         
         public void Init(bool isLocal)
         {
@@ -63,15 +66,18 @@ namespace GameFSM.FSM.PlayerFSM
             animator.applyRootMotion = false;
             AnimController = new PlayerAnimController(this, graphData);
             firearmController.Init();
-            playerGun = firearmController.GetWeapon(0);
-            playerGun.SetParent(gunCube, true); // 保持世界位置/旋转/缩放
-            firearmController.Weapon.InitTransform();
-            entityStatusUI.InitStatus(ref state);
-
             if (isLocal) _logic = new LocalPlayerLogic();
             else _logic = new RemotePlayerLogic();
-
+            
+            playerGun = firearmController.GetWeapon(0);
+            entityStatusUI.InitStatus(ref state);
             _logic.Init(this);
+        }
+
+        public void ResetGun()
+        {
+            playerGun.SetParent(gunCube, true); // 保持世界位置/旋转/缩放
+            firearmController.Weapon.InitTransform();
         }
 
         public void SetParent(Transform child, Transform parent)
@@ -142,7 +148,20 @@ namespace GameFSM.FSM.PlayerFSM
 
         private void FixedUpdate() => _logic?.OnFixedUpdate();
 
-        private void Update() => _logic?.OnUpdate();
+        private void Update()
+        { 
+            _logic?.OnUpdate();
+            aimIK.solver.IKPositionWeight = Mathf.MoveTowards(
+                aimIK.solver.IKPositionWeight, 
+                aimIkWeight, 
+                7 * Time.deltaTime
+            );
+            bodyIk.solver.IKPositionWeight = Mathf.MoveTowards(
+                bodyIk.solver.IKPositionWeight, 
+                rHeadIkWeight, 
+                7 * Time.deltaTime
+            );
+        }
         
         private void LateUpdate() => _logic?.OnLateUpdate();
         

@@ -12,6 +12,7 @@ namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
         public override void OnEnterState()
         {
             MyManager.upperName = "投弹";
+            MyManager.bodyIk.enabled = false;
         }
 
         public override void OnUpdateState()
@@ -32,6 +33,7 @@ namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
         public override void OnExitState()
         {
             MyManager.upperName = "投弹结束";
+            MyManager.bodyIk.enabled = true;
         }
     }
 }

@@ -13,7 +13,8 @@ namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
             nextState = "ShootWalk";
             return MyManager.IsShoot && MyManager.IsGround &&
                    MyManager.InputMove != Vector2.zero &&
-                   !MyManager.IsSprint && !MyManager.IsSliding;
+                   !MyManager.IsSprint && !MyManager.IsSliding &&
+                   !MyManager.IsReload;
         }
     }
 }

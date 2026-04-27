@@ -3,11 +3,8 @@ using AI.VisualRequest.VisualRequest;
 using Connect;
 using Connect.Converter;
 using Connect.Simulation;
-using Firearms;
-using Firearms.ThrowWeapon;
 using GameFSM.FSM.PlayerFSM;
 using mSystem.InputSystem.mEvent;
-using mSystem.SoundSystem;
 using QFramework;
 using UnityEngine;
 
@@ -39,6 +36,8 @@ namespace Player.ManagerLogic
                     _m.firearmController.DownSecondaryAction(ref _m.state.isShoot);
                     if (_m.IsShoot) _m.IsSprint = false;
                 }
+                if(e.IsPress) _m.firearmController.PressSecondaryAction();
+                if(e.IsUp) _m.firearmController.UpSecondaryAction();
             });
             _m.RegisterEvent<WeaponPrimaryActionEvent>(e =>
             {
@@ -75,8 +74,8 @@ namespace Player.ManagerLogic
                     }
                     if(!_m.playerGun) Debug.Log("武器为空");
                     _m.playerGun.gameObject.SetActive(true);
-                    _m.SetParent(_m.playerGun,_m.gunCube);
                     _m.firearmController.Weapon.InitTransform();
+                    _m.bodyIk.enabled = true;
                 }
             });
             _m.RegisterEvent<RunEvent>(_ =>
@@ -100,6 +99,7 @@ namespace Player.ManagerLogic
                 }
                 _m.IsThrow = true;
                 _m.IsShoot = false;
+                _m.bodyIk.enabled = false;
                 _m.firearmController.UserThrow();
             });
             _m.RegisterEvent<CrouchEvent>(_ =>

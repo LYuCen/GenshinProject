@@ -21,7 +21,6 @@ namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
         {
             MyManager.speed = 5f;
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.aimIK.enabled = true;
             MyManager.stateName = "滑铲";
             MyManager.isSlidingThrow = true;
             

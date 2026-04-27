@@ -17,7 +17,7 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 if (key.GetKeyName() == "InShoot")
                 {
                     _event.IsDown = key.GetIsDown();
-                    _event.IsPress = key.GetIsPress();
+                    _event.IsPress = key.GetIsLongPress();
                     _event.IsUp = key.GetIsUp();
                     if(_event.IsDown ||  _event.IsPress || _event.IsUp) this.SendEvent(_event);
                 }

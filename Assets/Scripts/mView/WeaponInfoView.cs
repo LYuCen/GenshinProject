@@ -17,8 +17,8 @@ namespace mView
         [SerializeField] private Image[] elementIconImg;
         [SerializeField] private TextMeshProUGUI[] elementBullets;
         [SerializeField] private RectTransform[] weapon;
-        
-        
+
+        [SerializeField] private GameObject frontSight;
         [SerializeField] private RectTransform mainRt;      // 主武器 UI
         [SerializeField] private RectTransform auxiliaryRt; // 附武器 UI 
 
@@ -139,6 +139,15 @@ namespace mView
         public void GrenadeElementImage(int index)
         {
             grenadeElementImg.sprite = ElementModel.Instance.elementUI[index];
+        }
+
+        /// <summary>
+        /// 准星是否可见
+        /// </summary>
+        /// <param name="enable"></param>
+        public void EnableFrontSight(bool enable)
+        {
+            frontSight.SetActive(enable);
         }
         
     }

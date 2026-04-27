@@ -1,4 +1,5 @@
 ﻿using System;
+using Firearms;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -57,6 +58,17 @@ namespace Editor
                     Data.AnimSpeed = evt.newValue;
                 });
                 mainContainer.Add(animSpeedField);
+                
+                var weaponAssetField = new ObjectField("Weapon Data Asset") {
+                    objectType = typeof(WeaponClipAsset),
+                    value = Data.weaponAsset
+                };
+                weaponAssetField.RegisterValueChangedCallback(evt => {
+                    Undo.RecordObject(_owner, "Change Weapon Asset");
+                    Data.weaponAsset = evt.newValue as WeaponClipAsset;
+                });
+                mainContainer.Add(weaponAssetField);
+                
 
                 clipField.SetEnabled(!Data.useTagOnly);
                 toggle.RegisterValueChangedCallback(evt => clipField.SetEnabled(!evt.newValue));

@@ -17,7 +17,8 @@ namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
         public override void OnEnterState()
         {
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.aimIK.enabled = false;
+            MyManager.aimIkWeight = 0;
+            MyManager.rHeadIkWeight = !MyManager.IsReload ? 1 : 0;
             MyManager.gunCube.localPosition = new Vector3(0.000118f, 0.001919f, 0.001026f);
             MyManager.gunCube.localEulerAngles = new Vector3(283.742096f, 323.333099f, 229.175308f);
             MyManager.stateName = "待机";

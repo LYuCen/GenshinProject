@@ -21,5 +21,16 @@ namespace IUtility
             // 映射 [0, 65535] 到 [-1.0, 1.0]
             return (value / Precision) * 2.0f - 1.0f;
         }
+
+        public static Vector3 GetPos(AnimationCurve x, AnimationCurve y, AnimationCurve z, float t)
+        {
+            return new Vector3(x.Evaluate(t), y.Evaluate(t), z.Evaluate(t));
+        }
+
+        public static Quaternion GetRot(AnimationCurve x, AnimationCurve y, AnimationCurve z, float t)
+        {
+            return Quaternion.Euler(x.Evaluate(t), y.Evaluate(t), z.Evaluate(t));
+        }
+
     }
 }

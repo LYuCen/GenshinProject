@@ -12,7 +12,7 @@ namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
         {
             nextState = "ThrowGrenade";
             var grenade = MyManager.firearmController.Weapon as Grenade;
-            return grenade?.CurrentState != GrenadeState.Idle;
+            return grenade?.CurrentState != GrenadeState.Idle && MyManager.IsThrow;
         }
     }
 }

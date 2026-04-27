@@ -1,4 +1,5 @@
-﻿using Firearms;
+﻿using AssetBundleFramework.Core.Resource;
+using Firearms;
 using Firearms.Gun;
 using GameFSM.FSM.PlayerFSM;
 using mEnum;
@@ -38,6 +39,10 @@ namespace Factory.Rifle
             node.AnimSpeed = 1.7f;
             node.Tag = "Reload";
             node.UseTagOnly = true;
+            var ir = ResourceManager.instance.Load(
+                "Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/MK14/Weapon_Mk14_Reload_Charge_BaseAsset.asset",
+                false);
+            node.CurrentData = ir.GetAsset<WeaponClipAsset>();
             return node;
         }
     }

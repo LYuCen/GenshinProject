@@ -1,4 +1,3 @@
-using Connect.DTO;
 using Firearms.WeaponInterface;
 using mModel;
 using mModel.ScriptableConfig;
@@ -17,6 +16,8 @@ namespace Firearms
         protected Transform Gun; // 枪
         protected Transform Muzzle;
         protected Transform MagazineTransform;
+        public Transform Hand;
+        public Transform Camera;
         protected Vector3 GunForward;
         protected WeaponGunConfig Config;
         protected float PrevShootTime; // 上次射击时间

@@ -12,6 +12,9 @@ namespace mController
         [Header("射线长度")] public float rayLength;
         [Header("相机碰撞白名单")] [SerializeField] private LayerMask obstacleMask;
         [Header("相机碰撞阈值")] [SerializeField] private float wallOffset = 0.1f;
+        [Header("枪口上抬偏移量")] public float liftOffset = 2f; // 往撞击点上方偏移多少
+        [Header("平滑过渡速度")] public float smoothSpeed = 10f;
+        public Transform scopeCamera; // 瞄准镜相机
         public Vector3 rayEnd; // 射击终点
         
         public PlayerManager manager;
@@ -22,6 +25,7 @@ namespace mController
         public float minPitch = -30f;   // y 方向最小偏移
         public float maxPitch = 60f;    // y 方向最大偏移
         public float shoulderOffset = 0.2f; // 正数右肩，负数左肩
+        public float endDistance = 2f;
 
         private float _yaw;
         public float Yaw => _yaw;   // XOZ平面与 z轴正方向偏转角
@@ -33,6 +37,8 @@ namespace mController
         private Ray _ray;
         private Camera _camera;
         private int _targetMask;
+        private int _originalMask;
+        private int _headLayerIndex;
         
         private void Start()
         {
@@ -45,7 +51,14 @@ namespace mController
             _nowDistance = distance;
             _haemalSystem = this.GetSystem<IHaemalSystem>();
             _camera = Camera.main;
-            _targetMask = LayerMask.GetMask("Default", "Hitbox", "Plane", "Wall"); 
+            _targetMask = LayerMask.GetMask("Default", "Hitbox", "Plane", "Wall");
+
+            if (_camera != null)
+            {
+                _originalMask = _camera.cullingMask;
+                _headLayerIndex = LayerMask.NameToLayer("Head");
+            }
+            
         }
     
 
@@ -67,12 +80,21 @@ namespace mController
             
             if (Physics.Raycast(_ray, out RaycastHit hit, rayLength, _targetMask))
             {
-                // 只要射线撞到了 _targetMask 中包含的任何一层，就会进这里
-                rayEnd = hit.point;
+                float dis = (hit.point - manager.gunStock.position).magnitude;
+                // 墙到相机的真实距离
+                if (dis < endDistance * endDistance)
+                {
+                    // 如果离墙过近就指向远方
+                    rayEnd = _ray.origin + _ray.direction * rayLength;
+                }
+                else
+                {
+                    // 距离足够远，正常指向撞击点
+                    rayEnd = hit.point;
+                }
             }
             else
             {
-                // 如果什么都没撞到，通常让 rayEnd 指向射线最远端，防止准星指地
                 rayEnd = _ray.origin + _ray.direction * rayLength;
             }
 
@@ -88,14 +110,29 @@ namespace mController
 
             Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0);
 
-            _nowDistance += manager.IsShoot ? -0.25f : 0.25f;
-            _nowDistance = Mathf.Clamp(_nowDistance, aimDistance, distance);
-            Vector3 targetPos = playerTransform.position + Vector3.up * height;
-            Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;
+            if (manager.IsShoot && !manager.isShoulder && !manager.IsThrow)
+            {
+                // 瞄准视角
+                transform.position = scopeCamera.position;
+                transform.rotation = rot;
+                _camera.cullingMask = _originalMask & ~(1 << _headLayerIndex); // 开镜时取消渲染头部
+                if(scopeCamera) scopeCamera.gameObject.SetActive(true);
+            }
+            else
+            {
+                // 第三人称视角
+                _nowDistance += manager.IsShoot ? -0.25f : 0.25f;
+                _nowDistance = Mathf.Clamp(_nowDistance, aimDistance, distance);
+                Vector3 targetPos = playerTransform.position + Vector3.up * height;
+                Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;
             
-            //transform.position = camPos;
-            CheckWall(targetPos, camPos);
-            transform.rotation = rot;
+                //transform.position = camPos;
+                CheckWall(targetPos, camPos);
+                transform.rotation = rot;
+                
+                _camera.cullingMask = _originalMask; // 恢复头部渲染
+                if(scopeCamera) scopeCamera.gameObject.SetActive(false);
+            }
         }
         
         private void CheckWall(Vector3 targetPos, Vector3 camPos)

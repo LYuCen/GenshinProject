@@ -40,10 +40,12 @@ namespace Firearms.Gun
         public void InitTransform()
         {
             if (!Gun) Gun = GetWeapon();
-            Muzzle = Gun.Find("Muzzle");
-            MagazineTransform = Gun.Find("Magazine");
-            Gun.transform.localPosition = new Vector3(-0.03f, -1.74f, -2.83f);
-            Gun.transform.localEulerAngles = new Vector3(274.814636f, 70.0597076f, 286.340332f);
+            if(!Muzzle) Muzzle = Gun.Find("Muzzle");
+            if(!MagazineTransform) MagazineTransform = Gun.Find("Magazine");
+            if (!Camera) Camera = Gun.Find("Camera");
+            if (!Hand) Hand = Gun.Find("hand");
+            Gun.localPosition = new Vector3(0.064f, -0.014f, -0.009f);
+            Gun.localRotation = Quaternion.Euler(20.4752f, 82.8698f, 203.5212f);
         }
 
         public void SetEnable(bool enable)
@@ -53,16 +55,16 @@ namespace Firearms.Gun
         
         public override void Shoot()
         {
-            if (!IsCanShoot) return;
+            if (!IsCanShoot || Magazine.BulletNumber == 0) return;
             IsCanShoot = false;
             PrevShootTime = Time.time;
-
+            
             // 准备原始数据
             ShootData data = new ShootData
             {
                 shooterId = NetworkService.Bridge.GetMyId(),
                 position = Muzzle.position,
-                forward = GunForward,
+                forward = (Manager.aim.position - Muzzle.position).normalized,
                 speed = Config.bulletSpeed,
                 baseHit = Magazine.BaseHurt * Config.hitMp,
                 headHit = Magazine.BaseHurt * Config.headshotMp,
@@ -94,7 +96,7 @@ namespace Firearms.Gun
         private void ExecuteShoot(ShootData data)
         {
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
-            obj.transform.position = data.position;
+            obj.transform.position = data.position - data.forward * 0.7f;
             obj.transform.forward = data.forward;
 
             Bullet.Bullet bullet = new Bullet.Bullet()
@@ -119,8 +121,7 @@ namespace Firearms.Gun
             muzzleObj.transform.SetParent(Muzzle);
             muzzleObj.gameObject.SetActive(true);
             muzzleObj.transform.localPosition = Vector3.zero;
-            muzzleObj.transform.localEulerAngles = new Vector3(90, 0, 0);
-            muzzleObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            muzzleObj.transform.localEulerAngles = new Vector3(0, 0, 0);
             Muzzle.Muzzle muzzle = muzzleObj.GetComponent<Muzzle.Muzzle>();
             muzzle.UpdateColor(ElementModel.Instance.colors[data.element]);
 
@@ -135,6 +136,7 @@ namespace Firearms.Gun
 
         public void OnPrimaryAction()
         {
+            Shoot();
         }
 
         public void PressPrimaryAction()
@@ -149,7 +151,7 @@ namespace Firearms.Gun
 
         public void OnSecondaryAction(ref bool isShoot)
         {
-            isShoot = !isShoot;
+            isShoot = !isShoot && !Manager.IsReload;
         }
 
         public void ReloadAction(AbstractMagazine magazine)
@@ -181,7 +183,7 @@ namespace Firearms.Gun
         {
             if (!Gun)
             {
-                IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/FN_IWS.prefab", false);
+                IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/Model/Weapon/HK416.prefab", false);
                 GameObject prefab = ir.GetAsset<GameObject>();
                 Gun = Object.Instantiate(prefab).transform;
             }
