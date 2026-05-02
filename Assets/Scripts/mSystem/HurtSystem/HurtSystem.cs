@@ -6,6 +6,7 @@ using mSystem.BuffSystem.ElementBuff.ElementBuffSystem;
 using mSystem.HitTextSystem;
 using QFramework;
 using Unity.VisualScripting;
+using UnityEngine;
 using IManager = BaseClass.IManager;
 
 namespace mSystem.HurtSystem
@@ -28,16 +29,15 @@ namespace mSystem.HurtSystem
                 var controller = component.Transform.GetComponent<ElementBuffController>();
                 if (!controller)
                 {
-                    controller = component.Transform.AddComponent<ElementBuffController>();
+                    continue;
                 }
 
                 // 运行元素反应系统
                 var result = _buffSystem.Reaction(
                     component.Transform, 
-                    component.Harm, 
                     component.Element,
                     ref component.ElementMeasure, 
-                    controller.elements
+                    controller
                 );
 
                 // 处理反应结果
@@ -58,7 +58,7 @@ namespace mSystem.HurtSystem
                     // 只有攻击元素量大于0时才附着（某些反应可能会在无反应的情况下消耗掉元素量）
                     if (component.ElementMeasure > 0)
                     {
-                        controller.AddElement(component.Element, component.ElementMeasure * 0.8f, component);
+                        controller.AddElement(component);
                     }
                 }
                 
@@ -73,6 +73,7 @@ namespace mSystem.HurtSystem
             // 优先处理模型层面的伤害逻辑
             if (PlayerPool.Instance && PlayerPool.Instance.Models.TryGetValue(component.victimId, out var model))
             {
+                Debug.Log($"{component.victimId} 受到：{component.Harm} 伤害");
                 model.HurtHp(component);
             }
 
@@ -109,8 +110,13 @@ namespace mSystem.HurtSystem
     {
         private HurtComponentSystem _hurtCs = new HurtComponentSystem();
 
+        // 伤害广播 Action
+        public static System.Action<HurtComponent> OnHurtEnqueued;
+
         public void EnQueue(HurtComponent component)
         {
+            OnHurtEnqueued?.Invoke(component);
+        
             _hurtCs.EnQueue(component);
         }
 
@@ -119,4 +125,5 @@ namespace mSystem.HurtSystem
             _hurtCs.FixedUpdate();
         }
     }
+    
 }

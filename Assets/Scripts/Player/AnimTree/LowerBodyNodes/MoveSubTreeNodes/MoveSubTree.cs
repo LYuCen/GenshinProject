@@ -1,8 +1,5 @@
-﻿using GameFSM.FSM.PlayerFSM;
+﻿using GameFSM.LevelFSM.PlayerFSM;
 using Player.AnimPro;
-using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes;
-using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes;
-using UnityEngine;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
 {
@@ -17,7 +14,7 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyMessage.InputMove != Vector2.zero && !MyMessage.IsSliding;
+            return parentActive && MyMessage.PlayerMove.sqrMagnitude > 0.001f;
         }
     }
 }

@@ -1,20 +1,25 @@
 ﻿using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.HitTextSystem;
-using QFramework;
+using mSystem.HurtSystem;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
 {
-    /// <summary> 元素反应类型：雷感电 (持续/剧变) </summary>
-    public class ElectElectrification : Reaction, ICanSendEvent
+    /// <summary>
+    /// (雷)感电反应
+    /// </summary>
+    public class ElectElectrification : Reaction
     {
-        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
+        public override ReactionResult Process(Transform target, ref float attackGauge,  ElementBuffController controller)
         {
-            // 检测目标是否有水 (索引 2)
-            if (targetGauges[2] > 0)
+            if (controller.Elements[2].Enable)
             {
-                // 感电逻辑：雷水共存，通常会增加附着并触发持续伤害
-                targetGauges[4] += attackGauge * 0.8f;
+                HurtComponent c = new HurtComponent()
+                {
+                    Element = 4,
+                    ElementMeasure = attackGauge
+                };
+                controller.AddElement(c);
                 
                 // 弹出 UI 文字
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent()
@@ -33,11 +38,6 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
             }
 
             return ReactionResult.None;
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

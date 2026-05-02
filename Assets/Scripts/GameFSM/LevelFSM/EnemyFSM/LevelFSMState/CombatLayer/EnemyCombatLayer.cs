@@ -1,10 +1,14 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+﻿using Common.LevelFSM;
+using Common.LevelFSM.EnemyFSM;
+using Common.LevelFSM.EnemyFSM.LevelFSMState;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
 {
     /// <summary>
     /// 战斗层

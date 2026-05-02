@@ -5,6 +5,7 @@ using Firearms;
 using Firearms.ThrowWeapon;
 using Firearms.WeaponInterface;
 using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.InputSystem.mEvent;
 using mView;
@@ -51,7 +52,7 @@ namespace mController
             weaponChangeEnable = true;
             AddBullet(90, ElementEnum.Fire);
             AddBullet(90, ElementEnum.Elect);
-            AddBullet(90, ElementEnum.Water);
+            AddBullet(90, ElementEnum.Grass);
             
             
             _weaponSlots[2] = _factory.GetWeapon("Grenade");

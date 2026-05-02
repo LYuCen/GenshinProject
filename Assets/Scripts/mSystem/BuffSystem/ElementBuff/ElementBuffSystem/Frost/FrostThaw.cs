@@ -3,17 +3,18 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Frost
 {
-    /// <summary> 元素反应类型：冰融化 (增幅) </summary>
+    /// <summary>
+    /// (冰)融化反应
+    /// </summary>
     public class FrostThaw : Reaction
     {
-        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
+        public override ReactionResult Process(Transform target, ref float attackGauge, ElementBuffController controller)
         {
-            if (targetGauges[1] > 0) // 弱冰打火
+            if (controller.Elements[1].Enable)
             {
-                attackGauge /= 2;
-                if (attackGauge > targetGauges[1]) { attackGauge -= targetGauges[1]; targetGauges[1] = 0; }
-                else { targetGauges[1] -= attackGauge; attackGauge = 0; }
-                attackGauge *= 2;
+                float val = controller.GetElement(1);
+                controller.ConsumeElement(1, attackGauge / 2f);
+                attackGauge = Mathf.Max(0, attackGauge - val * 2f);
 
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
                     transform = target, element = 6, Text = "融化", textType = 2

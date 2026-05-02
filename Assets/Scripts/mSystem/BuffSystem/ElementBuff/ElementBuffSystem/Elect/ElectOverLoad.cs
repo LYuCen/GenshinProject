@@ -4,15 +4,18 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
 {
-    /// <summary> 元素反应类型：雷超载 (剧变) </summary>
+    /// <summary>
+    /// (雷)超载反应
+    /// </summary>
     public class ElectOverLoad : Reaction
     {
-        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
+        public override ReactionResult Process(Transform target, ref float attackGauge, ElementBuffController controller)
         {
-            if (targetGauges[1] > 0) // 遇到火
+            if (controller.Elements[1].Enable) // 遇到火
             {
-                targetGauges[1] = 0;
-                attackGauge = 0;
+                float val = controller.GetElement(1);
+                controller.ConsumeElement(1, attackGauge);
+                attackGauge = Mathf.Max(0, attackGauge - val);
 
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
                     transform = target, element = 4, Text = "超载", textType = 2

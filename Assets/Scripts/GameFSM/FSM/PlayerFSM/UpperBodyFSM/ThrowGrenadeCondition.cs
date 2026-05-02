@@ -1,4 +1,5 @@
 ﻿using Firearms.ThrowWeapon;
+using GameFSM.LevelFSM.PlayerFSM;
 
 namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
 {

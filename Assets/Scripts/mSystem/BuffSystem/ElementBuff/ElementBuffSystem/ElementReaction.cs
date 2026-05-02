@@ -7,14 +7,13 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem
     {
         public List<Reaction> Reactions = new();
 
-        public virtual ReactionResult Reaction(Transform target, float baseHarm, ref float attackGauge,
-            float[] targetGauges)
+        public virtual ReactionResult Reaction(Transform target, ref float attackGauge, ElementBuffController controller)
         {
-            for (int i = 0; i < Reactions.Count; i++)
+            for (int i = 0; i < Reactions.Count && attackGauge > 0; i++)
             {
                 // 调用具体子反应的 Process 方法
                 // 注意：这里传了 ref attackGauge，子反应内部会消耗元素量
-                var result = Reactions[i].Process(target, baseHarm, ref attackGauge, targetGauges);
+                var result = Reactions[i].Process(target, ref attackGauge, controller);
 
                 if (result.IsReaction)
                 {

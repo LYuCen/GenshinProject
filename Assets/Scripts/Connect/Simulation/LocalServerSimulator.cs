@@ -5,6 +5,7 @@ using Connect.Data;
 using Connect.DTO;
 using Connect.FlatDTO;
 using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using Google.FlatBuffers;
 using UnityEngine;
 
@@ -69,7 +70,7 @@ namespace Connect.Simulation
                 isGround = true,
                 position = _playerManager.transform.position,
                 rotation = _playerManager.transform.rotation,
-                maxHp = 100, curHp = 100,
+                maxHp = 1000, curHp = 1000,
                 maxShield = 150, curShield = 150,
                 bRots = Array.Empty<Transform>()
             };

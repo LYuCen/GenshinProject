@@ -4,15 +4,18 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Fire
 {
-    /// <summary> 元素反应类型：火超载 (剧变) </summary>
+    /// <summary>
+    /// (火)超载反应
+    /// </summary>
     public class FireOverLoad : Reaction
     {
-        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
+        public override ReactionResult Process(Transform target, ref float attackGauge, ElementBuffController controller)
         {
-            if (targetGauges[4] > 0) // 遇到雷
+            if (controller.Elements[4].Enable) // 遇到雷
             {
-                targetGauges[4] = 0;
-                attackGauge = 0;
+                float val = controller.GetElement(4);
+                controller.ConsumeElement(4, attackGauge);
+                attackGauge = Mathf.Max(0, attackGauge - val);
 
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
                     transform = target, element = 4, Text = "超载", textType = 2

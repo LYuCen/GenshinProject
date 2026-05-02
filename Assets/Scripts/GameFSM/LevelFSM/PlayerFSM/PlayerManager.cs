@@ -13,7 +13,7 @@ using RootMotion.FinalIK;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace GameFSM.FSM.PlayerFSM
+namespace GameFSM.LevelFSM.PlayerFSM
 {
     public class PlayerManager : MonoBehaviour, ICanRegisterEvent, IEntityIdentity
     {
@@ -122,7 +122,6 @@ namespace GameFSM.FSM.PlayerFSM
         public void HurtHp(HurtComponent component)
         {
             float hurt = component.Harm;
-            Debug.Log($"玩家受伤： 剩余盾量 {state.curShield - hurt}");
             if(state.curShield > 0) characterEffectManager.PlayAuraAnimation(Color.cyan);
             else if(state.curHp > 0) characterEffectManager.PlayAuraAnimation(Color.red);
             if (hurt <= state.curShield)

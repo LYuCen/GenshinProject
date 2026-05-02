@@ -6,7 +6,7 @@
     public interface IStatusEffect 
     {
         bool IsFinished { get; }
-        void OnUpdate(float deltaTime, ElementBuffController owner);
-        void OnRemove(ElementBuffController owner);
+        void OnUpdate(ElementBuffController buff);
+        void OnRemove();
     }
 }

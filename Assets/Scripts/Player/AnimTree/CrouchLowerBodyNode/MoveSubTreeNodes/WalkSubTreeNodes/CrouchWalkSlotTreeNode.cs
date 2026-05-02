@@ -1,4 +1,5 @@
 ﻿using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using Player.AnimPro;
 
 namespace Player.AnimTree.CrouchLowerBodyNode.MoveSubTreeNodes.WalkSubTreeNodes

@@ -4,6 +4,10 @@ using UnityEngine.Playables;
 
 namespace Player.AnimPro
 {
+    /// <summary>
+    /// 动画插槽节点
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AnimTreeSlotNode<T> : AnimTreeNode<T>
     {
         protected AnimTreeNode<T> _activeSubtree;    

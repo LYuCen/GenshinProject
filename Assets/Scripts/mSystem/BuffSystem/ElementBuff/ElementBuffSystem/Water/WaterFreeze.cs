@@ -3,18 +3,18 @@ using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Water
 {
-    /// <summary> 元素反应类型：水冻结 (控制) </summary>
+    /// <summary>
+    /// 水冻结
+    /// </summary>
     public class WaterFreeze : Reaction
     {
-        public override ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges)
+        public override ReactionResult Process(Transform target, ref float attackGauge, ElementBuffController controller)
         {
-            // 检测目标是否有冰 (索引 6)
-            if (targetGauges[6] > 0)
+            if (controller.Elements[6].Enable)
             {
-                // 冻结逻辑：消耗元素量进行冻结
-                float consumed = Mathf.Min(attackGauge, targetGauges[6]);
-                targetGauges[6] -= consumed;
-                attackGauge -= consumed;
+                float val = controller.GetElement(6);
+                controller.ConsumeElement(6, attackGauge);
+                attackGauge = Mathf.Max(0, attackGauge - val);
                 
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent()
                 {
@@ -26,8 +26,8 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Water
                     IsReaction = true,
                     DamageMultiplier = 1f,
                     BonusDamage = 0,
-                    // 如果需要控制敌人无法行动，可以定义并返回 FreezeEffect
-                    // TriggeredEffect = new FreezeEffect(duration: 2f) 
+                    // 如果需要控制敌人无法行动，可以取消下面注释
+                    // TriggeredEffect = new FreezeEffect() 
                 };
             }
 

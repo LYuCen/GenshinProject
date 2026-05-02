@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GameFSM.LevelFSM.PlayerFSM;
 
 namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
 {

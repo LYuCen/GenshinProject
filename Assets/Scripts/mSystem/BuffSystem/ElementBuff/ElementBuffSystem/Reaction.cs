@@ -4,6 +4,6 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem
 {
     public abstract class Reaction
     {
-        public abstract ReactionResult Process(Transform target, float baseHarm, ref float attackGauge, float[] targetGauges);
+        public abstract ReactionResult Process(Transform target, ref float attackGauge,  ElementBuffController controller);
     }
 }

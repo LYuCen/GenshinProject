@@ -3,6 +3,7 @@ using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
 using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 using GameFSM.FSM;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
 
 namespace Common.LevelFSM.EnemyFSM.LevelFSMState
 {

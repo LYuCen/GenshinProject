@@ -1,135 +1,174 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.HurtSystem;
-using QFramework;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff
 {
-    public class ElementBuffController : MonoBehaviour, ICanRegisterEvent
+    public class ElementBuffController : MonoBehaviour
     {
-        // 元素附着量
-        public float[] elements = new float[8];
-        // 用于记录每种元素反应的内部冷却
-        public float[] reactionCDs = new float[8]; 
-        // 元素 UI 引用
-        public GameObject[] elementUI = new GameObject[8];
-        
-        // 持续性效果列表 (感电、冻结、燃烧等)
-        private List<IStatusEffect> _activeEffects = new List<IStatusEffect>();
-        
-        private float _decayTimer;
-
-        private void Awake()
-        {
-            _decayTimer = Time.time + 1f;
-        }
+        public ElementData[] Elements = new ElementData[8]; // 元素状态情况
+        private Dictionary<Type, IStatusEffect> _statusEffects = new();
+        // 用于暂存需要移除的 Key，避免在遍历时修改字典
+        private List<Type> _removeList = new();
+        public bool inQueue = false;
+        public int id;
 
         /// <summary>
-        /// 每帧(或FixedUpdate)由 System 调用，驱动所有状态更新
+        /// FixUpdate 时间，每 0.02s 调用一次
         /// </summary>
-        public void Tick(float deltaTime)
+        public void Tick()
         {
-            // 1. 处理所有持续性效果
-            for (int i = _activeEffects.Count - 1; i >= 0; i--)
-            {
-                _activeEffects[i].OnUpdate(deltaTime, this);
-                if (_activeEffects[i].IsFinished)
-                {
-                    _activeEffects[i].OnRemove(this);
-                    _activeEffects.RemoveAt(i);
-                }
-            }
+            _removeList.Clear();
             
-            for (int i = 0; i < 8; i++)
+            // 遍历字典
+            foreach (var kvp in _statusEffects)
             {
-                if (reactionCDs[i] > 0) reactionCDs[i] = Mathf.Max(0, reactionCDs[i] - deltaTime);
-            }
-
-            // 2. 元素自然衰减 (逻辑保留，但整理到 Tick 中)
-            UpdateDecay();
-        }
-
-        private void UpdateDecay()
-        {
-            if (Time.time < _decayTimer) return;
-
-            for (int i = 0; i < 8; i++)
-            {
-                // 每秒衰减 0.16 单位元素
-                elements[i] = Mathf.Max(elements[i] - 0.16f, 0);
+                var effect = kvp.Value;
+                effect.OnUpdate(this);
                 
-                if (elements[i] <= 0)
+                if (effect.IsFinished)
                 {
-                    if (elementUI[i])
-                    {
-                        ElementUIObjectPool.Instance.RemoveObj(elementUI[i]);
-                        elementUI[i] = null;
-                    }
+                    _removeList.Add(kvp.Key); // 记录需要移除的类型
                 }
             }
-            _decayTimer = Time.time + 1f;
-        }
-
-        /// <summary>
-        /// 添加元素附着
-        /// </summary>
-        public void AddElement(int elementType, float elementMeasure, HurtComponent component)
-        {
-            elements[elementType] = Mathf.Min(elementMeasure + elements[elementType], 1.8f);
             
-            // 如果该元素图标未显示，则触发 UI 逻辑
-            if (!elementUI[elementType])
+            // 移除结束的 Buff
+            foreach (var type in _removeList)
             {
-                var elementComponent = new ElementComponent
+                _statusEffects[type].OnRemove();
+                _statusEffects.Remove(type);
+            }
+
+
+            // 元素自然衰减
+            for (int i = 0; i < 8; i++)
+            {
+                if (Elements[i].Enable)
                 {
-                    Transform = component.Transform,
-                    Controller = this,
-                    Element = component.Element,
-                    IsStart = true
-                };
-                ElementSystem.Instance.EnQueue(elementComponent);
+                    Elements[i] = LoseData(Elements[i]);
+                }
             }
         }
 
         /// <summary>
-        /// 添加持续反应效果 (由 Reaction 系统调用)
+        /// 添加元素
         /// </summary>
+        /// <param name="c"></param>
+        public void AddElement(HurtComponent c)
+        {
+            ElementData data = Elements[c.Element];
+            if (!data.Enable) // 该槽位为空
+            {
+                data = InitData(c);
+            }
+            else
+            {
+                data = AddData(c, data);
+            }
+
+            Elements[c.Element] = data;
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        private ElementData InitData(HurtComponent c)
+        {
+            ElementData res = new ElementData();
+            res.Level = (int)c.ElementMeasure;
+            res.Val = (int)(c.ElementMeasure * 10000 * 0.8f);
+            res.Capacity = res.Val;
+            res.Enable = true;
+            return res;
+        }
+
+        /// <summary>
+        /// 添加元素
+        /// </summary>
+        /// <param name="c"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private ElementData AddData(HurtComponent c, ElementData data)
+        {
+            int val = (int)(c.ElementMeasure * 10000 * 0.8f);
+            ElementData res = data;
+            if (val > data.Capacity)
+            {
+                res.Capacity = val;
+                res.Val = val;
+            }
+            else res.Val = Mathf.Min(res.Val + val, res.Capacity);
+
+            return res;
+        }
+
+        private ElementData LoseData(ElementData data)
+        {
+            ElementData res = data;
+            if (data.Level == 1) res.Val -= 20;         // 8s
+            else if (data.Level == 2) res.Val -= 32;    // 10s
+            else if (data.Level == 4) res.Val -= 40;    // 16s
+            
+            res.Enable = res.Val > 0;
+            return res;
+        }
+
         public void AddEffect(IStatusEffect effect)
         {
-            // 如果已经有相同类型的 Effect，可以根据需要选择叠加或刷新（这里简单处理为直接添加）
-            _activeEffects.Add(effect);
+            Type type = effect.GetType();
+            
+            // 如果字典里已经有了这个类型的 Buff，直接返回（不覆盖）
+            if (_statusEffects.ContainsKey(type))
+            {
+                return;
+            }
+
+            _statusEffects.Add(type, effect);
         }
 
         /// <summary>
-        /// 判断是否还需要保留 Controller
+        /// 消耗元素
         /// </summary>
+        /// <param name="i">元素下标</param>
+        /// <param name="val">元素量</param>
+        public void ConsumeElement(int i, float val)
+        {
+            Elements[i].Val = Mathf.Max(0, (int)(Elements[i].Val - val * 10000));
+            Elements[i].Enable = Elements[i].Val > 0;
+        }
+
+        /// <summary>
+        /// 获取元素量
+        /// </summary>
+        /// <param name="i">元素下标</param>
+        /// <returns></returns>
+        public float GetElement(int i)
+        {
+            return Elements[i].Val / 10000f;
+        }
+
         public bool IsAlive()
         {
-            if (_activeEffects.Count > 0) return true;
-            for (int i = 0; i < 8; i++) if (elements[i] > 0) return true;
-            return false;
-        }
-
-        private void OnDisable()
-        {
-            if (ElementUIObjectPool.Instance == null) return;
-            
-            // 清理 UI
+            bool res = false;
             for (int i = 0; i < 8; i++)
             {
-                if (elementUI[i])
-                {
-                    ElementUIObjectPool.Instance.RemoveObj(elementUI[i]);
-                    elementUI[i] = null;
-                }
+                res |= Elements[i].Enable;
             }
-            
-            // 清理效果
-            foreach (var effect in _activeEffects) effect.OnRemove(this);
-            _activeEffects.Clear();
+            return res;
         }
 
-        public IArchitecture GetArchitecture() => GenshinArchitecture.Interface;
+        /// <summary>
+        /// 获取元素反应
+        /// </summary>
+        /// <typeparam name="T">继承 IStatusEffect 类型</typeparam>
+        /// <returns></returns>
+        public bool FindEffect<T>() where T : IStatusEffect
+        {
+            return _statusEffects.ContainsKey(typeof(T));
+        }
     }
 }

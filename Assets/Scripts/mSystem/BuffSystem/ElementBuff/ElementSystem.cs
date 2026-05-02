@@ -1,7 +1,4 @@
 ﻿using BaseClass;
-using mInterface;
-using mModel;
-using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff
 {
@@ -9,9 +6,12 @@ namespace mSystem.BuffSystem.ElementBuff
     {
         protected override void UpdateComponent()
         {
+            
             while (Queue.Count > 0)
             {
                 var c = Queue.Dequeue();
+                // todo
+                /* 
                 if (c.Controller.elements[c.Element] <= 0)
                 {
                     if (c.Controller.elementUI[c.Element])
@@ -37,7 +37,7 @@ namespace mSystem.BuffSystem.ElementBuff
                         c.Controller.elementUI[c.Element] = obj;
                     }
                 }
-
+                */
             }
         }
     }
@@ -52,13 +52,17 @@ namespace mSystem.BuffSystem.ElementBuff
                 if (!controller) continue;
 
                 // 驱动控制器逻辑
-                controller.Tick(Time.fixedDeltaTime);
+                controller.Tick();
 
                 // 如果控制器还有附着元素或者还有运行中的 Effect，则继续保留在队列中
                 if (controller.IsAlive())
                 {
                     Queue.Enqueue(controller);
-                } 
+                }
+                else
+                {
+                    controller.inQueue = false;
+                }
             }
         }
     }
@@ -75,6 +79,8 @@ namespace mSystem.BuffSystem.ElementBuff
 
         public void EnQueue(ElementBuffController component)
         {
+            if (component.inQueue) return;
+            component.inQueue = true;
             _controllerCs.EnQueue(component);
         }
 

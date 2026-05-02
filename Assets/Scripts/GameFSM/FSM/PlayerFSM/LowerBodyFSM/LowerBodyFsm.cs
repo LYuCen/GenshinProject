@@ -1,4 +1,6 @@
-﻿namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
+﻿using GameFSM.LevelFSM.PlayerFSM;
+
+namespace GameFSM.FSM.PlayerFSM.LowerBodyFSM
 {
     public class LowerBodyFsm : BaseFsm<PlayerManager>
     {

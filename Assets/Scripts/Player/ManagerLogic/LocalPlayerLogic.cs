@@ -4,6 +4,7 @@ using Connect;
 using Connect.Converter;
 using Connect.Simulation;
 using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using mSystem.InputSystem.mEvent;
 using QFramework;
 using UnityEngine;
@@ -104,12 +105,7 @@ namespace Player.ManagerLogic
             });
             _m.RegisterEvent<CrouchEvent>(_ =>
             {
-                if (_m.IsSliding) return;
-                if (_m.IsSprint && !_m.IsCrouch)
-                {
-                    if(_m.slidingCd == 0) _m.IsSliding = true;
-                }
-                else _m.IsCrouch = !_m.IsCrouch;
+                _m.IsCrouch = !_m.IsCrouch;
             });
 
             if (NetworkService.Bridge is LocalServerSimulator lss)

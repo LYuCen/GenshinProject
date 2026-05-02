@@ -26,27 +26,7 @@ namespace mSystem.ScopeHitSystem
                     
                     // 1. 基础过滤
                     if (target == component.Transform && !component.IsHurtSelf) continue; 
-
-                    // 2. 反应过滤逻辑 (例如：感电只会弹射到有水元素的敌人身上)
-                    var controller = target.GetComponent<ElementBuffController>();
                     
-                    if (component.ScopeType == 1) // 假设 ScopeType 1 代表感电弹射
-                    {
-                        // 逻辑：必须有水元素(2) 且 该目标的雷属性反应(4) 冷却已转好
-                        if (controller != null)
-                        {
-                            bool hasWater = controller.elements[2] > 0;
-                            bool isCdReady = controller.reactionCDs[4] <= 0;
-
-                            if (!hasWater || !isCdReady) continue;
-
-                            // 触发成功，给该目标设置雷元素反应冷却，防止瞬间被多次弹射
-                            controller.reactionCDs[4] = 1.0f; 
-                        }
-                        else continue; // 没有控制器的敌人不参与元素弹射
-                    }
-
-                    uniqueTargets.Add(target);
                 }
 
                 // 3. 发送伤害组件

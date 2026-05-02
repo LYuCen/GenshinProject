@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using Player.AnimPro;
 using UnityEngine;
 

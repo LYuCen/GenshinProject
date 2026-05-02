@@ -1,5 +1,6 @@
 ﻿using Firearms;
 using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
 using mModel.ScriptableConfig;
 using Player.AnimPro;

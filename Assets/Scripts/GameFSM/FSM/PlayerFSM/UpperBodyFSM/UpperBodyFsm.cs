@@ -1,4 +1,6 @@
-﻿namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
+﻿using GameFSM.LevelFSM.PlayerFSM;
+
+namespace GameFSM.FSM.PlayerFSM.UpperBodyFSM
 {
     public class UpperBodyFsm : BaseFsm<PlayerManager>
     {
