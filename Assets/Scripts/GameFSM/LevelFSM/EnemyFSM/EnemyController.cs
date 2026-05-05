@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM
+namespace GameFSM.LevelFSM.EnemyFSM
 {
     public class EnemyController : MonoBehaviour
     {

@@ -1,6 +1,6 @@
-﻿using Common.LevelFSM.EnemyFSM;
-using Enemy.Anim.LowerBodyAnim.BaseMove;
-using Enemy.Anim.LowerBodyAnim.CombatAnim;
+﻿using Enemy.Anim.LowerBodyAnim.CombatAnim;
+using Enemy.Anim.LowerBodyAnim.Patrol;
+using GameFSM.LevelFSM.EnemyFSM;
 using Player.Anim;
 using UnityEngine.Animations;
 using UnityEngine.Playables;

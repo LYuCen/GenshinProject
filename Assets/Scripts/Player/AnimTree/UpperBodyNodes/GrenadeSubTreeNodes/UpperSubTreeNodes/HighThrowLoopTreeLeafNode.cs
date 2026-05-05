@@ -1,5 +1,5 @@
 ﻿using Firearms.ThrowWeapon;
-using GameFSM.FSM.PlayerFSM;
+
 using GameFSM.LevelFSM.PlayerFSM;
 using Player.AnimPro;
 using UnityEngine;

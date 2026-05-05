@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
 {
     /// <summary>
     /// 掩体后待机

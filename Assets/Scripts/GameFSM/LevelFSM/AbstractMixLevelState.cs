@@ -2,7 +2,7 @@
 using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM
+namespace GameFSM.LevelFSM
 {
     public class AbstractMixLevelState<T> : AbstractLevelState<T>
     {
@@ -61,8 +61,45 @@ namespace Common.LevelFSM
         /// 创建状态节点
         /// </summary>
         protected virtual void BuildState(){}
-        public override void OnUpdateState()
+
+        public override void Enter()
         {
+            OnEnterState();
+            
+            if (_mCurrentState == null)
+            {
+                // 优先使用默认状态
+                if (_mDefaultState != null)
+                {
+                    _mCurrentState = _mDefaultState;
+                }
+                else
+                {
+                    // 否则找第一个满足条件的状态
+                    foreach (var state in States.Values)
+                    {
+                        if (state.CheckSelfConditions())
+                        {
+                            _mCurrentState = state;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // 传递 OnEnter
+            _mCurrentState?.Enter();
+        }
+
+        public override void Exit()
+        {
+            OnExitState();
+            _mCurrentState?.OnExitState();
+        }
+
+        public override void Update()
+        {
+            OnUpdateState();
             if (_mCurrentState == null) // 如果初始状态为空，那就搜索第一个满足的状态
             {
                 foreach (var state in _mStates)
@@ -70,7 +107,7 @@ namespace Common.LevelFSM
                     if (state.Value.CheckSelfConditions())
                     {
                         _mCurrentState = state.Value;
-                        _mCurrentState.OnEnterState();
+                        _mCurrentState.Enter();
                         break;
                     }
                 }
@@ -88,7 +125,7 @@ namespace Common.LevelFSM
                     ChangeState(state);
                 }
             }
-            else _mCurrentState.OnUpdateState();
+            else _mCurrentState.Update();
         }
         
         /// <summary>
@@ -115,6 +152,8 @@ namespace Common.LevelFSM
         
         private void ChangeState(AbstractLevelState<T> nextState)
         {
+            if (nextState == _mCurrentState) return; // 避免同状态重复进入
+            
             // 结束上一个状态，如果上个状态不为空
             _mCurrentState?.OnExitState();
 
@@ -122,7 +161,7 @@ namespace Common.LevelFSM
             {
                 _mCurrentState = nextState;
                 // 开始状态
-                _mCurrentState.OnEnterState();
+                _mCurrentState.Enter();
             }
         }
     }

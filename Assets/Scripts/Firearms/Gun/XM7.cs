@@ -1,6 +1,5 @@
 ﻿using AssetBundleFramework.Core.Resource;
 using Firearms.Magazine;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mModel;
 using mModel.ScriptableConfig;

@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyIdleCondition : AbstractCondition<EnemyManager>
     {

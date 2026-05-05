@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;

@@ -1,7 +1,6 @@
 ﻿using GameFSM.FSM;
-using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
 {
     public class EnemyPatrolIdleState : AbstractLeafLevelState<EnemyManager>
     {

@@ -1,5 +1,4 @@
-﻿using Common.LevelFSM;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 {
@@ -12,11 +11,11 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         {
             AddCondition(new PlayerAimStateCondition(MyManager,  "Aim"));
             AddCondition(new PlayerThrowStateCondition(MyManager, "Throw"));
+            AddCondition(new PlayerEmptyStateCondition(MyManager, "Empty"));
         }
         
         public override void OnEnterState()
         {
-            MyManager.upperName = "换弹";
             MyManager.aimIkWeight = 0;
             MyManager.rHeadIkWeight = 0;
             MyManager.IsShoot = false;

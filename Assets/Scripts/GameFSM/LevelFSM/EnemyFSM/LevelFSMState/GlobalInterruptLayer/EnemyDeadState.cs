@@ -1,8 +1,7 @@
-﻿using AssetBundleFramework.Core.Resource;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
     /// <summary>
     /// 敌人死亡状态

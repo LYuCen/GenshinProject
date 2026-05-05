@@ -1,7 +1,7 @@
 ﻿using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
 {
     public class EnemyCombatWalkState : AbstractLevelState<EnemyManager>
     {

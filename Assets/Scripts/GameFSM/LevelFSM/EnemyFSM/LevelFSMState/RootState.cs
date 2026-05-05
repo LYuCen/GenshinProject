@@ -1,11 +1,10 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class RootState : AbstractMixLevelState<EnemyManager>
     {

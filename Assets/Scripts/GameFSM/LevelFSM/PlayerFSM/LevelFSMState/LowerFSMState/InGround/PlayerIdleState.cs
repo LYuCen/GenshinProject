@@ -1,5 +1,4 @@
-﻿using Common.LevelFSM;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
@@ -17,9 +16,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
         public override void OnEnterState()
         {
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.aimIkWeight = 0;
+            MyManager.speed = 0f;
             MyManager.rHeadIkWeight = !MyManager.IsReload ? 1 : 0;
-            MyManager.stateName = "待机";
         }
     }
 }

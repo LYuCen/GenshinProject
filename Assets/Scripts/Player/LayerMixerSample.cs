@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Firearms;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 

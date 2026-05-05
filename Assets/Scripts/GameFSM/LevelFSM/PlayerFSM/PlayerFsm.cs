@@ -23,16 +23,16 @@ namespace GameFSM.LevelFSM.PlayerFSM
             //_upperBodyFsm = new UpperBodyFsm(new UpperBodyStateBuilder(_manager));
             _lowerBodyFsm = new LowerBodyLayer(_manager, new LowerBodyLayerCondition(_manager, "Lower"));
             _upperBodyFsm = new UpperBodyLayer(_manager, new UpperBodyLayerCondition(_manager, "Upper"));
-            _lowerBodyFsm.OnEnterState();
-            _upperBodyFsm.OnEnterState();
+            _lowerBodyFsm.Enter();
+            _upperBodyFsm.Enter();
         }
 
         public void Update()
         {
             //_lowerBodyFsm.Update();
             //_upperBodyFsm.Update();
-            _lowerBodyFsm.OnUpdateState();
-            _upperBodyFsm.OnUpdateState();
+            _lowerBodyFsm.Update();
+            _upperBodyFsm.Update();
         }
     }
 }

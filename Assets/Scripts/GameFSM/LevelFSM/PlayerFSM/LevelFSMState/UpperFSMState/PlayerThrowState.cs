@@ -1,5 +1,4 @@
-﻿using Common.LevelFSM;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 {
@@ -12,11 +11,11 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         {
             AddCondition(new PlayerReloadStateCondition(MyManager, "Reload"));
             AddCondition(new PlayerAimStateCondition(MyManager, "Aim"));
+            AddCondition(new PlayerEmptyStateCondition(MyManager, "Empty"));
         }
         
         public override void OnEnterState()
         {
-            MyManager.upperName = "投弹";
             MyManager.bodyIk.enabled = false;
         }
 
@@ -26,7 +25,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 
         public override void OnExitState()
         {
-            MyManager.upperName = "投弹结束";
             MyManager.bodyIk.enabled = true;
         }
     }

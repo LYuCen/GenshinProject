@@ -1,5 +1,4 @@
-﻿using Common.LevelFSM;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 {
@@ -17,6 +16,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             States.Add("Aim", new PlayerAimState(MyManager, new PlayerAimStateCondition(MyManager, "Aim")));
             States.Add("Reload", new PlayerReloadState(MyManager, new PlayerReloadStateCondition(MyManager,  "Reload")));
             States.Add("Throw", new PlayerThrowState(MyManager, new PlayerThrowStateCondition(MyManager, "Throw")));
+            States.Add("Empty", new PlayerEmptyState(MyManager, new PlayerEmptyStateCondition(MyManager, "Empty")));
             IsBuilt = true;
         }
     }

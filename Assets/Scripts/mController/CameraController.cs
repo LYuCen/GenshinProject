@@ -1,5 +1,4 @@
-﻿using GameFSM.FSM.PlayerFSM;
-using GameFSM.LevelFSM.PlayerFSM;
+﻿using GameFSM.LevelFSM.PlayerFSM;
 using mSystem.HaemalStrandSystem;
 using QFramework;
 using UnityEngine;
@@ -68,7 +67,16 @@ namespace mController
             Shooting();
             _haemalSystem.UIUpdate();
         }
-        
+
+        void FixedUpdate()
+        {
+            if (manager.IsCrouch)
+            {
+                height = Mathf.MoveTowards(height, 1.2f, Time.fixedDeltaTime);
+            }
+            else height = Mathf.MoveTowards(height, 1.5f, Time.fixedDeltaTime);
+        }
+
 
         void Shooting()
         {

@@ -1,9 +1,9 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
     /// <summary>
     /// 全局打断层, 满足状态条件强制打断其他状态

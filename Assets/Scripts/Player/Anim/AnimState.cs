@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
-using Common.LevelFSM.EnemyFSM;
-using GameFSM.FSM.PlayerFSM;
+using GameFSM.LevelFSM.EnemyFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mModel.ScriptableConfig;
 using UnityEngine;

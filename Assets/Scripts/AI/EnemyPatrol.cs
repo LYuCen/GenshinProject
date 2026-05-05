@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Common.LevelFSM.EnemyFSM.LevelFSMState;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState;
 using UnityEngine;
 
 namespace AI

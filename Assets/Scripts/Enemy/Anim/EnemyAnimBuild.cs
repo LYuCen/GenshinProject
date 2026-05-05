@@ -1,6 +1,6 @@
-﻿using Common.LevelFSM.EnemyFSM;
-using Enemy.Anim.HurtBodyAnim;
+﻿using Enemy.Anim.HurtBodyAnim;
 using Enemy.Anim.LowerBodyAnim;
+using GameFSM.LevelFSM.EnemyFSM;
 using Player.Anim;
 using Player.Ik;
 using UnityEngine;

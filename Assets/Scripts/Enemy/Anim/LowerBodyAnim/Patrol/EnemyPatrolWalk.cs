@@ -1,9 +1,9 @@
-﻿using Common.LevelFSM.EnemyFSM;
+﻿using GameFSM.LevelFSM.EnemyFSM;
 using Player.Anim;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Enemy.Anim.LowerBodyAnim.BaseMove.Patrol
+namespace Enemy.Anim.LowerBodyAnim.Patrol
 {
     public class EnemyPatrolWalk : EnemyAnimState
     {

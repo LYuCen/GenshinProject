@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
 {
     public class EnemyPatrolWalkCondition : AbstractCondition<EnemyManager>
     {

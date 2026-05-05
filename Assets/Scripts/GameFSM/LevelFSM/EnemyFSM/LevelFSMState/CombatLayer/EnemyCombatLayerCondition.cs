@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer
 {
     public class EnemyCombatLayerCondition : AbstractCondition<EnemyManager>
     {

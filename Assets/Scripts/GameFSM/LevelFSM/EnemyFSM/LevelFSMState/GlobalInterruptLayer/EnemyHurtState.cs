@@ -1,7 +1,7 @@
 ﻿using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
     public class EnemyHurtState : AbstractLevelState<EnemyManager>
     {

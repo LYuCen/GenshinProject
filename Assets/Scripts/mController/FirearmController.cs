@@ -4,7 +4,6 @@ using Factory;
 using Firearms;
 using Firearms.ThrowWeapon;
 using Firearms.WeaponInterface;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.InputSystem.mEvent;
@@ -193,7 +192,7 @@ namespace mController
                 ElementEnum elementEnum = view.GetChose();
                 return reloadable.TryReload(elementEnum, bullets[(int)elementEnum]);
             }
-
+            view.EnableFrontSight(true);
             return false;
         }
 

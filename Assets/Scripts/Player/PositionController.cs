@@ -1,19 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PositionController : MonoBehaviour
+namespace Player
 {
-    // Start is called before the first frame update
-    public Vector3 vec;
-    void Start()
+    public class PositionController : MonoBehaviour
     {
-        vec = this.transform.position;
-    }
+        // Start is called before the first frame update
+        public Vector3 vec;
+        void Start()
+        {
+            vec = this.transform.position;
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
-        this.transform.position = vec;
+        // Update is called once per frame
+        void Update()
+        {
+            this.transform.position = vec;
+        }
     }
 }

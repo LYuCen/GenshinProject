@@ -4,7 +4,7 @@ using mSystem.EQSSystem;
 using mSystem.EQSSystem.EqsTest;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
 {
     /// <summary>
     /// 后退射击（未发现掩体时）

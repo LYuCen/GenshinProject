@@ -1,4 +1,4 @@
-﻿using Common.LevelFSM.EnemyFSM;
+﻿using GameFSM.LevelFSM.EnemyFSM;
 using Player.Anim;
 using UnityEngine.Animations;
 using UnityEngine.Playables;

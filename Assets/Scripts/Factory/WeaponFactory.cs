@@ -3,10 +3,8 @@ using Connect.Data;
 using Factory.Greade;
 using Factory.Rifle;
 using Firearms;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
-using mModel.ScriptableConfig;
 using Player.AnimTree;
 using UnityEngine;
 

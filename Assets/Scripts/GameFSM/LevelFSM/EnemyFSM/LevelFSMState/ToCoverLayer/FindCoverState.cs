@@ -1,7 +1,7 @@
 ﻿using GameFSM.FSM;
 using UnityEngine;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer
 {
     /// <summary>
     /// 寻找掩体

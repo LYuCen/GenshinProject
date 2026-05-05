@@ -3,7 +3,7 @@ using GameFSM.FSM;
 using IUtility;
 using UnityEngine;
 
-namespace Common.LevelFSM
+namespace GameFSM.LevelFSM
 {
     public abstract class AbstractLevelState<T>
     {
@@ -15,6 +15,21 @@ namespace Common.LevelFSM
         {
             MyManager = manager;
             _selfCondition = selfCondition;
+        }
+        
+        public virtual void Enter()
+        {
+            OnEnterState(); // 执行子类的具体逻辑
+        }
+
+        public virtual void Update()
+        {
+            OnUpdateState(); // 执行子类的具体逻辑
+        }
+
+        public virtual void Exit()
+        {
+            OnExitState(); // 执行子类的具体逻辑
         }
         
         /// <summary>

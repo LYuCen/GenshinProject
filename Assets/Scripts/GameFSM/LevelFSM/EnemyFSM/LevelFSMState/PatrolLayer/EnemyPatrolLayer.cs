@@ -1,9 +1,9 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.ToCoverLayer;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.PatrolLayer
 {
     /// <summary>
     /// 巡逻层

@@ -1,10 +1,9 @@
-﻿using Firearms;
-using IUtility;
+﻿using IUtility;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Player
+namespace Firearms
 {
     public class WeaponSocketTool : MonoBehaviour
     {

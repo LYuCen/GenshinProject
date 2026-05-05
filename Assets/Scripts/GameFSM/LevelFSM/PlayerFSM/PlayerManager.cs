@@ -5,6 +5,7 @@ using mController;
 using mInterface;
 using mSystem.HurtSystem;
 using mSystem.StatusSystem;
+using Player;
 using Player.AnimPro;
 using Player.AnimTree;
 using Player.ManagerLogic;
@@ -20,8 +21,6 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public PlayerStateData state = new PlayerStateData();
         public int EntityId => state.playerId;
         public EntityStatusUI EntityStatusUI => entityStatusUI;
-        [Header("当前状态")] public string stateName;
-        [Header("上半身状态")] public string upperName;
         public bool IsGround { get => state.isGround; set => state.isGround = value; }
         public bool IsJump { get => state.isJump; set => state.isJump = value; }
         public bool IsShoot { get => state.isShoot; set => state.isShoot = value; }
@@ -33,7 +32,9 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public Vector2 InputMove { get => state.inputMove; set => state.inputMove = value; }
         public Vector2 PlayerMove { get => state.playerMove; set => state.playerMove = value; }
         [Header("角色骨骼")] public Transform[] bones;
-        [Header("移动速度")] public float speed;
+        [Header("角色移动速度")] public float moveSpeed;
+        [Header("预期移动速度")] public float speed;
+        [Header("移动速度权重")] public float moveSpeedWeight = 1;
         [Header("脚下判定框高度")] public float h;
         [Header("判定半径")] public float radius;
         [Header("滑铲cd")] public float slidingCd;
@@ -145,7 +146,11 @@ namespace GameFSM.LevelFSM.PlayerFSM
             firearmController.Reload();
         }
 
-        private void FixedUpdate() => _logic?.OnFixedUpdate();
+        private void FixedUpdate()
+        { 
+            _logic?.OnFixedUpdate();
+            moveSpeed = Mathf.MoveTowards(moveSpeed, speed * moveSpeedWeight, Time.fixedTime);
+        }
 
         private void Update()
         { 

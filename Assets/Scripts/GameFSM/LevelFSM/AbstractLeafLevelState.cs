@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM
+namespace GameFSM.LevelFSM
 {
     public abstract class AbstractLeafLevelState<T> : AbstractLevelState<T>
     {

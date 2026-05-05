@@ -1,19 +1,19 @@
 ﻿using AI;
 using AI.EqsController;
 using BaseClass;
-using Common.LevelFSM.EnemyFSM.LevelFSMState;
 using Enemy;
 using Enemy.Anim;
 using Firearms;
 using Firearms.Gun;
 using Firearms.Magazine;
 using Firearms.WeaponInterface;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState;
 using mController;
 using mSystem.BuffSystem.ElementBuff;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Common.LevelFSM.EnemyFSM
+namespace GameFSM.LevelFSM.EnemyFSM
 {
     public class EnemyManager : MonoBehaviour, IManager
     {

@@ -1,7 +1,5 @@
-﻿using GameFSM.FSM.PlayerFSM;
-using GameFSM.LevelFSM.PlayerFSM;
+﻿using GameFSM.LevelFSM.PlayerFSM;
 using Player.AnimPro;
-using Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.ShoulderShootSubTreeNodes;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
 {

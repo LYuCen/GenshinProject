@@ -1,4 +1,4 @@
-﻿using GameFSM.FSM.PlayerFSM;
+﻿using GameFSM.FSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using Player.Ik;
 using UnityEngine;

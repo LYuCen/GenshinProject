@@ -1,5 +1,4 @@
-﻿using Common.LevelFSM;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
 using UnityEngine;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
@@ -13,13 +12,13 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         {
             AddCondition(new PlayerReloadStateCondition(MyManager, "Reload"));
             AddCondition(new PlayerThrowStateCondition(MyManager,  "Throw"));
+            AddCondition(new PlayerEmptyStateCondition(MyManager, "Empty"));
         }
         
         public override void OnEnterState()
         {
-            MyManager.speed = 0.4f;
+            MyManager.moveSpeedWeight = 0.9f;
             MyManager.aimIkWeight = !MyManager.IsThrow && !MyManager.IsReload ? 1 : 0;
-            MyManager.stateName = "据枪待机";
         }
 
         public override void OnUpdateState()
@@ -43,6 +42,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             
             Quaternion targetRot = Quaternion.LookRotation(forward);
             MyManager.transform.rotation = targetRot;
+            MyManager.moveSpeedWeight = 1f;
+            MyManager.aimIkWeight = 0;
         }
     }
 }

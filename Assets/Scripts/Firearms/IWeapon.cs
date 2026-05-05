@@ -1,5 +1,4 @@
-﻿using GameFSM.FSM.PlayerFSM;
-using GameFSM.LevelFSM.PlayerFSM;
+﻿using GameFSM.LevelFSM.PlayerFSM;
 using mModel.ScriptableConfig;
 using UnityEngine;
 

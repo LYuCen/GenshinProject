@@ -5,7 +5,6 @@ using Connect;
 using Connect.Converter;
 using Connect.Data;
 using Firearms.Magazine;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mModel;
 using mModel.ScriptableConfig;

@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
-using Connect.Converter;
 using Connect.FlatDTO;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using Player.ManagerLogic;
 using UnityEngine;

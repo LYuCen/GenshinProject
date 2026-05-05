@@ -1,6 +1,6 @@
 ﻿using GameFSM.FSM;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer
 {
     public class EnemyDeadCondition : AbstractCondition<EnemyManager>
     {

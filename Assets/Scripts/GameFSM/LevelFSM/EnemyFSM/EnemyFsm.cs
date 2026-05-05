@@ -1,6 +1,6 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState;
+﻿using GameFSM.LevelFSM.EnemyFSM.LevelFSMState;
 
-namespace Common.LevelFSM.EnemyFSM
+namespace GameFSM.LevelFSM.EnemyFSM
 {
     public class EnemyFsm
     {

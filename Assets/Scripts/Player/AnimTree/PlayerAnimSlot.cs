@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Player.AnimPro;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 
 namespace Player.AnimTree

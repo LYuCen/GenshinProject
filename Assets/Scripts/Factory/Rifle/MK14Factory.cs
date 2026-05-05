@@ -1,7 +1,6 @@
 ﻿using AssetBundleFramework.Core.Resource;
 using Firearms;
 using Firearms.Gun;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
 using mModel.ScriptableConfig;

@@ -15,9 +15,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         public override bool CheckCondition(out string nextState)
         {
             nextState = "Sprint";
-            return MyManager.IsSprint && (MyManager.InputMove == Vector2.up ||
-                                          MyManager.InputMove == new Vector2(-1, 1) ||
-                                          MyManager.InputMove == new Vector2(1, 1));
+            return MyManager.IsSprint;
         }
     }
 }

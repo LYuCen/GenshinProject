@@ -1,11 +1,9 @@
-﻿using Common.LevelFSM.EnemyFSM;
-using Enemy.Anim.LowerBodyAnim.BaseIdle;
-using Enemy.Anim.LowerBodyAnim.BaseMove.Patrol;
+﻿using GameFSM.LevelFSM.EnemyFSM;
 using Player.Anim;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace Enemy.Anim.LowerBodyAnim.BaseMove
+namespace Enemy.Anim.LowerBodyAnim.Patrol
 {
     public class EnemyPatrol : EnemyAnimState
     {

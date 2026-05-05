@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Firearms;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
 using Player.AnimPro;

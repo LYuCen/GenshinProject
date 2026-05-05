@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
 using Firearms.Magazine;
-using GameFSM.FSM.PlayerFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEvent;
 using mModel;

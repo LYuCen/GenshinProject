@@ -1,9 +1,8 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
-using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
-using GameFSM.FSM;
-using UnityEngine;
+﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.CombatLayer;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyIdleState : AbstractLeafLevelState<EnemyManager>
     {

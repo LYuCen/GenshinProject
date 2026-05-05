@@ -1,7 +1,7 @@
-﻿using Common.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
-using GameFSM.FSM;
+﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.EnemyFSM.LevelFSMState.GlobalInterruptLayer;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyAttackState : AbstractLeafLevelState<EnemyManager>
     {

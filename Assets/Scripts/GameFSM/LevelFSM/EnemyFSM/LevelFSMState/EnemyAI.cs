@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Common.LevelFSM.EnemyFSM.LevelFSMState
+namespace GameFSM.LevelFSM.EnemyFSM.LevelFSMState
 {
     public class EnemyAI : MonoBehaviour
     {
