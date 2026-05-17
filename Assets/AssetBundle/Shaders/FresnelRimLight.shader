@@ -20,14 +20,14 @@
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct Attributes
+            struct UniversalAttributes
             {
                 float4 positionOS : POSITION;
                 float3 normalOS   : NORMAL;
                 float2 uv         : TEXCOORD0;
             };
 
-            struct Varyings
+            struct UniversalVaryings
             {
                 float4 positionCS : SV_POSITION;
                 float2 uv         : TEXCOORD0;
@@ -45,9 +45,9 @@
                 float _RimPower;
             CBUFFER_END
 
-            Varyings vert(Attributes input)
+            UniversalVaryings vert(UniversalAttributes input)
             {
-                Varyings output;
+                UniversalVaryings output;
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
                 output.positionCS = vertexInput.positionCS;
                 output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
@@ -58,7 +58,7 @@
                 return output;
             }
 
-            half4 frag(Varyings input) : SV_Target
+            half4 frag(UniversalVaryings input) : SV_Target
             {
                 float3 N = normalize(input.normalWS);
                 // 强制计算视线方向

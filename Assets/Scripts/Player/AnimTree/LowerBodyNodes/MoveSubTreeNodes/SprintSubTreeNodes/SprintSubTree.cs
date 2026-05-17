@@ -1,4 +1,6 @@
 ﻿using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 
@@ -12,11 +14,13 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
             // 处于奔跑状态并且方向为 前，前左，前右
-            return parentActive && MyMessage.IsSprint && 
-                   (MyMessage.PlayerMove == Vector2.up ||
-                    MyMessage.PlayerMove == new Vector2(-1, 1) ||
-                    MyMessage.PlayerMove == new Vector2(1, 1));
+            bool res = query.HasState(PlayerMoveFlags.Sprint) &&
+                       (query.HasState(PlayerMoveFlags.Forward) ||
+                        query.HasState(PlayerMoveFlags.ForwardLeft) ||
+                        query.HasState(PlayerMoveFlags.ForwardRight));
+            return parentActive && res;
         }
     }
 }

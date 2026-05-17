@@ -18,8 +18,7 @@ namespace Firearms.WeaponInterface
         /// 换弹结束，实际换弹调用
         /// </summary>
         /// <param name="elementEnum">换弹元素</param>
-        /// <param name="bullets">子弹</param>
-        public void ReloadEnd(ElementEnum elementEnum, ref int[] bullets);
+        public void ReloadEnd(ElementEnum elementEnum);
 
         /// <summary>
         /// 换弹开始，给子弹弹匣

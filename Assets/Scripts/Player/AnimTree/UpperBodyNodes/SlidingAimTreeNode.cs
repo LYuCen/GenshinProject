@@ -1,5 +1,7 @@
 ﻿
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -15,7 +17,8 @@ namespace Player.AnimTree.UpperBodyNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && MyMessage.IsSliding;
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            return parentActive && query.HasState(PlayerMoveFlags.Sliding);
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

@@ -1,4 +1,6 @@
 ﻿using GameFSM.FSM;
+using mEnum.Flags;
+using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 {
@@ -16,21 +18,20 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         
         public override void OnEnterState()
         {
-            MyManager.aimIkWeight = 0;
-            MyManager.rHeadIkWeight = 0;
-            MyManager.IsShoot = false;
+            MyManager.IkModule.SetAimIk(0);
+            MyManager.IkModule.SetHandIk(0);
             MyManager.gunCube.SetParent(MyManager.hand);
         }
 
         public override void OnUpdateState()
         {
-            MyManager.IsShoot = false;
         }
 
         public override void OnExitState()
         {
-            MyManager.aimIkWeight = MyManager.IsShoot ? 1 : 0;
-            MyManager.rHeadIkWeight = 1;
+            WeaponQuery query = MyManager.CombatModule.GetQuery();
+            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Shoot) ? 1 : 0);
+            MyManager.IkModule.SetHandIk(1);
         }
     }
 }

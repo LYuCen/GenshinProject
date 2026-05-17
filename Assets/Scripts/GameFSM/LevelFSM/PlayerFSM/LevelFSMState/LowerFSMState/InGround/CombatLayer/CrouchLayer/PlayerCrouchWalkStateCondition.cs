@@ -1,5 +1,6 @@
 ﻿using GameFSM.FSM;
-using UnityEngine;
+using mEnum.Flags;
+using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer.CrouchLayer
 {
@@ -15,7 +16,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         public override bool CheckCondition(out string nextState)
         {
             nextState = "Walk";
-            return !MyManager.IsSprint;
+            PlayerMoveQuery query = MyManager.MoveModule.GetQuery();
+            return !query.HasState(PlayerMoveFlags.Sprint);
         }
     }
 }

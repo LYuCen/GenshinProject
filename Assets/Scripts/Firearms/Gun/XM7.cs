@@ -1,6 +1,7 @@
 ﻿using AssetBundleFramework.Core.Resource;
 using Firearms.Magazine;
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Query;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -21,8 +22,6 @@ namespace Firearms.Gun
             Muzzle = Gun.Find("Muzzle");
             MagazineTransform = Gun.Find("Magazine");
             Magazine = new BaseMagazine(0, 30, 30, ElementEnum.Fire);
-            PrevShootTime = 0;
-            IsCanShoot = true;
             IsReload = false;
             ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/XM7.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
@@ -38,16 +37,11 @@ namespace Firearms.Gun
         {
             if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
             SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
-            IsCanShoot = false;
             IsReload = true;
-            EndReloadTime = Time.time + Config.reloadCd;
         }
 
         public override void Shoot()
         {
-            if (!IsCanShoot) return;
-            IsCanShoot = false;
-            PrevShootTime = Time.time;
             
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
             obj.transform.position = Muzzle.position;
@@ -93,9 +87,18 @@ namespace Firearms.Gun
             
         }
 
-        public void OnSecondaryAction(ref bool isShoot)
+        public void OnSecondaryAction()
         {
-            isShoot = !isShoot;
+        }
+
+        public void PressSecondaryAction()
+        {
+            
+        }
+
+        public void UpSecondaryAction()
+        {
+            
         }
 
         public void ReloadAction(AbstractMagazine magazine)
@@ -105,7 +108,7 @@ namespace Firearms.Gun
 
         public float ReloadTime()
         {
-            return Mathf.Max(0, EndReloadTime - Time.time);
+            return 0f;
         }
 
         public AbstractMagazine GetMagazine()
@@ -149,6 +152,11 @@ namespace Firearms.Gun
         }
 
         public AnimationClip GetClipByTag(string tag)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public WeaponQuery GetQuery()
         {
             throw new System.NotImplementedException();
         }

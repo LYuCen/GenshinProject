@@ -1,4 +1,6 @@
 ﻿using GameFSM.FSM;
+using mEnum.Flags;
+using mEnum.Query;
 using UnityEngine;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
@@ -17,8 +19,9 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         
         public override void OnEnterState()
         {
-            MyManager.moveSpeedWeight = 0.9f;
-            MyManager.aimIkWeight = !MyManager.IsThrow && !MyManager.IsReload ? 1 : 0;
+            WeaponQuery query = MyManager.CombatModule.GetQuery();
+            float weight = !query.HasState(WeaponFlags.Throw)&& !query.HasState(WeaponFlags.Reload) ? 1 : 0;
+            MyManager.IkModule.SetAimIk(weight);
         }
 
         public override void OnUpdateState()
@@ -42,8 +45,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             
             Quaternion targetRot = Quaternion.LookRotation(forward);
             MyManager.transform.rotation = targetRot;
-            MyManager.moveSpeedWeight = 1f;
-            MyManager.aimIkWeight = 0;
         }
     }
 }

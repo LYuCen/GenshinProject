@@ -1,6 +1,9 @@
 ﻿
+using Firearms;
 using GameFSM.LevelFSM.PlayerFSM;
 using IUtility;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -60,33 +63,42 @@ namespace Player.AnimTree.UpperBodyNodes
             return _playable;
         }
 
+        private IWeapon _weapon;
+
         public override void OnEnterState()
         {
             Debug.Log("Start Reloading...");
             _playable.SetTime(0); // 每次进入时重置时间
             if (CurrentData)
             {
-                MyMessage.playerGun.SetParent(MyMessage.firearmController.weaponPivot);
-                MyMessage.playerGun.localPosition = Vector3.zero;
-                MyMessage.playerGun.localEulerAngles = Vector3.zero;
+                Transform gun = MyMessage.CombatModule.GetWeapon();
+                gun.SetParent(MyMessage.firearmController.weaponPivot);
+                gun.localPosition = Vector3.zero;
+                gun.localEulerAngles = Vector3.zero;
                 LateUpdate();
+                _weapon = MyMessage.firearmController.Weapon;
             }
         }
         
         public override bool CheckState(bool parentActive)
         {
-            return (parentActive && MyMessage.IsReload) || Weight > 0.001f;
+            WeaponQuery query = MyMessage.CombatModule.GetQuery();
+            
+            bool res = query.HasState(WeaponFlags.Reload);
+            
+            return parentActive && res;
         }
 
         public override float UpdateNode()
         {
-            TargetWeight = MyMessage.IsReload ? 1f : 0f;
+            WeaponQuery query = MyMessage.CombatModule.GetQuery();
+            TargetWeight = query.HasState(WeaponFlags.Reload) ? 1f : 0f;
             float currentWeight = base.UpdateNode();
-            if (currentWeight > 0.9f && MyMessage.IsReload)
+            if (currentWeight > 0.9f && query.HasState(WeaponFlags.Reload))
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {
-                    MyMessage.ReloadEnd(); // 这里会让 IsReload 变 false，触发上面的 TargetWeight = 0
+                    //MyMessage.CombatModule.ReloadEnd(); // 这里会让 IsReload 变 false，触发上面的 TargetWeight = 0
                 }
                 else if(CurrentData) LateUpdate();
             }
@@ -107,7 +119,7 @@ namespace Player.AnimTree.UpperBodyNodes
             if (CurrentData.handWeight != null && CurrentData.handWeight.length > 0)
             {
                 _handBlend = CurrentData.handWeight.Evaluate(normalizedTime);
-                MyMessage.rHeadIkWeight = 1 - _handBlend;
+                MyMessage.IkModule.SetHandIk(1 - _handBlend);
             }
 
             // 3. 烘焙曲线采样
@@ -128,8 +140,8 @@ namespace Player.AnimTree.UpperBodyNodes
 
         public override void OnExitState()
         {
-            MyMessage.rHeadIkWeight = 1;
-            MyMessage.ResetGun();
+            MyMessage.IkModule.SetHandIk(1);
+            MyMessage.CombatModule.ResetGun(_weapon);
             
             Debug.Log("Exit Reloading");
         }

@@ -34,7 +34,7 @@ namespace Factory.Greade
             anyGun.MoveNext();
             var cfg = anyGun.Current.GetConfig();
 
-            Debug.Log($"[RifleFactory] 检测到类型切换，更新移动动画集");
+            Debug.Log($"[Grenade] 检测到类型切换，更新移动动画集");
             
             var slots = _myManager.AnimController.Slot;
         }

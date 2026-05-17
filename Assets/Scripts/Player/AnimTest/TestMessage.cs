@@ -107,7 +107,8 @@ namespace Player.AnimTest
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            var cfg = GetAnimConfig("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset");
+            var cfg = GetAnimConfig
+                ("Assets/AssetBundle/ScriptableObject/Anim/Weapon/Gun/FN_IWS/ReloadAnim.asset");
             _playable = AnimationClipPlayable.Create(graph, cfg.animClip);
             _playable.SetSpeed(cfg.animSpeed);
             _clipDuration = cfg.animClip.length;

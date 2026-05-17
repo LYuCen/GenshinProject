@@ -1,4 +1,6 @@
 ﻿using GameFSM.FSM;
+using mEnum.Flags;
+using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 {
@@ -14,7 +16,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         public override bool CheckCondition(out string nextState)
         {
             nextState = "Throw";
-            return MyManager.IsThrow;
+            WeaponQuery query = MyManager.CombatModule.GetQuery();
+            return query.HasState(WeaponFlags.Throw);
         }
     }
 }

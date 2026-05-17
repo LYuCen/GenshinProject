@@ -2,6 +2,8 @@
 using AssetBundleFramework.Core.Resource;
 using Firearms.Magazine;
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using mEvent;
 using mModel;
 using mModel.ScriptableConfig;
@@ -119,12 +121,22 @@ namespace Firearms.ThrowWeapon
         }
 
 
-        public void OnSecondaryAction(ref bool isShoot)
+        public void OnSecondaryAction()
         {
             if (!Enable) return;
             Debug.Log("切换投掷模式");
             IsDownThrow = !IsDownThrow && CurrentState != GrenadeState.Idle;
             _force = IsDownThrow ? 5f : 10f; // 低抛力量为 5, 高抛力量为 10
+        }
+
+        public void PressSecondaryAction()
+        {
+            
+        }
+
+        public void UpSecondaryAction()
+        {
+            
         }
 
         public void ReloadAction(AbstractMagazine magazine)
@@ -276,6 +288,12 @@ namespace Firearms.ThrowWeapon
         
             Debug.LogWarning($"武器 {_config.weaponName} 未配置 Tag 为 {tag} 的动画");
             return null;
+        }
+
+        public WeaponQuery GetQuery()
+        {
+            WeaponQuery query = new WeaponQuery();
+            return query;
         }
     }
 }

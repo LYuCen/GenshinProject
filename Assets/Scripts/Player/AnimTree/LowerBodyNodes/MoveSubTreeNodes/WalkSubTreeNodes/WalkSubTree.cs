@@ -1,4 +1,6 @@
 ﻿using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
@@ -10,6 +12,11 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
     {
         public WalkSubTree(PlayerManager myManager) : base(myManager) { }
 
-        public override bool CheckState(bool parentActive) => parentActive && !MyMessage.IsSprint;
+        public override bool CheckState(bool parentActive)
+        {
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            bool res = !query.HasState(PlayerMoveFlags.Sprint);
+            return parentActive && res;
+        }
     }
 }

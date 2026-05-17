@@ -27,11 +27,11 @@
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct Attributes {
+            struct UniversalAttributes {
                 float4 positionOS : POSITION;
             };
 
-            struct Varyings {
+            struct UniversalVaryings {
                 float4 positionCS : SV_POSITION;
                 float2 scopeUV : TEXCOORD0;
                 float2 reticleUV : TEXCOORD1;
@@ -41,9 +41,9 @@
             float _Zoom, _MeshSize, _Aspect, _ReticleSize, _ReticleAspect, _ReticleBrightness;
             float4 _ReticleColor, _ReticleOffset;
 
-            Varyings vert (Attributes input)
+            UniversalVaryings vert (UniversalAttributes input)
             {
-                Varyings output;
+                UniversalVaryings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
                 
                 // --- 1. 背景画面 (Scope View) UV 计算 ---
@@ -63,7 +63,7 @@
                 return output;
             }
 
-            half4 frag (Varyings input) : SV_Target
+            half4 frag (UniversalVaryings input) : SV_Target
             {
                 // 采样背景
                 half4 scopeCol = tex2D(_MainTex, input.scopeUV);

@@ -23,6 +23,7 @@ namespace mModel.ScriptableConfig
         [Tooltip("爆头倍率")] public float headshotMp; // 爆头倍率
         [Tooltip("射击间隔")] public float shootCd; // 射击间隔
         [Tooltip("换弹时间")] public float reloadCd; // 换弹时间
+        [Tooltip("拉栓时间")] public float boltCd;
         [Tooltip("换弹声音")] public AudioClip reloadAudioClip;
         [Tooltip("射击声音")] public AudioClip shootAudioClip;
         [Tooltip("切换声音")] public AudioClip getWeaponAudioClip;

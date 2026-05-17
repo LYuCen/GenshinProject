@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using mSystem.InputSystem.mEvent;
+using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
 using QFramework;
 
@@ -7,24 +7,24 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
     public class ChangeWeaponHandler : KeyHandler, ICanSendEvent
     {
-        private ChangeGunEvent _event = new ChangeGunEvent();
+
+        public ChangeWeaponHandler(InputContext context) : base(context)
+        {
+        }
+
         public override void Handle(List<KeyState> states)
         {
             if (!Enable) return;
 
             foreach (var key in states)
             {
-                if (!key.GetIsDown()) continue;
-
                 if (key.GetKeyName() == "MainGun")
                 {
-                    _event.GunIndex = 0;
-                    this.SendEvent(_event);
+                    Context.GetPrimaryWeapon.Down = key.GetIsDown();
                 }
                 else if (key.GetKeyName() == "MainGun2")
                 {
-                    _event.GunIndex = 1;
-                    this.SendEvent(_event);
+                    Context.GetSecondaryWeapon.Down = key.GetIsDown();
                 }
             }
         }

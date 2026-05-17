@@ -1,4 +1,5 @@
 ﻿using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Query;
 using mModel.ScriptableConfig;
 using UnityEngine;
 
@@ -29,7 +30,17 @@ namespace Firearms
         /// <summary>
         /// 按下副功能键 （默认右键）
         /// </summary>
-        void OnSecondaryAction(ref bool isShoot);
+        void OnSecondaryAction();
+        
+        /// <summary>
+        /// 按住副功能键 （默认右键）
+        /// </summary>
+        void PressSecondaryAction();
+        
+        /// <summary>
+        /// 抬起副功能键 （默认右键）
+        /// </summary>
+        void UpSecondaryAction();
 
         /// <summary>
         /// 换弹剩余时间

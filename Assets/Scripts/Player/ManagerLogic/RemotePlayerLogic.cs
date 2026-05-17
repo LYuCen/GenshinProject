@@ -2,6 +2,10 @@
 using Connect.FlatDTO; // 必须引用 FlatBuffers 生成的命名空间
 
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
+using mSystem.InputSystem.Context;
+using Player.Context;
 using UnityEngine;
 
 namespace Player.ManagerLogic
@@ -19,14 +23,12 @@ namespace Player.ManagerLogic
 
         private const float MaxSnapDistance = 2.0f; 
 
-        public void Init(PlayerManager manager)
+        public void Init(PlayerManager manager, InputContext context = null)
         {
             _m = manager;
+            WeaponQuery query = _m.CombatModule.GetQuery();
             _lastPacketTime = Time.time;
-            GameObject go = new GameObject("Aim");
-            _m.aim = go.transform;
-            _m.aimIK.solver.target = _m.aim;
-            _m.aimIK.enabled = _m.IsShoot;
+            
         }
 
         // 修改参数为 PlayerDataFlat
@@ -70,7 +72,7 @@ namespace Player.ManagerLogic
                 if (dto.AimPosition != null)
                 {
                     var aimPos = dto.AimPosition.Value;
-                    _m.aim.position = new Vector3(aimPos.X, aimPos.Y, aimPos.Z);
+                    //_m.aim.position = new Vector3(aimPos.X, aimPos.Y, aimPos.Z);
                 }
 
                 // 5. 更新 IK 状态

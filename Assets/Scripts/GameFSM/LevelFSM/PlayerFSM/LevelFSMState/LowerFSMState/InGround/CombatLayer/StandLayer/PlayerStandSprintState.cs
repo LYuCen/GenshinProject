@@ -1,4 +1,6 @@
 ﻿using GameFSM.FSM;
+using mEnum.Flags;
+using mEnum.Query;
 using UnityEngine;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer.StandLayer
@@ -15,18 +17,21 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         
         public override void OnEnterState()
         {
-            MyManager.speed = 4f;
+            
+            MyManager.MoveModule.SetSpeed(4f);
             MyManager.gunCube.SetParent(MyManager.hand);
+            MyManager.IkModule.SetAimIk(0);
         }
 
         public override void OnUpdateState()
         {
-            MyManager.IsSprint = MyManager.InputMove == Vector2.up || MyManager.InputMove == new Vector2(-1, 1) ||
-                                   MyManager.InputMove == new Vector2(1, 1);
+            MyManager.MoveModule.Sprint();
         }
 
         public override void OnExitState()
         {
+            WeaponQuery query = MyManager.CombatModule.GetQuery();
+            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Reload) ? 0 : 1);
         }
     }
 }

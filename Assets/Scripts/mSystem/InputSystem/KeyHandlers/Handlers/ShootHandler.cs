@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using mSystem.InputSystem.mEvent;
+using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
 using QFramework;
 
@@ -7,7 +7,10 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
     public class ShootHandler : KeyHandler, ICanSendEvent
     {
-        private WeaponSecondaryActionEvent _event = new();
+        public ShootHandler(InputContext context) : base(context)
+        {
+        }
+
         public override void Handle(List<KeyState> states)
         {
             if (!Enable) return;
@@ -16,10 +19,9 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
             {
                 if (key.GetKeyName() == "InShoot")
                 {
-                    _event.IsDown = key.GetIsDown();
-                    _event.IsPress = key.GetIsLongPress();
-                    _event.IsUp = key.GetIsUp();
-                    if(_event.IsDown ||  _event.IsPress || _event.IsUp) this.SendEvent(_event);
+                    Context.SecondaryAction.Down = key.GetIsDown();
+                    Context.SecondaryAction.Press = key.GetIsLongPress();
+                    Context.SecondaryAction.Up = key.GetIsUp();
                 }
             }
         }

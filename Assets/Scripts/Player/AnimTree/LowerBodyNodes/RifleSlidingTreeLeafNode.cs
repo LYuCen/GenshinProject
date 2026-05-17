@@ -1,5 +1,7 @@
 ﻿
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -16,7 +18,11 @@ namespace Player.AnimTree.LowerBodyNodes
         {
         }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsSliding;
+        public override bool CheckState(bool parentActive)
+        {
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            return parentActive && query.HasState(PlayerMoveFlags.Sliding);
+        }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
@@ -49,14 +55,14 @@ namespace Player.AnimTree.LowerBodyNodes
         public override float UpdateNode()
         {
             float currentWeight = base.UpdateNode();
-
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            
             // 逻辑：如果当前权重较大（已切入），且动画播放完毕，则重置状态
-            if (currentWeight > 0.5f && MyMessage.IsSliding)
+            if (currentWeight > 0.5f && query.HasState(PlayerMoveFlags.Sliding))
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {
-                    MyMessage.slidingCd = 0.5f;
-                    MyMessage.IsSliding = false;
+                    
                 }
             }
             return currentWeight;

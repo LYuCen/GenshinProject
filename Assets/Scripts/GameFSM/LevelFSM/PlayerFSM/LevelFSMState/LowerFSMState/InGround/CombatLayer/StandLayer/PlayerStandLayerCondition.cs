@@ -1,4 +1,6 @@
 ﻿using GameFSM.FSM;
+using mEnum.Flags;
+using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer.StandLayer
 {
@@ -14,7 +16,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         public override bool CheckCondition(out string nextState)
         {
             nextState = "Stand";
-            return !MyManager.IsCrouch;
+            PlayerMoveQuery query = MyManager.MoveModule.GetQuery();
+            return !query.HasState(PlayerMoveFlags.Crouch);
         }
     }
 }

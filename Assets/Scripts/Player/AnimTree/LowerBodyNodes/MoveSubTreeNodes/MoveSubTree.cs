@@ -1,4 +1,6 @@
 ﻿using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
@@ -14,7 +16,11 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         { 
-            return parentActive && MyMessage.PlayerMove.sqrMagnitude > 0.001f;
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+
+            // 在地面且八方向移动
+            bool res = query.HasState(PlayerMoveFlags.Ground) && query.HasState(PlayerMoveFlags.Move);
+            return parentActive && res;
         }
     }
 }

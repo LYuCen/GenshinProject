@@ -1,38 +1,37 @@
 ﻿using System.Collections.Generic;
+using mSystem.InputSystem.Context;
 using mSystem.InputSystem.KeyHandlers;
 using mSystem.InputSystem.KeyHandlers.Handlers;
 using mSystem.InputSystem.mKey;
-using QFramework;
 
 namespace mSystem.InputSystem
 {
-    public interface IInputSystem : ISystem
+    public interface IInputSystem
     {
         public bool Enable { get; set; }
         void SetKeyCode();
     }
 
-    public class InputSystem : AbstractSystem, IInputSystem
+    public class InputSystem : IInputSystem 
     {
         private List<KeyHandler> _handlers;
         private List<KeyState> _keyStates;
-        private IKeyModel _keyModel;
         public bool Enable { get; set; }
-        protected override void OnInit()
+        public InputSystem(InputContext context)
         {
-            _keyModel = this.GetModel<IKeyModel>();
+            KeyModel model = new KeyModel();
             _handlers = new List<KeyHandler>();
-            _keyStates = _keyModel.GetKeys();
-            _handlers.Add(new MoveHandler());
-            _handlers.Add(new AttackHandler());
-            _handlers.Add(new ShootHandler());
-            _handlers.Add(new JumpHandler());
-            _handlers.Add(new MouseScrollHandler());
-            _handlers.Add(new ReloadHandler());
-            _handlers.Add(new ChangeWeaponHandler());
-            _handlers.Add(new RunHandler());
-            _handlers.Add(new ThrowGrenadeHandler());
-            _handlers.Add(new CrouchHandler());
+            _keyStates = model.GetKeys();
+            _handlers.Add(new MoveHandler(context));
+            _handlers.Add(new AttackHandler(context));
+            _handlers.Add(new ShootHandler(context));
+            _handlers.Add(new JumpHandler(context));
+            _handlers.Add(new MouseScrollHandler(context));
+            _handlers.Add(new ReloadHandler(context));
+            _handlers.Add(new ChangeWeaponHandler(context));
+            _handlers.Add(new RunHandler(context));
+            _handlers.Add(new ThrowGrenadeHandler(context));
+            _handlers.Add(new CrouchHandler(context));
             Enable = true;
         }
 

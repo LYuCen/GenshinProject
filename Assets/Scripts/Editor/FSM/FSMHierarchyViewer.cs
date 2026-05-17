@@ -19,7 +19,7 @@ namespace Editor.FSM
         private GUIStyle _conditionStyle;
         private HashSet<object> _visited = new HashSet<object>();
 
-        [MenuItem("Tools/FSM 深度调试器")]
+        [MenuItem("Tools/FSMLevel 可视化")]
         public static void ShowWindow() => GetWindow<FSMHierarchyViewer>("FSM Debugger");
 
         private void OnEnable()

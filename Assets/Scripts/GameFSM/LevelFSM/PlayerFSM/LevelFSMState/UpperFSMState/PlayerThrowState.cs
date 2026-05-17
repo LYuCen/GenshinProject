@@ -16,7 +16,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         
         public override void OnEnterState()
         {
-            MyManager.bodyIk.enabled = false;
+            
         }
 
         public override void OnUpdateState()
@@ -25,7 +25,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 
         public override void OnExitState()
         {
-            MyManager.bodyIk.enabled = true;
+            
         }
     }
 }

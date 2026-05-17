@@ -1,5 +1,8 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
-using mSystem.HaemalStrandSystem;
+﻿using AI;
+using AI.VisualRequest.VisualRequest;
+using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using QFramework;
 using UnityEngine;
 
@@ -33,12 +36,12 @@ namespace mController
         private float _pitch;       // YOZ平面与 z轴正方向偏转角
         private float _nowDistance; // 当前相机离角色距离
         
-        private IHaemalSystem _haemalSystem;
         private Ray _ray;
         private Camera _camera;
         private int _targetMask;
         private int _originalMask;
         private int _headLayerIndex;
+        PointVisualRequest _request = new PointVisualRequest();
         
         private void Start()
         {
@@ -49,7 +52,6 @@ namespace mController
             _yaw = euler.y;  
             _pitch = euler.x; 
             _nowDistance = distance;
-            _haemalSystem = this.GetSystem<IHaemalSystem>();
             _camera = Camera.main;
             _targetMask = LayerMask.GetMask("Default", "Hitbox", "Plane", "Wall");
 
@@ -58,19 +60,22 @@ namespace mController
                 _originalMask = _camera.cullingMask;
                 _headLayerIndex = LayerMask.NameToLayer("Head");
             }
-            
+
+            _request.Radius = 0.01f;
+
+            VisualizerManager.Instance.Register(_request);
         }
     
 
         public void UpdateForward()
         {
             Shooting();
-            _haemalSystem.UIUpdate();
         }
 
         void FixedUpdate()
         {
-            if (manager.IsCrouch)
+            PlayerMoveQuery query = manager.MoveModule.GetQuery();
+            if (query.HasState(PlayerMoveFlags.Crouch))
             {
                 height = Mathf.MoveTowards(height, 1.2f, Time.fixedDeltaTime);
             }
@@ -107,7 +112,7 @@ namespace mController
                 rayEnd = _ray.origin + _ray.direction * rayLength;
             }
 
-            manager.aim.position = rayEnd;
+            _request.PointPos = rayEnd;
         }
         
         void LateUpdate()
@@ -119,7 +124,11 @@ namespace mController
 
             Quaternion rot = Quaternion.Euler(_pitch, _yaw, 0);
 
-            if (manager.IsShoot && !manager.isShoulder && !manager.IsThrow)
+            WeaponQuery query = manager.CombatModule.GetQuery();
+
+            if (query.HasState(WeaponFlags.Shoot) && !query.HasState(WeaponFlags.Shoulder)
+                                                  && !query.HasState(WeaponFlags.Throw)
+                                                  && !query.HasState(WeaponFlags.Blot))
             {
                 // 瞄准视角
                 transform.position = scopeCamera.position;
@@ -130,7 +139,7 @@ namespace mController
             else
             {
                 // 第三人称视角
-                _nowDistance += manager.IsShoot ? -0.25f : 0.25f;
+                _nowDistance += query.HasState(WeaponFlags.Shoulder) ? -0.25f : 0.25f;
                 _nowDistance = Mathf.Clamp(_nowDistance, aimDistance, distance);
                 Vector3 targetPos = playerTransform.position + Vector3.up * height;
                 Vector3 camPos = targetPos - rot * Vector3.forward * _nowDistance + rot * Vector3.right * shoulderOffset;

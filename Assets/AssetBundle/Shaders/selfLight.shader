@@ -30,24 +30,24 @@
                 float _EmissiveIntensity;
             CBUFFER_END
             
-            struct Attributes
+            struct UniversalAttributes
             {
                 float4 positionOS : POSITION;
             };
             
-            struct Varyings
+            struct UniversalVaryings
             {
                 float4 positionCS : SV_POSITION;
             };
             
-            Varyings Vert(Attributes input)
+            UniversalVaryings Vert(UniversalAttributes input)
             {
-                Varyings output;
+                UniversalVaryings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
                 return output;
             }
             
-            half4 Frag(Varyings input) : SV_TARGET
+            half4 Frag(UniversalVaryings input) : SV_TARGET
             {
                 // 基础颜色 + 自发光颜色
                 half3 finalColor = _Color.rgb + (_EmissiveColor.rgb * _EmissiveIntensity);

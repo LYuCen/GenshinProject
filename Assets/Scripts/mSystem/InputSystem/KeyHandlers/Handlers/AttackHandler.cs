@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
-using mSystem.InputSystem.mEvent;
+using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
 using QFramework;
-using UnityEngine;
 
 namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
     public class AttackHandler : KeyHandler, ICanSendEvent
     {
-        private WeaponPrimaryActionEvent _event = new(); 
+
+
+        public AttackHandler(InputContext context) : base(context)
+        {
+        }
+
         public override void Handle(List<KeyState> states)
         {
             if (!Enable) return;
@@ -17,10 +21,9 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
             {
                 if (key.GetKeyName() == "MouseLeft")
                 {
-                    _event.IsDown = key.GetIsDown();
-                    _event.IsPress = key.GetIsPress();
-                    _event.IsUp = key.GetIsUp();
-                    if(_event.IsDown ||  _event.IsPress || _event.IsUp) this.SendEvent(_event);
+                    Context.PrimaryAction.Down = key.GetIsDown();
+                    Context.PrimaryAction.Press = key.GetIsPress();
+                    Context.PrimaryAction.Up = key.GetIsUp();
                 }
             }
         }

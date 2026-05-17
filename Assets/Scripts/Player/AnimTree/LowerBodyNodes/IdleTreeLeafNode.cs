@@ -1,5 +1,7 @@
 ﻿
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -19,10 +21,13 @@ namespace Player.AnimTree.LowerBodyNodes
         }
 
         public override bool CheckState(bool parentActive)
-        { 
-            return parentActive && MyMessage.IsGround &&
-                   MyMessage.InputMove == Vector2.zero &&
-                   !MyMessage.IsSliding;
+        {
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+
+            // 在地面且没有八方向移动
+            bool res = query.HasState(PlayerMoveFlags.Ground) && !query.HasState(PlayerMoveFlags.Move);
+            
+            return parentActive && res;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

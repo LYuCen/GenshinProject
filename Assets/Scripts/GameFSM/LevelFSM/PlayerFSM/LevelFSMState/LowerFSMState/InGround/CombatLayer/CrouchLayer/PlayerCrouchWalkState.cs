@@ -14,7 +14,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         
         public override void OnEnterState()
         {
-            MyManager.speed = 1.6f;
+            MyManager.MoveModule.SetSpeed(1.6f);
             MyManager.gunCube.SetParent(MyManager.hand);
         }
 

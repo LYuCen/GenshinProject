@@ -24,7 +24,6 @@ namespace Player.AnimPro
 
         public AnimTreeSlotNode(T myMessage) : base(myMessage)
         {
-            IsLeaf = false;
         }
         
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
@@ -90,24 +89,24 @@ namespace Player.AnimPro
 
         public override float UpdateNode()
         {
-            // 1. 基础权重更新：这个 Weight 是给父节点（LayerMixer）看的
+            // 基础权重更新：这个 Weight 是给父节点（LayerMixer）看的
             // 我们让插槽的 Weight 等于 内部子树逻辑权重的混合值
             float activeLogicW = _activeSubtree != null ? _activeSubtree.UpdateNode() : 0f;
             float fadingLogicW = _fadingSubtree != null ? _fadingSubtree.UpdateNode() : 0f;
 
-            // 2. 过渡进度更新
+            // 过渡进度更新
             if (_crossfadeWeight < 1f)
                 _crossfadeWeight = Mathf.MoveTowards(_crossfadeWeight, 1f, Time.fixedDeltaTime * CrossfadeSpeed);
 
-            // 3. 计算插槽节点整体输出给父级的 Weight
-            // 公式：新子树权重 * 进度 + 旧子树权重 * (1 - 进度)
+            // 计算插槽节点整体输出给父级的 Weight
+            // 新子树权重 * 进度 + 旧子树权重 * (1 - 进度)
             float combinedWeight = (activeLogicW * _crossfadeWeight) + (fadingLogicW * (1f - _crossfadeWeight));
     
             // 如果是根节点，强制为 1；否则跟随逻辑
             if (Parent == null) Weight = 1f;
             else Weight = combinedWeight;
 
-            // 4. 【核心修复】内层 Mixer 归一化设置
+            // 内层 Mixer 归一化设置
             // 无论逻辑权重是多少，插槽内部的两个输入端口之和必须为 1.0
             // 这样可以保证输出给 LayerMixer 的 Pose 是“纯净”的，没有被稀释成 T-Pose
             if (_activeSubtree != null || _fadingSubtree != null)
@@ -117,8 +116,7 @@ namespace Player.AnimPro
                 _slotMixer.SetInputWeight(1, 1f - _crossfadeWeight);
             }
 
-            // 5. 状态触发逻辑 (Enter/Exit)
-            // 注意：这里使用逻辑权重 activeLogicW 来判断
+            // 状态触发逻辑 (Enter/Exit)
             if (_activeSubtree != null)
             {
                 if (_lastActiveSubtreeWeight <= 0f && activeLogicW > 0f) _activeSubtree.OnEnterState();
@@ -126,7 +124,7 @@ namespace Player.AnimPro
                 _lastActiveSubtreeWeight = activeLogicW;
             }
 
-            // 6. 清理淡出完毕的子树
+            // 清理淡出完毕的子树
             if (_fadingSubtree != null)
             {
                 if (fadingLogicW <= 0f && _crossfadeWeight >= 0.99f)
@@ -160,7 +158,7 @@ namespace Player.AnimPro
             TargetWeight = selfActive ? 1f : 0f;
 
             _activeSubtree?.Evaluate(selfActive);
-            _fadingSubtree?.Evaluate(selfActive);
+            _fadingSubtree?.Evaluate(false);
         }
 
         private void DestroySubtree(AnimTreeNode<T> node, int port)

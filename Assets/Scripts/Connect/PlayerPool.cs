@@ -34,7 +34,7 @@ namespace Connect
                 {
                     PlayerManager pm = _models[pid];
                     
-                    pm.SyncStatus(dto); 
+                    pm.HpModule.SyncStatus(dto); 
 
                     if (pid == UserClient.MyId) continue;
 

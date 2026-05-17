@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using Firearms.WeaponInterface;
+using GameFSM.FSM;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BuffSystem.ElementBuff;
@@ -10,9 +13,9 @@ namespace Firearms
     /// <summary>
     /// 枪械抽象类
     /// </summary>
-    public abstract class AbstractGun : IReloadable
+    public abstract class AbstractGun : IReloadable,IFsmDebugger
     {
-        protected AbstractMagazine Magazine; // 弹匣
+        public AbstractMagazine Magazine; // 弹匣
         protected Transform Gun; // 枪
         protected Transform Muzzle;
         protected Transform MagazineTransform;
@@ -20,16 +23,24 @@ namespace Firearms
         public Transform Camera;
         protected Vector3 GunForward;
         protected WeaponGunConfig Config;
-        protected float PrevShootTime; // 上次射击时间
-        protected bool IsCanShoot; // 是否可以射击
-        protected float EndReloadTime; // 换弹结束时间
-        protected bool IsReload; // 是否正在换弹
+        public bool IsReload; // 是否正在换弹
+        public bool IsShoot;
+        public bool IsBolt;
         protected bool Enable = true;
+
+        private Action _onActionComplete;
+        protected BaseFsm<AbstractGun> Fsm;
+        protected string UniqueId;
+        
+        // FSM 可视化
+        public string GetCurrentStateName() => Fsm?.GetCurrentStateName();
+        public IEnumerable<string> GetAllStateNames() => Fsm?.GetAllStateNames();
+        public IEnumerable<string> GetConditions(string stateName) => Fsm?.GetConditions(stateName);
+        // end
 
         protected void UpdateState()
         {
-            IsReload = EndReloadTime > Time.time;
-            IsCanShoot = PrevShootTime + Config.shootCd < Time.time && !IsReload;
+            Fsm.Update();
         }
 
         
@@ -52,9 +63,8 @@ namespace Firearms
             
             // 进入换弹阶段 播放声音
             SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
-            IsCanShoot = false;
             IsReload = true;
-            EndReloadTime = Time.time + Config.reloadCd;
+            IsShoot = false;
             return true;
         }
         
@@ -64,18 +74,14 @@ namespace Firearms
             
             // 进入换弹阶段 播放声音
             SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
-            IsCanShoot = false;
             IsReload = true;
-            EndReloadTime = Time.time + Config.reloadCd;
+            
             return true;
         }
         
-        public void ReloadEnd(ElementEnum ele, ref int[] bullets)
+        public void ReloadEnd(ElementEnum ele)
         {
-            bullets[Magazine.GetElementEnum()] += Magazine.GetBulletNumber();
-            Magazine.SetBulletNumber(bullets[(int)ele], ele);
-            bullets[Magazine.GetElementEnum()] -= Magazine.GetBulletNumber();
-            
+            IsReload = false;
             // 更新武器材质
             if (MagazineTransform)
             {
@@ -101,7 +107,35 @@ namespace Firearms
                 meshRenderer.materials = materials;
             }
         }
+        
+        public void StartControlledAction(Action onComplete)
+        {
+            _onActionComplete = onComplete;
+        }
+
+        /// <summary>
+        /// 状态机结束后调用
+        /// </summary>
+        public void ExecuteActionSuccess()
+        {
+            _onActionComplete?.Invoke();
+            _onActionComplete = null;
+        }
+
+        /// <summary>
+        /// 被打断时调用
+        /// </summary>
+        public void CancelAction()
+        {
+            Debug.Log("动作被打断，回调已销毁");
+            _onActionComplete = null; // 直接丢弃，这样逻辑永远不会被执行
+        }
 
         public Transform GetMuzzle() => Muzzle;
+        
+        public void Dispose()
+        {
+            FsmDebuggerRegistry.Unregister(UniqueId);
+        }
     }
 }

@@ -6,7 +6,7 @@ namespace GameFSM.FSM
     /// <summary>
     /// 有限状态机
     /// </summary>
-    public class BaseFsm<T>
+    public class BaseFsm<T> : IFsmDebugger
     {
         // 状态字典
         private Dictionary<string, AbstractState<T>> _mStates;
@@ -104,6 +104,31 @@ namespace GameFSM.FSM
                 // 开始状态
                 _mCurrentState.OnEnterState();
             }
+        }
+        
+        // Debug 可视化
+        public string GetCurrentStateName() => _mCurrentState != null ? FindStateName(_mCurrentState) : "None";
+
+        public IEnumerable<string> GetAllStateNames() => States.Keys;
+
+        public IEnumerable<string> GetConditions(string stateName)
+        {
+            if (States.TryGetValue(stateName, out var state))
+            {
+                // 通过反射获取私有的 Conditions 列表
+                var fields = typeof(AbstractState<T>).GetField("Conditions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var conditions = fields?.GetValue(state) as List<AbstractCondition<T>>;
+                if (conditions != null)
+                {
+                    foreach (var c in conditions) yield return $"-> {c.NextStateName}";
+                }
+            }
+        }
+
+        private string FindStateName(AbstractState<T> state)
+        {
+            foreach (var pair in States) if (pair.Value == state) return pair.Key;
+            return "Unknown";
         }
     }
 }

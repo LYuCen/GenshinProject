@@ -31,13 +31,13 @@
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct Attributes
+            struct UniversalAttributes
             {
                 float4 positionOS   : POSITION;
                 float3 normalOS     : NORMAL;
             };
 
-            struct Varyings
+            struct UniversalVaryings
             {
                 float4 positionCS   : SV_POSITION;
                 float3 viewDirWS    : TEXCOORD0;
@@ -51,9 +51,9 @@
                 float _AuraIntensity;
             CBUFFER_END
 
-            Varyings vert(Attributes IN)
+            UniversalVaryings vert(UniversalAttributes IN)
             {
-                Varyings OUT;
+                UniversalVaryings OUT;
                 
                 // 1. 获取世界坐标和法线
                 float3 posWS = TransformObjectToWorld(IN.positionOS.xyz);
@@ -70,7 +70,7 @@
                 return OUT;
             }
 
-            half4 frag(Varyings IN) : SV_Target
+            half4 frag(UniversalVaryings IN) : SV_Target
             {
                 float3 normal = normalize(IN.normalWS);
                 float3 viewDir = normalize(IN.viewDirWS);

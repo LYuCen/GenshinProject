@@ -2,6 +2,7 @@
 using Connect.Data;
 using Factory.Greade;
 using Factory.Rifle;
+using Factory.Snipe;
 using Firearms;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
@@ -22,6 +23,7 @@ namespace Factory
             _myManager = manager;
             // 注册具体的类型工厂
             RegisterTypeFactory(new RifleFactory(manager));
+            RegisterTypeFactory(new SnipeFactory(manager));
             RegisterTypeFactory(new GrenadesFactory(manager));
         }
 

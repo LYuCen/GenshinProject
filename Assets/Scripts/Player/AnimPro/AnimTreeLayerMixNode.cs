@@ -12,7 +12,6 @@ namespace Player.AnimPro
 
         public AnimTreeLayerMixNode(T myMessage) : base(myMessage)
         {
-            IsLeaf = false;
         }
         
         public override void AddNode(AnimTreeNode<T> node)

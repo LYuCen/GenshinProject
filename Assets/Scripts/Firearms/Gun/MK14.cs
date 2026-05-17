@@ -23,8 +23,6 @@ namespace Firearms.Gun
         public void Init()
         {
             Magazine = new BaseMagazine(0, 45, 30, ElementEnum.Fire);
-            PrevShootTime = 0;
-            IsCanShoot = true;
             IsReload = false;
             IResource ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/MK14.asset", false);
             Config = ir.GetAsset<WeaponGunConfig>();
@@ -50,23 +48,18 @@ namespace Firearms.Gun
         {
             if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
             SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
-            IsCanShoot = false;
             IsReload = true;
-            EndReloadTime = Time.time + Config.reloadCd;
         }
 
         public override void Shoot()
         {
-            if (!IsCanShoot || Magazine.BulletNumber == 0) return;
-            IsCanShoot = false;
-            PrevShootTime = Time.time;
 
             // 准备原始数据
             ShootData data = new ShootData
             {
                 shooterId = NetworkService.Bridge.GetMyId(),
                 position = Muzzle.position,
-                forward = (Manager.aim.position - Muzzle.position).normalized,
+                forward = (Manager.cameraController.rayEnd - Muzzle.position).normalized,
                 speed = Config.bulletSpeed,
                 baseHit = Magazine.BaseHurt * Config.hitMp,
                 headHit = Magazine.BaseHurt * Config.headshotMp,
@@ -150,9 +143,18 @@ namespace Firearms.Gun
             
         }
 
-        public void OnSecondaryAction(ref bool isShoot)
+        public void OnSecondaryAction()
         {
-            isShoot = !isShoot && !Manager.IsReload;
+        }
+
+        public void PressSecondaryAction()
+        {
+            
+        }
+
+        public void UpSecondaryAction()
+        {
+            
         }
 
         public void ReloadAction(AbstractMagazine magazine)
@@ -162,7 +164,7 @@ namespace Firearms.Gun
 
         public float ReloadTime()
         {
-            return Mathf.Max(0, EndReloadTime - Time.time);
+            return 0;
         }
 
         public AbstractMagazine GetMagazine()

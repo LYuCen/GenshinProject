@@ -1,4 +1,6 @@
 ﻿using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -14,7 +16,9 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && MyMessage.PlayerMove == Vector2.up;
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            bool res = query.HasState(PlayerMoveFlags.Forward);
+            return parentActive && res;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)

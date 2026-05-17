@@ -17,7 +17,7 @@ namespace Factory.Rifle
         {
             _myManager = manager;
             // 注册具体步枪生产线
-            _gunFactories.Add("HK416", new HK416Factory(manager));
+            _gunFactories.Add("FN_IWS", new FN_IWSFactory(manager));
             _gunFactories.Add("MK14", new MK14Factory(manager));
         }
 

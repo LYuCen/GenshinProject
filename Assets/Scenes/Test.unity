@@ -905,33 +905,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 829e36395a504048883f875aa39b6aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elements:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  reactionCDs:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  elementUI:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!23 &1374873911
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1050,33 +1023,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 829e36395a504048883f875aa39b6aea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elements:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  reactionCDs:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  elementUI:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!23 &1460504603
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7666,7 +7612,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 1620193927055122146}
-  idleAnim: {fileID: 7400000, guid: 456966df347e16f46a1846a289305e70, type: 2}
+  idleAnim: {fileID: 7400000, guid: bed4e6f1da736b64fab223ab417fd9d4, type: 2}
   walkAnim: {fileID: 7400000, guid: d8600093cd0206042b172e113a0bac6b, type: 2}
   reloadAnim: {fileID: 7400000, guid: 78fa18b4730506c498a769b147e6c67b, type: 2}
   avatarMask: {fileID: 31900000, guid: 70ed7049a7a851b4ebfbbf866c6f04ca, type: 2}

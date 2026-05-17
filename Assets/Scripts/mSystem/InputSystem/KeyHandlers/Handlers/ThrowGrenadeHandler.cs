@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using mSystem.InputSystem.mEvent;
+using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
 using QFramework;
 
@@ -7,15 +7,19 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
     public class ThrowGrenadeHandler : KeyHandler, ICanSendEvent
     {
+        public ThrowGrenadeHandler(InputContext context) : base(context)
+        {
+        }
+
         public override void Handle(List<KeyState> states)
         {
             if (!Enable) return;
 
             foreach (var s in states)
             {
-                if (s.GetIsDown() && s.GetKeyName() == "ThrowGrenade")
+                if ( s.GetKeyName() == "ThrowGrenade")
                 {
-                    this.SendEvent(new GetGrenade());
+                    Context.Ability1.Down = s.GetIsDown();
                 }
             }
         }

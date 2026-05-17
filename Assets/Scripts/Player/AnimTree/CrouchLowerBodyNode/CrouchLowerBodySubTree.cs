@@ -1,5 +1,7 @@
 ﻿
 using GameFSM.LevelFSM.PlayerFSM;
+using mEnum.Flags;
+using mEnum.Query;
 using Player.AnimPro;
 
 namespace Player.AnimTree.CrouchLowerBodyNode
@@ -11,6 +13,11 @@ namespace Player.AnimTree.CrouchLowerBodyNode
     {
         public CrouchLowerBodySubTree(PlayerManager myManager) : base(myManager) { }
 
-        public override bool CheckState(bool parentActive) => parentActive && MyMessage.IsCrouch;
+        public override bool CheckState(bool parentActive)
+        {
+            PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
+            bool res = query.HasState(PlayerMoveFlags.Crouch);
+            return parentActive && res;
+        }
     }
 }

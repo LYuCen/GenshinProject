@@ -1,5 +1,7 @@
 ﻿using GameFSM.FSM;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer;
+using mEnum.Flags;
+using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
 {
@@ -15,9 +17,11 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
         
         public override void OnEnterState()
         {
+            WeaponQuery query = MyManager.CombatModule.GetQuery();
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.speed = 0f;
-            MyManager.rHeadIkWeight = !MyManager.IsReload ? 1 : 0;
+            MyManager.MoveModule.SetSpeed(0f);
+            MyManager.IkModule.SetHandIk(!query.HasState(WeaponFlags.Reload) ? 1 : 0);
+            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Reload) ? 0 : 1);
         }
     }
 }

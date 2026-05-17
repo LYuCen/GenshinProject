@@ -74,7 +74,7 @@ namespace mSystem.HurtSystem
             if (PlayerPool.Instance && PlayerPool.Instance.Models.TryGetValue(component.victimId, out var model))
             {
                 Debug.Log($"{component.victimId} 受到：{component.Harm} 伤害");
-                model.HurtHp(component);
+                model.HpModule.HurtHp(component);
             }
 
             // 飘字系统：显示最终计算后的伤害

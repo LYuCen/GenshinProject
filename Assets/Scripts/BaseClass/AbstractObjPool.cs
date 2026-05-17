@@ -18,11 +18,27 @@ namespace BaseClass
         /// <param name="maxSize">对象池大小</param>
         public virtual void Init(int value = 0,int maxSize = 100)
         {
+            if (_isBuild) return;
             IsOnDestroy = false;
             Pool = new Queue<GameObject>();
             MaxSize = maxSize;
             Prefab = InitPrefab();
+            InitObject(value);
             _isBuild = true;
+        }
+
+        protected void InitObject(int val)
+        {
+            GameObject[] objs = new GameObject[val];
+            for (int i = 0; i < val; i++)
+            {
+                objs[i] = GetObj();
+            }
+
+            for (int i = 0; i < val; i++)
+            {
+                RemoveObj(objs[i]);
+            }
         }
 
         protected abstract GameObject InitPrefab();
