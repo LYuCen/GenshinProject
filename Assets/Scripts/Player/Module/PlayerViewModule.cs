@@ -18,7 +18,7 @@ namespace Player.Module
         {
             _chose = 0;
             _weapon = 0;
-            this.SendEvent(new ViewInitEvent());
+            this.SendEvent(new WeaponDataUpdateEvent());
         }
 
         public void OnUpdate()

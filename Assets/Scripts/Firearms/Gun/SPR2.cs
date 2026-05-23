@@ -131,7 +131,6 @@ namespace Firearms.Gun
 
             // 加入子弹系统
             BulletSystem.Instance.EnQueue(bullet);
-            SoundSystem.Instance.PlaySound(Config.shootAudioClip);
 
             // 弹药逻辑
             if (data.shooterId == UserClient.MyId)
@@ -189,7 +188,6 @@ namespace Firearms.Gun
         public void UpdateWeapon()
         {
             UpdateState();
-            Debug.Log($"[SPR2] UpdateWeapon - HashCode:{this.GetHashCode()}, IsShoot:{IsShoot}, IsBolt:{IsBolt}");
         }
 
         public Transform GetWeapon()
@@ -210,7 +208,7 @@ namespace Firearms.Gun
 
         public void OnWeaponSwitchEnter()
         {
-            SoundSystem.Instance.PlaySound(Config.getWeaponAudioClip);
+            AudioSystem.Instance.PlaySound(Config.getWeaponAudioClip);
             Fsm = _fsm;
             FsmDebuggerRegistry.Register(UniqueId, this);
         }

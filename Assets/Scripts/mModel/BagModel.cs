@@ -1,5 +1,7 @@
-﻿using Firearms;
+﻿using AssetBundleFramework.Core.Resource;
+using Firearms;
 using mSystem.BuffSystem.ElementBuff;
+using mWeapon;
 using QFramework;
 
 namespace mModel
@@ -21,19 +23,32 @@ namespace mModel
         private BulletInfo[] _bullets;
         private AbstractGun _primaryWeapon;
         private AbstractGun _secondaryWeapon;
+        private WeaponPro _fnIws;
+        private WeaponPro _spr2;
+        public WeaponPro Weapon { get; private set; }
+        private int _index;
         protected override void OnInit()
         {
             _bullets = new BulletInfo[3];
+            var ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FnIws/FnIws.asset",
+                false);
+            _fnIws = new WeaponPro(ir.GetAsset<WeaponData>());
+            var ir2 = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/Spr2/Spr2.asset",
+                false);
+            _spr2 = new WeaponPro(ir2.GetAsset<WeaponData>());
+            Weapon = _fnIws;
         }
 
         public void SetPrimaryWeapon(AbstractGun gun)
         {
             _primaryWeapon = gun;
+            Weapon = _fnIws;
         }
 
         public void SetSecondaryWeapon(AbstractGun gun)
         {
             _secondaryWeapon = gun;
+            Weapon = _spr2;
         }
 
         public AbstractGun GetPrimaryWeapon() => _primaryWeapon;

@@ -63,6 +63,7 @@ namespace GameFSM.LevelFSM.PlayerFSM
             _combatContext = new CombatContext
             {
                 FirearmController = firearmController,
+                CameraController = cameraController,
                 InputContext = context,
                 GunCube = gunCube,
             };

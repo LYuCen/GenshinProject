@@ -61,8 +61,6 @@ namespace Firearms
             // 子弹数量为 0
             if (bullet <= 0) return false;
             
-            // 进入换弹阶段 播放声音
-            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
             IsReload = true;
             IsShoot = false;
             return true;
@@ -72,8 +70,6 @@ namespace Firearms
         {
             if (magazine == null) return false;
             
-            // 进入换弹阶段 播放声音
-            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
             IsReload = true;
             
             return true;

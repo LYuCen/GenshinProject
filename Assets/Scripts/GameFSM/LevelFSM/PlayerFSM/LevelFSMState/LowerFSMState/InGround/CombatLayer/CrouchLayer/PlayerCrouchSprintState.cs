@@ -28,8 +28,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
 
         public override void OnExitState()
         {
-            WeaponQuery query = MyManager.CombatModule.GetQuery();
-            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Reload) ? 0 : 1);
+            MyManager.IkModule.SetAimIk(MyManager.CombatModule.GetQuery().HasState(WeaponFlags.Reload) ? 0 : 1);
         }
     }
 }

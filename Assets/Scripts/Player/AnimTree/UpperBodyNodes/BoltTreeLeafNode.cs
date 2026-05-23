@@ -42,15 +42,17 @@ namespace Player.AnimTree.UpperBodyNodes
                 gun.localEulerAngles = Vector3.zero;
                 LateUpdate();
                 _weapon = MyMessage.firearmController.Weapon;
+                Debug.Log("切换到中心");
             }
+            else Debug.Log("未发现CurrentData");
         }
         
         public override float UpdateNode()
         {
             WeaponQuery query = MyMessage.CombatModule.GetQuery();
-            TargetWeight = query.HasState(WeaponFlags.Reload) ? 1f : 0f;
+            TargetWeight = query.HasState(WeaponFlags.Blot) ? 1f : 0f;
             float currentWeight = base.UpdateNode();
-            if (currentWeight > 0.9f && query.HasState(WeaponFlags.Reload))
+            if (currentWeight > 0.9f && query.HasState(WeaponFlags.Blot))
             {
                 if (_playable.GetTime() >= _clipDuration)
                 {
@@ -136,7 +138,6 @@ namespace Player.AnimTree.UpperBodyNodes
         {
             //MyMessage.rHeadIkWeight = 1;
             MyMessage.CombatModule.ResetGun(_weapon);
-            
             Debug.Log("Exit Reloading");
         }
     }

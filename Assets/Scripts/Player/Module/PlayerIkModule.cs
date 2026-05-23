@@ -1,9 +1,11 @@
-﻿using Player.Context;
+﻿using mEvent;
+using Player.Context;
+using QFramework;
 using UnityEngine;
 
 namespace Player.Module
 {
-    public class PlayerIkModule : IModule
+    public class PlayerIkModule : IModule, ICanRegisterEvent
     {
         private PlayerIkContext _context;
         private float _aimIkWeight;
@@ -21,6 +23,10 @@ namespace Player.Module
             _target = new GameObject("Aim").transform;
             _context.AimIK.solver.target = _target;
             _context.BodyBipedIK.solver.leftHandEffector.target = _hand;
+            this.RegisterEvent<BoltEvent>(_ => _aimIkWeight = 0)
+                .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
+            this.RegisterEvent<BoltEndEvent>(_ => _aimIkWeight = 1)
+                .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
         }
 
         public void OnUpdate()
@@ -58,11 +64,17 @@ namespace Player.Module
         public void SetHandIk(Transform trans)
         {
             _hand = trans;
+            _context.BodyBipedIK.solver.leftHandEffector.target = _hand;
         }
 
         public void OnFixedUpdate()
         {
             
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
         }
     }
 }

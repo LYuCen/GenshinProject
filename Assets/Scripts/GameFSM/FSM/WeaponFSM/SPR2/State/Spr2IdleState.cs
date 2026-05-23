@@ -13,7 +13,6 @@ namespace GameFSM.FSM.WeaponFSM.SPR2.State
 
         public override void OnUpdateState()
         {
-            Debug.Log($"[FSM] OnUpdateState - MyManager HashCode:{MyManager.GetHashCode()}, Type:{MyManager.GetType().Name}, IsShoot:{MyManager.IsShoot}, IsReload:{MyManager.IsReload}");
         }
     }
 }

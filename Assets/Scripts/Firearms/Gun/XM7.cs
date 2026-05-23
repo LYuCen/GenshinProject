@@ -36,7 +36,7 @@ namespace Firearms.Gun
         public void TryReload(int element)
         {
             if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
-            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
+            AudioSystem.Instance.PlaySound(Config.reloadAudioClip);
             IsReload = true;
         }
 
@@ -69,7 +69,7 @@ namespace Firearms.Gun
             muzzleObj.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
             Muzzle.Muzzle muzzle = muzzleObj.GetComponent<Muzzle.Muzzle>();
             muzzle.UpdateColor(ElementModel.Instance.colors[(int)Magazine.Element]);
-            SoundSystem.Instance.PlaySound(Config.shootAudioClip);
+            AudioSystem.Instance.PlaySound(Config.shootAudioClip);
             //Magazine.BulletNumber--;
         }
 
@@ -143,7 +143,7 @@ namespace Firearms.Gun
         
         public void OnWeaponSwitchEnter()
         {
-            SoundSystem.Instance.PlaySound(Config.getWeaponAudioClip);
+            AudioSystem.Instance.PlaySound(Config.getWeaponAudioClip);
         }
 
         public void OnWeaponSwitchExit()

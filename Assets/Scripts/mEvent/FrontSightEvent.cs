@@ -1,6 +1,6 @@
 ﻿namespace mEvent
 {
-    public class EnterShootEvent
+    public class FrontSightEvent
     {
         
     }

@@ -1,8 +1,7 @@
 ﻿using DG.Tweening;
-using Firearms;
 using mEvent;
 using mModel;
-using mSystem.BuffSystem.ElementBuff;
+using mWeapon;
 using QFramework;
 using TMPro;
 using UnityEngine;
@@ -24,10 +23,8 @@ namespace mView
         [SerializeField] private GameObject frontSight;
         [SerializeField] private RectTransform mainRt;      // 主武器 UI
         [SerializeField] private RectTransform auxiliaryRt; // 附武器 UI 
-
-        private ElementEnum[] _ints = new ElementEnum[3];
+        
         private BagModel _bagModel;
-        private AbstractGun _gun;
 
         private int _prevIndex;
         private int _useWeaponIndex;
@@ -39,34 +36,21 @@ namespace mView
             this.RegisterEvent<ViewUpdateWeaponEvent>(e =>
             {
                 UpdateWeapon(e.Index);
-                _gun = e.Index == 0 ? _bagModel.GetPrimaryWeapon() : _bagModel.GetSecondaryWeapon();
-                weaponElementImg.sprite = ElementModel.Instance.elementUI[(int)_gun.Magazine.Element];
+                weaponElementImg.sprite =
+                    ElementModel.Instance.elementUI[(int)_bagModel.Weapon.Runtime.Component.ElementEnum];
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
             this.RegisterEvent<ViewUpdateElement>(e =>
             {
                 UpdateElementBullets(e.Offset);
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<ViewInitEvent>(_ =>
-                {
-                    InitUI();
-                    _gun = _bagModel.GetPrimaryWeapon();
-                })
+            this.RegisterEvent<WeaponDataUpdateEvent>(_ => UpdateUI())
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<ShootEvent>(_ => UpdateText())
-                .UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<ReloadEndEvent>(_ =>
-            {
-                UpdateText();
-                weaponElementImg.sprite = ElementModel.Instance.elementUI[(int)_gun.Magazine.Element];
-                InitUI();
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<EnterShootEvent>(_ => EnableFrontSight(false))
-                .UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<ExitShootEvent>(_ => EnableFrontSight(true))
+            this.RegisterEvent<FrontSightEvent>(_ =>
+                EnableFrontSight(_bagModel.Weapon.Runtime.Stance != WeaponStance.Ads))
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
-        private void InitUI()
+        private void UpdateUI()
         {
             for (int i = 0; i < 3; i++)
             {
@@ -74,28 +58,14 @@ namespace mView
                 elementIconImg[i].sprite = ElementModel.Instance.elementUI[(int)bullet.Data];
                 elementBullets[i].text = $"{bullet.Val:D3}";
             }
-        }
 
-        /// <summary>
-        /// 更新子弹数
-        /// </summary>
-        /// <param name="bullets">备弹数组</param>
-        public void UpdateBulletsText(int[] bullets)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                elementBullets[i].text = $"{bullets[(int)_ints[i]]:D3}";
-            }
-        }
-        
-        /// <summary>
-        /// 更新当前枪械弹匣子弹数
-        /// </summary>
-        private void UpdateText()
-        {
             bulletText.text =
-                $"{_gun.Magazine.BulletNumber:D3}/{_bagModel.GetBullet(_gun.Magazine.Element).Val:D3}";
+                $"{_bagModel.Weapon.Runtime.Component.BulletVal:D3}/" +
+                $"{_bagModel.GetBullet(_bagModel.Weapon.Runtime.Component.ElementEnum).Val:D3}";
+            weaponElementImg.sprite =
+                ElementModel.Instance.elementUI[(int)_bagModel.Weapon.Runtime.Component.ElementEnum];
         }
+            
 
         /// <summary>
         /// 更新武器
@@ -151,8 +121,7 @@ namespace mView
         /// <summary>
         /// 准星是否可见
         /// </summary>
-        /// <param name="enable"></param>
-        public void EnableFrontSight(bool enable)
+        private void EnableFrontSight(bool enable)
         {
             frontSight.SetActive(enable);
         }

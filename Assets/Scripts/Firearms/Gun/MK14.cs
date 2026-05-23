@@ -47,7 +47,7 @@ namespace Firearms.Gun
         public void TryReload(int element)
         {
             if(IsReload || (Magazine.BulletNumber == Magazine.BulletCapacity && element == (int)Magazine.Element)) return;
-            SoundSystem.Instance.PlaySound(Config.reloadAudioClip);
+            AudioSystem.Instance.PlaySound(Config.reloadAudioClip);
             IsReload = true;
         }
 
@@ -122,7 +122,7 @@ namespace Firearms.Gun
 
             // 加入子弹系统
             BulletSystem.Instance.EnQueue(bullet);
-            SoundSystem.Instance.PlaySound(Config.shootAudioClip);
+            AudioSystem.Instance.PlaySound(Config.shootAudioClip);
 
             // 弹药逻辑
             if (data.shooterId == UserClient.MyId)
@@ -205,7 +205,7 @@ namespace Firearms.Gun
         
         public void OnWeaponSwitchEnter()
         {
-            SoundSystem.Instance.PlaySound(Config.getWeaponAudioClip);
+            AudioSystem.Instance.PlaySound(Config.getWeaponAudioClip);
         }
 
         public void OnWeaponSwitchExit()

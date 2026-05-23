@@ -6,6 +6,8 @@ using mEvent;
 using mModel;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BulletSystem;
+using mWeapon;
+using mWeapon.Presenter;
 using Player.Context;
 using QFramework;
 using UnityEngine;
@@ -39,9 +41,26 @@ namespace Player.Module
 
         public void OnUpdate()
         {
-            if(_context.InputContext.PrimaryAction.Down) _context.FirearmController.DownPrimaryAction();
-            if (_context.InputContext.PrimaryAction.Press) _context.FirearmController.PressPrimaryAction();
+            WeaponAction action = new WeaponAction
+            {
+                Primary = _context.InputContext.PrimaryAction,
+                Secondary = _context.InputContext.SecondaryAction,
+                Reload = _context.InputContext.Reload
+            };
+            if (_context.InputContext.PrimaryAction.Down)
+            {
+                _context.FirearmController.DownPrimaryAction();
+            }
+            if (_context.InputContext.PrimaryAction.Press)
+            {
+                _context.FirearmController.PressPrimaryAction();
+            }
             if(_context.InputContext.PrimaryAction.Up) _context.FirearmController.UpPrimaryAction();
+            _bagModel.Weapon?.HandleAction(action);
+            _bagModel.Weapon?.Tick();
+            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Normal) Debug.Log("Normal");
+            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Ads) Debug.Log("Ads");
+            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Shoulder) Debug.Log("Shoulder");
         }
 
         public void OnFixedUpdate()
@@ -60,7 +79,6 @@ namespace Player.Module
         {
             _isReload = _context.FirearmController.TryReload(chose, bullet);
             _isShoot = _isShoot && !_isReload;
-            if(!_isShoot) this.SendEvent(new ExitShootEvent());
             if (_isReload && _context.FirearmController.Weapon is AbstractGun gun)
             {
                 gun.StartControlledAction(action);
@@ -78,7 +96,6 @@ namespace Player.Module
             _isReload = false;
             _isThrow = false;
             _context.Weapon = _context.FirearmController.GetWeapon(0);
-            Debug.Log(_context.Weapon == null);
             if(!_context.Weapon) Debug.Log("武器为空");
             _context.Weapon.gameObject.SetActive(true);
             _context.FirearmController.Weapon.InitTransform();
@@ -90,6 +107,8 @@ namespace Player.Module
                     Trans = gun.Hand
                 });
                 _bagModel.SetPrimaryWeapon(gun);
+                WeaponPresenter presenter = _context.Weapon.GetComponent<WeaponPresenter>();
+                presenter.Init(_bagModel.Weapon, _context.CameraController);
             }
             else _gun = null;
         }
@@ -110,6 +129,8 @@ namespace Player.Module
                     Trans = gun.Hand
                 });
                 _bagModel.SetSecondaryWeapon(gun);
+                WeaponPresenter presenter = _context.Weapon.GetComponent<WeaponPresenter>();
+                presenter.Init(_bagModel.Weapon, _context.CameraController);
             }
             else _gun = null;
         }
@@ -117,35 +138,27 @@ namespace Player.Module
         public WeaponQuery GetQuery()
         {
             _query.SetState(0);
-            if(_isReload) _query.AddFlags(WeaponFlags.Reload);
+            if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Reloading)) _query.AddFlags(WeaponFlags.Reload);
             if(_isThrow) _query.AddFlags(WeaponFlags.Throw);
-            if(_isShoulder) _query.AddFlags(WeaponFlags.Shoulder);
-            if(_isShoot) _query.AddFlags(WeaponFlags.Shoot);
-            if(_gun != null && _gun.IsBolt) _query.AddFlags(WeaponFlags.Blot);
+            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Shoulder) _query.AddFlags(WeaponFlags.Shoulder);
+            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Ads) _query.AddFlags(WeaponFlags.Shoot);
+            if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Bolting)) _query.AddFlags(WeaponFlags.Blot);
             return _query;
         }
 
         public void DownSecondaryAction()
         {
-            if (_isReload) return;
-            _isShoot = !_isShoot;
-            _context.FirearmController.DownSecondaryAction();
-            if(_isShoot) this.SendEvent(new EnterShootEvent());
-            else this.SendEvent(new ExitShootEvent());
+            
         }
 
         public void PressSecondaryAction()
         {
-            if(!_isShoulder) this.SendEvent(new ExitShootEvent());
-            _isShoulder = true;
-            _context.FirearmController.PressSecondaryAction();
+            
         }
 
         public void UpSecondaryAction()
         {
-            if (_isShoulder) _isShoot = false;
-            _isShoulder = false;
-            _context.FirearmController.UpSecondaryAction();
+            
         }
 
         public void DownAbility1()

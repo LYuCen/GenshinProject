@@ -75,11 +75,9 @@ namespace Player.ManagerLogic
         private void Reload(ElementEnum e, int val)
         {
             AbstractMagazine magazine = _m.firearmController.Weapon.GetMagazine();
-            _m.BagModule.ReturnBullet(new BulletInfo { Data = magazine.Element, Val = magazine.BulletNumber });
             val = Mathf.Min(val, magazine.BulletCapacity);
             magazine.BulletNumber = val;
             magazine.Element = e;
-            _m.BagModule.DeductBullet(new BulletInfo { Data = magazine.Element, Val = magazine.BulletNumber });
             _m.CombatModule.ReloadEnd();
         }
 

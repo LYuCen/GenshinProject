@@ -1,6 +1,6 @@
 ﻿namespace mEvent
 {
-    public class ExitShootEvent
+    public class BoltEvent
     {
         
     }

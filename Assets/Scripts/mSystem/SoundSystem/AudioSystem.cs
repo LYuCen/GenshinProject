@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using AssetBundleFramework.Core.Resource;
 using BaseClass;
 using UnityEngine;
 
 namespace mSystem.SoundSystem
 {
-    public class SoundSystem : AbstractSingleton<SoundSystem>
+    public class AudioSystem : AbstractSingleton<AudioSystem>
     {
         private Dictionary<string, AudioClip> _dic;
         public AudioSource audioSource;
