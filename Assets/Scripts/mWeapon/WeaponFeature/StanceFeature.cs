@@ -24,17 +24,30 @@ namespace mWeapon.WeaponFeature
         {
             _weapon = weapon;
             ReloadFeature r = weapon.RequireFeature<ReloadFeature>();
+            BoltFeature b = weapon.GetFeature<BoltFeature>();
             r.OnReload += ExitShoulder;
+            if(b != null) b.OnBolt += ExitShoulder;
         }
 
         public void HandleAction(WeaponAction action)
         {
             if (!action.Secondary.IsActive()) return;
             if (_weapon.Runtime.HasState(WeaponStateTags.Reloading)) return;
+            if (_weapon.Runtime.HasState(WeaponStateTags.Bolting)) return;
             HandleSecondary(action.Secondary);
         }
 
         public void Tick()
+        {
+            
+        }
+
+        public void OnEnter()
+        {
+            
+        }
+
+        public void OnExit()
         {
             
         }

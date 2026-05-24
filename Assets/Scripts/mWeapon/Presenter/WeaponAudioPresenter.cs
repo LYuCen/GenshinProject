@@ -11,12 +11,6 @@ namespace mWeapon.Presenter
         public WeaponAudioPresenter(WeaponPro weapon)
         {
             _weapon = weapon;
-            _weapon.RequireFeature<FireFeature>().OnFire += OnFire;
-            _weapon.RequireFeature<ReloadFeature>().OnReload += OnReload;
-            if (_weapon.GetFeature<BoltFeature>() != null)
-            {
-                _weapon.GetFeature<BoltFeature>().OnBolt += OnBolt;
-            }
         }
 
         private void OnFire()
@@ -37,6 +31,26 @@ namespace mWeapon.Presenter
         private void OnBolt()
         {
             AudioSystem.Instance.PlaySound(_weapon.RequireComponent<AudioComponent>().BoltAudioClip);
+        }
+        
+        public void OnEnter()
+        {
+            _weapon.RequireFeature<FireFeature>().OnFire += OnFire;
+            _weapon.RequireFeature<ReloadFeature>().OnReload += OnReload;
+            if (_weapon.GetFeature<BoltFeature>() != null)
+            {
+                _weapon.GetFeature<BoltFeature>().OnBolt += OnBolt;
+            }
+        }
+
+        public void OnExit()
+        {
+            _weapon.RequireFeature<FireFeature>().OnFire -= OnFire;
+            _weapon.RequireFeature<ReloadFeature>().OnReload -= OnReload;
+            if (_weapon.GetFeature<BoltFeature>() != null)
+            {
+                _weapon.GetFeature<BoltFeature>().OnBolt -= OnBolt;
+            }
         }
     }
 }

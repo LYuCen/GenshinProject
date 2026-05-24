@@ -1,9 +1,5 @@
-﻿using System;
-using Connect;
-using Connect.Data;
-using mController;
+﻿using mController;
 using mWeapon.Component;
-using mWeapon.WeaponFeature;
 using UnityEngine;
 
 namespace mWeapon.Presenter
@@ -21,6 +17,8 @@ namespace mWeapon.Presenter
         private CameraController _cameraController;
 
         private WeaponAudioPresenter _audioPresenter;
+        private WeaponFirePresenter _firePresenter;
+        private WeaponMuzzlePresenter _muzzlePresenter;
 
         private bool _isInit;
         public void Init(WeaponPro weapon, CameraController  cameraController)
@@ -30,27 +28,30 @@ namespace mWeapon.Presenter
             _weapon = weapon;
             _cameraController = cameraController;
             _audioPresenter = new WeaponAudioPresenter(weapon);
-            _weapon.RequireFeature<FireFeature>().OnFire += OnFire;
+            _firePresenter = new WeaponFirePresenter(weapon, muzzle, cameraController);
+            _muzzlePresenter = new WeaponMuzzlePresenter(weapon, muzzle);
+        }
+        
+        public void OnEnter()
+        {
+            transform.localPosition = _weapon.RequireComponent<TransformComponent>().Pos;
+            Vector3 rot = _weapon.RequireComponent<TransformComponent>().Rot;
+            transform.localRotation = Quaternion.Euler(rot.x, rot.y, rot.z);
+                
+            _audioPresenter?.OnEnter();
+
+            _firePresenter?.OnEnter();
+            
+            _muzzlePresenter?.OnEnter();
         }
 
-        private void OnFire()
+        public void OnExit()
         {
-            var fireFeature = _weapon.RequireFeature<FireFeature>();
-            var damageProfile = _weapon.RequireComponent<DamageProfileComponent>();
-            var mag = _weapon.RequireComponent<MagazineComponent>();
-            ShootData data = new ShootData
-            {
-                shooterId = NetworkService.Bridge.GetMyId(),
-                position = muzzle.position,
-                forward = (_cameraController.rayEnd - muzzle.position).normalized,
-                speed = fireFeature.Data.muzzleVelocity,
-                baseHit = fireFeature.Data.damage * damageProfile.BodyMultiplier,
-                headHit = fireFeature.Data.damage * damageProfile.HeadMultiplier,
-                element = (int)mag.ElementEnum,
-                elementMeasure = 1f,
-                moveTime = 3f,
-                serverTick = DateTime.UtcNow.Ticks,
-            };
+            _audioPresenter?.OnExit();
+
+            _firePresenter?.OnExit();
+            
+            _muzzlePresenter?.OnExit();
         }
     }
 }

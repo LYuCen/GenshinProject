@@ -7,5 +7,9 @@
         void HandleAction(WeaponAction action);
 
         void Tick();
+        
+        void OnEnter();
+
+        void OnExit();
     }
 }

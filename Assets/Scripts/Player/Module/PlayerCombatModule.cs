@@ -25,6 +25,7 @@ namespace Player.Module
         private bool _isBolt;       // 拉栓
         private AbstractGun _gun;
         private BagModel _bagModel;
+        private WeaponPresenter _presenter;
         
         public PlayerCombatModule(CombatContext context)
         {
@@ -107,8 +108,10 @@ namespace Player.Module
                     Trans = gun.Hand
                 });
                 _bagModel.SetPrimaryWeapon(gun);
-                WeaponPresenter presenter = _context.Weapon.GetComponent<WeaponPresenter>();
-                presenter.Init(_bagModel.Weapon, _context.CameraController);
+                _presenter?.OnExit();
+                _presenter = _context.Weapon.GetComponent<WeaponPresenter>();
+                _presenter.Init(_bagModel.Weapon, _context.CameraController);
+                _presenter?.OnEnter();
             }
             else _gun = null;
         }
@@ -129,8 +132,10 @@ namespace Player.Module
                     Trans = gun.Hand
                 });
                 _bagModel.SetSecondaryWeapon(gun);
-                WeaponPresenter presenter = _context.Weapon.GetComponent<WeaponPresenter>();
-                presenter.Init(_bagModel.Weapon, _context.CameraController);
+                _presenter?.OnExit();
+                _presenter = _context.Weapon.GetComponent<WeaponPresenter>();
+                _presenter.Init(_bagModel.Weapon, _context.CameraController);
+                _presenter?.OnEnter();
             }
             else _gun = null;
         }

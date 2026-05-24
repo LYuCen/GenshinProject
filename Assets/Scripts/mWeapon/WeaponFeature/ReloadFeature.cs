@@ -35,6 +35,16 @@ namespace mWeapon.WeaponFeature
         {
         }
 
+        public void OnEnter()
+        {
+            
+        }
+
+        public void OnExit()
+        {
+            
+        }
+
         private void TryReload()
         {
             WeaponRuntime runtime = _weapon.InternalRuntime;

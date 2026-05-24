@@ -15,6 +15,8 @@ namespace mWeapon
                     return new DamageProfileComponent(dam);
                 case AudioComponentData audio:
                     return new AudioComponent(audio);
+                case TransformComponentData trans:
+                    return new TransformComponent(trans);
             }
             return null;
         }

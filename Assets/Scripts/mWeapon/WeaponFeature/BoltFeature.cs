@@ -44,12 +44,21 @@ namespace mWeapon.WeaponFeature
             }
         }
 
+        public void OnEnter()
+        {
+            
+        }
+
+        public void OnExit()
+        {
+            
+        }
+
         private void StartBolt()
         {
             _weapon.InternalRuntime.AddState(WeaponStateTags.Bolting);
 
             _timer = _data.boltDuration;
-            Debug.Log("拉栓");
             OnBolt?.Invoke();
         }
     }

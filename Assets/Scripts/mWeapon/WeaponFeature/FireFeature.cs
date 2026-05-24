@@ -41,6 +41,16 @@ namespace mWeapon.WeaponFeature
             _timer -= Time.deltaTime;
         }
 
+        public void OnEnter()
+        {
+            
+        }
+
+        public void OnExit()
+        {
+            
+        }
+
         private void TryFire()
         {
             if(_timer > 0) return;
@@ -65,7 +75,6 @@ namespace mWeapon.WeaponFeature
 
         private void Fire()
         {
-            Debug.Log("射击" + _weapon.GetComponent<MagazineComponent>().BulletVal);
         }
 
         public IArchitecture GetArchitecture()

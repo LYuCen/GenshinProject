@@ -51,8 +51,8 @@ namespace Firearms.Gun
             if(!MagazineTransform) MagazineTransform = Gun.Find("Magazine");
             if (!Camera) Camera = Gun.Find("Camera");
             if (!Hand) Hand = Gun.Find("hand");
-            Gun.localPosition = new Vector3(0.064f, -0.014f, -0.009f);
-            Gun.localRotation = Quaternion.Euler(20.4752f, 82.8698f, 203.5212f);
+            //Gun.localPosition = new Vector3(0.064f, -0.014f, -0.009f);
+            //Gun.localRotation = Quaternion.Euler(20.4752f, 82.8698f, 203.5212f);
         }
 
         public void SetEnable(bool enable)
@@ -97,6 +97,7 @@ namespace Firearms.Gun
         // 本地和远程共用
         private void ExecuteShoot(ShootData data)
         {
+            /*
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
             obj.transform.position = data.position;
             obj.transform.forward = data.forward;
@@ -113,11 +114,13 @@ namespace Firearms.Gun
                 speed = data.speed,
                 MoveTime = data.moveTime
             };
+            
 
             // 设置粒子和枪焰
             var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
             var main = ps.main;
             main.startColor = ElementModel.Instance.colors[bullet.element];
+            
             
             GameObject muzzleObj = FireMuzzleObjectPool.Instance.GetObj();
             muzzleObj.transform.SetParent(Muzzle);
@@ -128,8 +131,8 @@ namespace Firearms.Gun
             muzzle.UpdateColor(ElementModel.Instance.colors[data.element]);
 
             // 加入子弹系统
-            BulletSystem.Instance.EnQueue(bullet);
-
+            //BulletSystem.Instance.EnQueue(bullet);
+            */
             // 弹药逻辑
             if (data.shooterId == UserClient.MyId)
                 Magazine.BulletNumber--;

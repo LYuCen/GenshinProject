@@ -4,7 +4,6 @@ using mModel;
 using mWeapon.Component;
 using mWeapon.WeaponFeature;
 using QFramework;
-using UnityEngine;
 
 namespace mWeapon
 {
@@ -129,6 +128,22 @@ namespace mWeapon
             foreach (var feature in _features)
             {
                 feature.Tick();
+            }
+        }
+        
+        public void OnEnter()
+        {
+            foreach (var feature in _features)
+            {
+                feature.OnEnter();
+            }
+        }
+
+        public void OnExit()
+        {
+            foreach (var feature in _features)
+            {
+                feature.OnExit();
             }
         }
 

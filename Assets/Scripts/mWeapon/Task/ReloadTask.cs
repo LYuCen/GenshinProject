@@ -23,7 +23,6 @@ namespace mWeapon.Task
         {
             _runtime.AddState(WeaponStateTags.Reloading);
             _timer = _reloadTime;
-            Debug.Log("换弹开始");
         }
         public void Tick()
         {
@@ -42,7 +41,6 @@ namespace mWeapon.Task
             mag.BulletVal = Mathf.Min(_weapon.BagModel.GetBullet(mag.ElementEnum).Val, mag.MagSize);
             info = new BulletInfo(mag.ElementEnum, mag.BulletVal);
             _weapon.BagModel.DeductBullet(info);
-            Debug.Log("换弹结束");
             this.SendEvent<WeaponDataUpdateEvent>();
             Finished = true;
         }
