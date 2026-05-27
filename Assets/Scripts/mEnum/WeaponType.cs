@@ -3,6 +3,10 @@
     public enum WeaponType
     {
         /// <summary>
+        /// 空
+        /// </summary>
+        Normal,
+        /// <summary>
         /// 步枪
         /// </summary>
         Rifle,

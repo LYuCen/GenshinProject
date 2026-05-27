@@ -1,6 +1,5 @@
 ﻿using mController;
 using RootMotion.FinalIK;
-using UnityEngine;
 
 namespace Player.Context
 {
@@ -9,6 +8,7 @@ namespace Player.Context
         public CameraController CameraController;
         public AimIK AimIK;
         public FullBodyBipedIK BodyBipedIK;
-
+        public bool ListenEvents = true;
+        public bool IsLocal = true;
     }
 }

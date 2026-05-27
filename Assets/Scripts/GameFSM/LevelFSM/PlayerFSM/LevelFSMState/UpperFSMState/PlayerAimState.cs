@@ -15,13 +15,13 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             AddCondition(new PlayerReloadStateCondition(MyManager, "Reload"));
             AddCondition(new PlayerThrowStateCondition(MyManager,  "Throw"));
             AddCondition(new PlayerEmptyStateCondition(MyManager, "Empty"));
+            AddCondition(new PlayerBoltStateCondition(MyManager, "Bolt"));
         }
         
         public override void OnEnterState()
         {
             WeaponQuery query = MyManager.CombatModule.GetQuery();
-            float weight = !query.HasState(WeaponFlags.Throw)&& !query.HasState(WeaponFlags.Reload) ? 1 : 0;
-            MyManager.IkModule.SetAimIk(weight);
+            MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
 
         public override void OnUpdateState()

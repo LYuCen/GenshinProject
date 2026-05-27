@@ -9,7 +9,7 @@ namespace mWeapon.Component
 
         public readonly int MagSize;
 
-        public readonly ElementEnum ElementEnum;
+        public ElementEnum ElementEnum;
 
         public MagazineComponent(MagazineComponentData data)
         {

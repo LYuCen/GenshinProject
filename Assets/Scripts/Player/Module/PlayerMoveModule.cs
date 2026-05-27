@@ -1,5 +1,6 @@
 ﻿using AI;
 using AI.VisualRequest.VisualRequest;
+using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
 using Player.Context;
@@ -76,6 +77,16 @@ namespace Player.Module
             _moveSpeed = speed;
         }
 
+        /// <summary>
+        /// 网络同步状态
+        /// </summary>
+        public void SyncFromState(PlayerStateData state)
+        {
+            _isCrouch = state.isCrouch;
+            _isSprint = state.isSprint;
+            _move = state.inputMove;
+        }
+
         public void Sprint()
         {
             PlayerMoveQuery query = GetQuery();
@@ -86,6 +97,7 @@ namespace Player.Module
                          query.HasState(PlayerMoveFlags.ForwardLeft) ||
                          query.HasState(PlayerMoveFlags.ForwardRight));
             _isSprint &= !weaponQuery.HasState(WeaponFlags.Shoot);
+            _isSprint &= !weaponQuery.HasState(WeaponFlags.Shoulder);
         }
 
         public void Crouch()

@@ -1,15 +1,17 @@
 ﻿using Connect;
 using Connect.Converter;
 using Connect.Simulation;
-using Firearms;
 using GameFSM.LevelFSM.PlayerFSM;
 using mController.Player.InputController;
-using mEnum.Flags;
-using mEnum.Query;
 using mEvent;
 using mModel;
-using mSystem.BuffSystem.ElementBuff;
+using mSystem.InputSystem;
 using mSystem.InputSystem.Context;
+using mWeapon;
+using mWeapon.Component;
+using mWeapon.ComponentData;
+using Player.AnimTree;
+using Player.Module;
 using QFramework;
 using UnityEngine;
 
@@ -21,24 +23,46 @@ namespace Player.ManagerLogic
         private Vector3 _bottom;
         private float _stableTimer; // 输入状态切换当前时间
         
-        private InputContext _context;
+        
         private PlayerInputController _inputController;
         private IUnRegister _mReloadEvent;
         private IUnRegister _mSetHandEvent;
+        private BagModel _bagModel;
         
-        public void Init(PlayerManager manager, InputContext context = null)
+        private InputContext _context;
+        private IInputSystem _inputSystem;
+        
+        public void Init(PlayerManager manager)
         {
+            Debug.Log("创建本地玩家");
             _m = manager;
-            _context = context;
+            _bagModel = this.GetModel<BagModel>();
+            _context = new InputContext();
+            _inputSystem = new InputSystem(_context);
+            
+            manager.CombatContext.InputContext = _context;
+            manager.CombatModule = new PlayerCombatModule(manager.CombatContext);
+            manager.MoveContext.CombatModule = manager.CombatModule;
+            manager.MoveModule = new PlayerMoveModule(manager.MoveContext);
+            manager.ViewModule = new PlayerViewModule(manager.PlayerContext);
+            manager.BagModule = new PlayerBagModule(manager.PlayerContext);
+            manager.IkModule = new PlayerIkModule(manager.IKContext);
+            
             _inputController = new PlayerInputController(_m);
             if (NetworkService.Bridge is LocalServerSimulator lss)
             {
                 lss.InitPlayerManager(manager);
             }
-
             _mReloadEvent = this.RegisterEvent<ReloadEvent>(_ => TryReload());
-            _mSetHandEvent = this.RegisterEvent<SetHandIkTargetEvent>(e => InitHandIK(e.Trans));
-        }
+            _mSetHandEvent = this.RegisterEvent<SetHandIkTargetEvent>(InitHandIK);
+            
+            manager.BagModule.Init();
+            manager.CombatModule.Init();
+            manager.MoveModule.Init();
+            manager.IkModule.Init();
+            manager.ViewModule.Init();
+            
+            }
 
         public void OnUpdate()
         {
@@ -46,10 +70,17 @@ namespace Player.ManagerLogic
 
             _m.state.aimPosition = _m.cameraController.rayEnd;
 
-            _m.firearmController.UpdateForward((_m.cameraController.rayEnd - _m.gunStock.position).normalized);
             _m.AnimController.Update();
             SendPositionToServer();
             if(_context.Reload.Down) TryReload();
+            
+            // 监听输入
+            _inputSystem.SetKeyCode();
+            
+            _m.ViewModule?.OnUpdate();
+            _m.CombatModule?.OnUpdate();
+            _m.MoveModule?.OnUpdate();
+            _m.IkModule?.OnUpdate();
         }
 
         public void OnFixedUpdate()
@@ -64,26 +95,25 @@ namespace Player.ManagerLogic
 
         private void TryReload()
         {
-            WeaponQuery query = _m.CombatModule.GetQuery();
-            if (query.HasState(WeaponFlags.Reload)) return;
+            WeaponPro weapon = _bagModel.Weapon;
+            if(weapon == null) return;
+            if(weapon.Runtime.HasState(WeaponStateTags.Reloading)) return;
 
             int chose = _m.ViewModule.GetChose();
             BulletInfo info = _m.BagModule.GetBulletInfo(chose);
-            _m.CombatModule.TryReload(info.Data, info.Val, () => Reload(info.Data, info.Val));
+
+            // 没有该元素子弹
+            if(info.Val <= 0) return;
+            MagazineComponent mag = weapon.GetComponent<MagazineComponent>();
+            // 已装满且元素相同，不需要换弹
+            if(mag.IsFull && mag.ElementEnum == info.Data) return;
+            mag.ElementEnum = info.Data;
         }
 
-        private void Reload(ElementEnum e, int val)
+        private void InitHandIK(SetHandIkTargetEvent e)
         {
-            AbstractMagazine magazine = _m.firearmController.Weapon.GetMagazine();
-            val = Mathf.Min(val, magazine.BulletCapacity);
-            magazine.BulletNumber = val;
-            magazine.Element = e;
-            _m.CombatModule.ReloadEnd();
-        }
-
-        private void InitHandIK(Transform hand)
-        {
-            _m.IkModule.SetHandIk(hand);
+            _m.IkModule.SetHandIk(e.Trans);
+            _m.IkModule.SetMuzzle(e.Muzzle);
         }
 
         /// <summary>

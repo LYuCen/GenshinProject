@@ -56,6 +56,24 @@ namespace Connect.Simulation
                     UpdateInternalBotState(msg.data);
                     ReceiveAtClient(msg);
                     break;
+                case "Revive":
+                    int reviveId = BitConverter.ToInt32(msg.data, 0);
+                    if (reviveId == _myId)
+                    {
+                        _playerManager.state.curHp = _playerManager.state.maxHp;
+                        _playerManager.state.curShield = _playerManager.state.maxShield;
+                    }
+
+                    foreach (var bot in _fakeBots)
+                    {
+                        if (bot.playerId == reviveId)
+                        {
+                            bot.curHp = bot.maxHp;
+                            bot.curShield = bot.maxShield;
+                            break;
+                        }
+                    }
+                    break;
             }
             byte[] listData = PackAllPlayers(_fakeBots);
             ReceiveAtClient(new Message("AllPlayerInfo", listData));
@@ -70,7 +88,7 @@ namespace Connect.Simulation
                 isGround = true,
                 position = _playerManager.transform.position,
                 rotation = _playerManager.transform.rotation,
-                maxHp = 1000, curHp = 1000,
+                maxHp = 100, curHp = 100,
                 maxShield = 150, curShield = 150,
                 bRots = Array.Empty<Transform>()
             };

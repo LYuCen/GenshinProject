@@ -17,10 +17,12 @@ namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
+            /*
             if (MyMessage.firearmController.Weapon is Grenade g)
             {
                 return parentActive && g.IsThrowingAction;
             }
+            */
 
             return false;
         }
@@ -28,9 +30,11 @@ namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
         public override void OnEnterState()
         {
             if (!_playable.IsValid()) return;
+            /*
             // 只在 Throwing 阶段内部进行站/蹲的时间同步
             float savedTime = MyMessage.firearmController.currentActionNormalizedTime;
             _playable.SetTime(savedTime * _clipDuration);
+            */
         }
 
         public override float UpdateNode()
@@ -38,6 +42,7 @@ namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
             float w = base.UpdateNode();
             if (!_playable.IsValid()) return w;
 
+            /*
             // 判定：只有当武器状态处于 Throwing 时，才同步时间
             if (w > 0.5f && MyMessage.firearmController.Weapon is Grenade g && g.CurrentState == GrenadeState.Throwing)
             {
@@ -57,24 +62,16 @@ namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
                     g.OnThrowAnimationEnd();
                 }
             }
+            */
             return w;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            // 直接使用基类里被解析器注入的变量
-            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
-
-            if (!clipToUse && !string.IsNullOrEmpty(Tag))
-            {
-                // 去武器表里找
-                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
-            }
-
-            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            _playable = AnimationClipPlayable.Create(graph, DefaultClip);
             _playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
             
-            if (clipToUse) _clipDuration = clipToUse.length;
+            if (DefaultClip) _clipDuration = DefaultClip.length;
             return _playable;
         }
     }

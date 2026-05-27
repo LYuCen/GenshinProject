@@ -18,7 +18,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         {
             MyManager.MoveModule.SetSpeed(3.5f);
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.IkModule.SetAimIk(0);
+            MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
 
         public override void OnUpdateState()
@@ -28,7 +28,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
 
         public override void OnExitState()
         {
-            MyManager.IkModule.SetAimIk(MyManager.CombatModule.GetQuery().HasState(WeaponFlags.Reload) ? 0 : 1);
+            MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
     }
 }

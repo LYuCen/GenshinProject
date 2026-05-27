@@ -12,6 +12,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             AddCondition(new PlayerReloadStateCondition(MyManager, "Reload"));
             AddCondition(new PlayerAimStateCondition(MyManager, "Aim"));
             AddCondition(new PlayerThrowStateCondition(MyManager, "Throw"));
+            AddCondition(new PlayerBoltStateCondition(MyManager, "Bolt"));
         }
 
         public override void OnEnterState()

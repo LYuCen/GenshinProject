@@ -8,5 +8,6 @@ namespace mEvent
     public class SetHandIkTargetEvent
     {
         public Transform Trans;
+        public Transform Muzzle;
     }
 }

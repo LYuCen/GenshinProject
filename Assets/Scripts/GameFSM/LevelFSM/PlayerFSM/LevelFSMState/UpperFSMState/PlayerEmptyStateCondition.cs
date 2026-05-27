@@ -15,6 +15,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             _list.Add(new PlayerAimStateCondition(MyManager, "Aim"));
             _list.Add(new PlayerReloadStateCondition(MyManager, "Reload"));
             _list.Add(new PlayerThrowStateCondition(MyManager, "Throw"));
+            _list.Add(new PlayerBoltStateCondition(MyManager, "Bolt"));
         }
 
         public override bool CheckCondition(out string nextState)

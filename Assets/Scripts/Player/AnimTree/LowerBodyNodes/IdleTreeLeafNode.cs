@@ -32,16 +32,7 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            // 直接使用基类里被解析器注入的变量
-            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
-
-            if (!clipToUse && !string.IsNullOrEmpty(Tag))
-            {
-                // 去武器表里找
-                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
-            }
-
-            var playable = AnimationClipPlayable.Create(graph, clipToUse);
+            var playable = AnimationClipPlayable.Create(graph, DefaultClip);
             playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
             return playable;
         }

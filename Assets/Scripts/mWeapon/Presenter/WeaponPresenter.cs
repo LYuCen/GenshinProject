@@ -1,5 +1,8 @@
 ﻿using mController;
+using mEvent;
 using mWeapon.Component;
+using mWeapon.WeaponFeature;
+using QFramework;
 using UnityEngine;
 
 namespace mWeapon.Presenter
@@ -7,14 +10,13 @@ namespace mWeapon.Presenter
     /// <summary>
     /// 武器实例
     /// </summary>
-    public class WeaponPresenter : MonoBehaviour
+    public class WeaponPresenter : MonoBehaviour, ICanSendEvent
     {
         public Transform magazine;
         public Transform hand;
         public Transform muzzle;
         public Transform gunSight;
         private WeaponPro _weapon;
-        private CameraController _cameraController;
 
         private WeaponAudioPresenter _audioPresenter;
         private WeaponFirePresenter _firePresenter;
@@ -26,17 +28,17 @@ namespace mWeapon.Presenter
             if (_isInit) return;
             _isInit = true;
             _weapon = weapon;
-            _cameraController = cameraController;
             _audioPresenter = new WeaponAudioPresenter(weapon);
             _firePresenter = new WeaponFirePresenter(weapon, muzzle, cameraController);
             _muzzlePresenter = new WeaponMuzzlePresenter(weapon, muzzle);
+
+            var boltFeature = weapon.GetFeature<BoltFeature>();
         }
         
         public void OnEnter()
         {
-            transform.localPosition = _weapon.RequireComponent<TransformComponent>().Pos;
-            Vector3 rot = _weapon.RequireComponent<TransformComponent>().Rot;
-            transform.localRotation = Quaternion.Euler(rot.x, rot.y, rot.z);
+            ResetTrans();
+            this.SendEvent<WeaponDataUpdateEvent>();
                 
             _audioPresenter?.OnEnter();
 
@@ -47,11 +49,27 @@ namespace mWeapon.Presenter
 
         public void OnExit()
         {
+            gameObject.SetActive(false);
+            
             _audioPresenter?.OnExit();
 
             _firePresenter?.OnExit();
             
             _muzzlePresenter?.OnExit();
+        }
+
+        public void ResetTrans()
+        {
+            if (_weapon == null) return;
+
+            transform.localPosition = _weapon.RequireComponent<TransformComponent>().Pos;
+            Vector3 rot = _weapon.RequireComponent<TransformComponent>().Rot;
+            transform.localRotation = Quaternion.Euler(rot.x, rot.y, rot.z);
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
         }
     }
 }

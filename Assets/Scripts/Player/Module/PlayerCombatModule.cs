@@ -1,13 +1,14 @@
-﻿using System;
-using Firearms;
+﻿using AssetBundleFramework.Core.Resource;
 using mEnum.Flags;
 using mEnum.Query;
 using mEvent;
 using mModel;
-using mSystem.BuffSystem.ElementBuff;
+using mModel.ScriptableConfig;
 using mSystem.BulletSystem;
 using mWeapon;
+using mWeapon.Component;
 using mWeapon.Presenter;
+using Player.AnimTree.UpperBodyNodes;
 using Player.Context;
 using QFramework;
 using UnityEngine;
@@ -18,14 +19,7 @@ namespace Player.Module
     {
         private CombatContext _context;
         private WeaponQuery _query;
-        private bool _isReload;     // 换弹
-        private bool _isThrow;      // 投掷
-        private bool _isShoot;      // 射击
-        private bool _isShoulder;   // 肩射
-        private bool _isBolt;       // 拉栓
-        private AbstractGun _gun;
         private BagModel _bagModel;
-        private WeaponPresenter _presenter;
         
         public PlayerCombatModule(CombatContext context)
         {
@@ -35,33 +29,27 @@ namespace Player.Module
         public void Init()
         {
             _query = new WeaponQuery();
-            _bagModel = this.GetModel<BagModel>();
-            GetPrimaryWeapon();
-            BulletGameObjectPool.Instance.Init(20);
+            if (_context.IsLocal)
+            {
+                _bagModel = this.GetModel<BagModel>();
+                GetPrimaryWeapon();
+                BulletGameObjectPool.Instance.Init(20);
+            }
         }
 
         public void OnUpdate()
         {
+            // 非主控玩家直接跳过
+            if (!_context.IsLocal) return;
+            
             WeaponAction action = new WeaponAction
             {
                 Primary = _context.InputContext.PrimaryAction,
                 Secondary = _context.InputContext.SecondaryAction,
                 Reload = _context.InputContext.Reload
             };
-            if (_context.InputContext.PrimaryAction.Down)
-            {
-                _context.FirearmController.DownPrimaryAction();
-            }
-            if (_context.InputContext.PrimaryAction.Press)
-            {
-                _context.FirearmController.PressPrimaryAction();
-            }
-            if(_context.InputContext.PrimaryAction.Up) _context.FirearmController.UpPrimaryAction();
             _bagModel.Weapon?.HandleAction(action);
             _bagModel.Weapon?.Tick();
-            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Normal) Debug.Log("Normal");
-            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Ads) Debug.Log("Ads");
-            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Shoulder) Debug.Log("Shoulder");
         }
 
         public void OnFixedUpdate()
@@ -69,85 +57,97 @@ namespace Player.Module
             
         }
         
-        public void ResetGun(IWeapon weapon)
+        public void ResetGun()
         {
-            if (weapon == null) return;
-            weapon.GetWeapon().SetParent(_context.GunCube, true); // 保持世界位置/旋转/缩放
-            weapon.InitTransform();
-        }
-
-        public void TryReload(ElementEnum chose, int bullet, Action action)
-        {
-            _isReload = _context.FirearmController.TryReload(chose, bullet);
-            _isShoot = _isShoot && !_isReload;
-            if (_isReload && _context.FirearmController.Weapon is AbstractGun gun)
-            {
-                gun.StartControlledAction(action);
-            }
-        }
-        
-        public void ReloadEnd()
-        {
-            _isReload = false;
-            _context.FirearmController.Reload();
+            Transform weapon = _bagModel.Weapon?.Presenter?.transform;
+            if (!weapon) return;
+            weapon.SetParent(_context.GunCube, true);
+            _bagModel.Weapon.Presenter.ResetTrans();
         }
 
         public void GetPrimaryWeapon()
         {
-            _isReload = false;
-            _isThrow = false;
-            _context.Weapon = _context.FirearmController.GetWeapon(0);
-            if(!_context.Weapon) Debug.Log("武器为空");
-            _context.Weapon.gameObject.SetActive(true);
-            _context.FirearmController.Weapon.InitTransform();
-            if (_context.FirearmController.Weapon is AbstractGun gun)
+            _bagModel.Weapon.Presenter?.OnExit();
+            _bagModel.SetPrimaryWeapon();
+            if (!_bagModel.Weapon.Presenter)
             {
-                _gun = gun;
-                this.SendEvent(new SetHandIkTargetEvent
-                {
-                    Trans = gun.Hand
-                });
-                _bagModel.SetPrimaryWeapon(gun);
-                _presenter?.OnExit();
-                _presenter = _context.Weapon.GetComponent<WeaponPresenter>();
-                _presenter.Init(_bagModel.Weapon, _context.CameraController);
-                _presenter?.OnEnter();
+                IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);
+                GameObject prefab = Object.Instantiate(ir.GetAsset<GameObject>(), _context.GunCube, false);
+                _bagModel.Weapon.Presenter = prefab.GetComponent<WeaponPresenter>();
             }
-            else _gun = null;
+            ActivateWeapon();
         }
 
         public void GetSecondaryWeapon()
         {
-            _isReload = false;
-            _isThrow = false;
-            _context.Weapon = _context.FirearmController.GetWeapon(1);
-            if(!_context.Weapon) Debug.Log("武器为空");
-            _context.Weapon.gameObject.SetActive(true);
-            _context.FirearmController.Weapon.InitTransform();
-            if (_context.FirearmController.Weapon is AbstractGun gun)
+            _bagModel.Weapon.Presenter?.OnExit();
+            _bagModel.SetSecondaryWeapon();
+            if (!_bagModel.Weapon.Presenter)
             {
-                _gun = gun;
-                this.SendEvent(new SetHandIkTargetEvent
-                {
-                    Trans = gun.Hand
-                });
-                _bagModel.SetSecondaryWeapon(gun);
-                _presenter?.OnExit();
-                _presenter = _context.Weapon.GetComponent<WeaponPresenter>();
-                _presenter.Init(_bagModel.Weapon, _context.CameraController);
-                _presenter?.OnEnter();
+                IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);
+                GameObject prefab = Object.Instantiate(ir.GetAsset<GameObject>(), _context.GunCube, false);
+                _bagModel.Weapon.Presenter = prefab.GetComponent<WeaponPresenter>();
             }
-            else _gun = null;
+            ActivateWeapon();
+        }
+
+        private void ActivateWeapon()
+        {
+            // 动画树切换
+            var animComp = _bagModel.Weapon.RequireComponent<AnimComponent>();
+            _context.AnimController.SwitchWeaponGraph(
+                animComp.AnimGraphData,
+                _bagModel.Weapon.WeaponType
+            );
+            TagClipPair tagClipPair = new TagClipPair();
+            for (int i = 0; i < animComp.AnimMappings.Count; i++)
+            {
+                if (animComp.AnimMappings[i].tag == "Reload")
+                {
+                    tagClipPair = animComp.AnimMappings[i];
+                    break;
+                }
+            }
+            _context.AnimController.InstallSlotAction("UpperSlot", manager =>
+            {
+                var node = new ReloadTreeLeafNode(manager);
+                node.AnimSpeed = tagClipPair.animSpeed;
+                node.Tag = tagClipPair.tag;
+                node.UseTagOnly = false;
+                node.DefaultClip = tagClipPair.clip;
+                node.CurrentData = tagClipPair.clipAsset;
+                return node;
+            });
+            _bagModel.Weapon.Presenter.gameObject.SetActive(true);
+            this.SendEvent(new SetHandIkTargetEvent
+            {
+                Trans = _bagModel.Weapon.Presenter.hand,
+                Muzzle = _bagModel.Weapon.Presenter.muzzle
+            });
+            _bagModel.Weapon.Presenter.Init(_bagModel.Weapon, _context.CameraController);
+            _bagModel.Weapon.Presenter.OnEnter();
+            _context.CameraController.scopeCamera = _bagModel.Weapon.Presenter.gunSight;
+            _context.CameraController.scopeCamera?.gameObject.SetActive(false); // 初始隐藏，开镜时才显
         }
 
         public WeaponQuery GetQuery()
         {
             _query.SetState(0);
-            if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Reloading)) _query.AddFlags(WeaponFlags.Reload);
-            if(_isThrow) _query.AddFlags(WeaponFlags.Throw);
-            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Shoulder) _query.AddFlags(WeaponFlags.Shoulder);
-            if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Ads) _query.AddFlags(WeaponFlags.Shoot);
-            if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Bolting)) _query.AddFlags(WeaponFlags.Blot);
+            if (_context.IsLocal)
+            {
+                if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Reloading)) _query.AddFlags(WeaponFlags.Reload);
+                if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Shoulder) _query.AddFlags(WeaponFlags.Shoulder);
+                if(_bagModel.Weapon.Runtime.Stance == WeaponStance.Ads) _query.AddFlags(WeaponFlags.Shoot);
+                if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Bolting)) _query.AddFlags(WeaponFlags.Bolt);
+            }
+            else
+            {
+                var state = _context.StateData;
+                if(state.isShoot) _query.AddFlags(WeaponFlags.Shoot);
+                if(state.isReload) _query.AddFlags(WeaponFlags.Reload);
+                if(state.isThrow) _query.AddFlags(WeaponFlags.Throw);
+
+            }
             return _query;
         }
 
@@ -168,14 +168,12 @@ namespace Player.Module
 
         public void DownAbility1()
         {
-            _isThrow = true;
-            _isShoot = false;
-            _context.FirearmController.UserThrow();
+            
         }
 
         public Transform GetWeapon()
         {
-            return _context.Weapon;
+            return _bagModel.Weapon?.Presenter?.transform;
         }
 
         public IArchitecture GetArchitecture()

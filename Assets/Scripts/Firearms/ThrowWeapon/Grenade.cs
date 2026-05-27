@@ -44,7 +44,7 @@ namespace Firearms.ThrowWeapon
             _hasPhysicalThrown = false; 
             _hasFinishedAction = false;
 
-            Manager.firearmController.currentActionNormalizedTime = 0f; 
+            //Manager.firearmController.currentActionNormalizedTime = 0f; 
             Debug.Log($"[Grenade] 进入阶段: {newState}");
         }
 

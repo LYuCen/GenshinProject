@@ -13,10 +13,7 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override bool CheckState(bool parentActive)
         {
-            if (MyMessage.firearmController.Weapon is Grenade g)
-            {
-                return parentActive && g.CurrentState == GrenadeState.Idle;
-            }
+            
 
             return false;
         }

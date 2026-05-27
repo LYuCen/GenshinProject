@@ -26,23 +26,16 @@ namespace Player.AnimTree.LowerBodyNodes
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            AnimationClip clipToUse = UseTagOnly ? null : DefaultClip;
-
-            if (!clipToUse && !string.IsNullOrEmpty(Tag))
+            if (!DefaultClip)
             {
-                clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
-            }
-
-            if (!clipToUse)
-            {
-                Debug.LogError($"[RifleSlidingNode] 找不到动画剪辑！Tag: {Tag}");
+                Debug.LogError($"[ReloadNode] 找不到有效的动画剪辑！Tag: {Tag}");
                 return Playable.Null;
             }
             
-            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            _playable = AnimationClipPlayable.Create(graph, DefaultClip);
             _playable.SetSpeed(this.AnimSpeed);
             
-            _clipDuration = clipToUse.length; 
+            _clipDuration = DefaultClip.length; 
 
             return _playable;
         }

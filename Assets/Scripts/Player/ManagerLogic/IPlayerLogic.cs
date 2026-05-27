@@ -6,7 +6,7 @@ namespace Player.ManagerLogic
 {
     public interface IPlayerLogic
     {
-        void Init(PlayerManager manager, InputContext context = null);
+        void Init(PlayerManager manager);
         void OnUpdate();
         void OnFixedUpdate();
         void OnLateUpdate();

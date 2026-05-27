@@ -156,7 +156,7 @@ namespace mController
 
         private void Update()
         {
-            Weapon.UpdateWeapon();
+            //Weapon.UpdateWeapon();
                         
             if (weaponIndex == 2 && _weaponSlots[2] != null)
             {

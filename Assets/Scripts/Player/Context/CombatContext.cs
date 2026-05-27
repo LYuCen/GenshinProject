@@ -1,16 +1,18 @@
-﻿using mController;
+﻿using Connect.Data;
+using mController;
 using mSystem.InputSystem.Context;
+using Player.AnimTree;
 using UnityEngine;
 
 namespace Player.Context
 {
     public class CombatContext
     {
-        public FirearmController FirearmController;
         public CameraController CameraController;
         public InputContext InputContext;
-
+        public PlayerAnimController AnimController;
+        public PlayerStateData StateData;
         public Transform GunCube;
-        public Transform Weapon;
+        public bool IsLocal = true;
     }
 }

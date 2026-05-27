@@ -39,15 +39,13 @@ namespace mModel
             Weapon = _fnIws;
         }
 
-        public void SetPrimaryWeapon(AbstractGun gun)
+        public void SetPrimaryWeapon()
         {
-            _primaryWeapon = gun;
             Weapon = _fnIws;
         }
 
-        public void SetSecondaryWeapon(AbstractGun gun)
+        public void SetSecondaryWeapon()
         {
-            _secondaryWeapon = gun;
             Weapon = _spr2;
         }
 

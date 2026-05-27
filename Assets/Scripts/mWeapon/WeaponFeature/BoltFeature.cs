@@ -1,10 +1,12 @@
 ﻿using System;
+using mEvent;
 using mWeapon.FeatureData;
+using QFramework;
 using UnityEngine;
 
 namespace mWeapon.WeaponFeature
 {
-    public class BoltFeature : IWeaponFeature
+    public class BoltFeature : IWeaponFeature, ICanSendEvent
     {
         
         private WeaponPro _weapon;
@@ -59,7 +61,13 @@ namespace mWeapon.WeaponFeature
             _weapon.InternalRuntime.AddState(WeaponStateTags.Bolting);
 
             _timer = _data.boltDuration;
+            this.SendEvent(new BoltEvent());
             OnBolt?.Invoke();
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Firearms;
-using GameFSM.LevelFSM.PlayerFSM;
+﻿using GameFSM.LevelFSM.PlayerFSM;
 using IUtility;
 using mEnum.Flags;
 using mEnum.Query;
@@ -15,8 +14,8 @@ namespace Player.AnimTree.UpperBodyNodes
         private AnimationClipPlayable _playable;
         private float _clipDuration;
         private float _handBlend;
-        private IWeapon _weapon;
-        
+        private bool _wasFullyActive;
+
         public BoltTreeLeafNode(PlayerManager myMessage) : base(myMessage)
         {
         }
@@ -24,40 +23,38 @@ namespace Player.AnimTree.UpperBodyNodes
         public override bool CheckState(bool parentActive)
         {
             WeaponQuery query = MyMessage.CombatModule.GetQuery();
-            
-            bool res = query.HasState(WeaponFlags.Blot);
-            
+
+            bool res = query.HasState(WeaponFlags.Bolt);
+
             return parentActive && res;
         }
-        
+
         public override void OnEnterState()
         {
-            Debug.Log("Start Reloading...");
-            _playable.SetTime(0); // 每次进入时重置时间
+            _playable.SetTime(0);
             if (CurrentData)
             {
-                Transform gun = MyMessage.CombatModule.GetWeapon();
-                gun.SetParent(MyMessage.firearmController.weaponPivot);
-                gun.localPosition = Vector3.zero;
-                gun.localEulerAngles = Vector3.zero;
                 LateUpdate();
-                _weapon = MyMessage.firearmController.Weapon;
-                Debug.Log("切换到中心");
             }
-            else Debug.Log("未发现CurrentData");
         }
-        
+
         public override float UpdateNode()
         {
             WeaponQuery query = MyMessage.CombatModule.GetQuery();
-            TargetWeight = query.HasState(WeaponFlags.Blot) ? 1f : 0f;
+            bool shouldBeActive = query.HasState(WeaponFlags.Bolt);
+            TargetWeight = shouldBeActive ? 1f : 0f;
             float currentWeight = base.UpdateNode();
-            if (currentWeight > 0.9f && query.HasState(WeaponFlags.Blot))
+
+            bool isFullyActive = currentWeight > 0.9f && shouldBeActive;
+            if (isFullyActive && !_wasFullyActive && _playable.GetTime() >= _clipDuration)
             {
-                if (_playable.GetTime() >= _clipDuration)
-                {
-                    //MyMessage.CombatModule.ReloadEnd(); // 这里会让 IsReload 变 false，触发上面的 TargetWeight = 0
-                }
+                _playable.SetTime(0);
+            }
+            _wasFullyActive = isFullyActive;
+
+            if (isFullyActive)
+            {
+                if (_playable.GetTime() >= _clipDuration) { }
                 else if(CurrentData) LateUpdate();
             }
             return currentWeight;
@@ -66,38 +63,17 @@ namespace Player.AnimTree.UpperBodyNodes
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             MixIndex = mixIndex;
-            AnimationClip clipToUse = null;
-
-            // 根据编辑器里的配置决定使用哪个 Clip
-            if (UseTagOnly)
-            {
-                // 严格 Tag 模式：去当前武器里找
-                if (MyMessage.firearmController.Weapon != null && !string.IsNullOrEmpty(Tag))
-                {
-                    clipToUse = MyMessage.firearmController.Weapon.GetClipByTag(Tag);
-                }
-            }
-            else
-            {
-                // 混合模式：优先用图中拖进去的，没拖再用 Tag 找
-                clipToUse = DefaultClip;
-                if (!clipToUse && !string.IsNullOrEmpty(Tag))
-                {
-                    clipToUse = MyMessage.firearmController.Weapon?.GetClipByTag(Tag);
-                }
-            }
-
-            if (!clipToUse)
+            if (!DefaultClip)
             {
                 Debug.LogError($"[ReloadNode] 找不到有效的动画剪辑！Tag: {Tag}");
                 return Playable.Null;
             }
             
-            _playable = AnimationClipPlayable.Create(graph, clipToUse);
+            _playable = AnimationClipPlayable.Create(graph, DefaultClip);
             
             _playable.SetSpeed(AnimSpeed);
             
-            _clipDuration = clipToUse.length;
+            _clipDuration = DefaultClip.length;
             return _playable;
         }
         
@@ -130,14 +106,13 @@ namespace Player.AnimTree.UpperBodyNodes
             Vector3 finalLP = lBP + (lBR * CurrentData.lOffset);
             Quaternion finalLR = lBR * Quaternion.Euler(CurrentData.lRot);
             
-            MyMessage.firearmController.weaponPivot.localPosition = Vector3.Lerp(finalLP, finalRP, _handBlend);
-            MyMessage.firearmController.weaponPivot.localRotation = Quaternion.Slerp(finalLR, finalRR, _handBlend);
+            MyMessage.weaponPivot.localPosition = Vector3.Lerp(finalLP, finalRP, _handBlend);
+            MyMessage.weaponPivot.localRotation = Quaternion.Slerp(finalLR, finalRR, _handBlend);
         }
         
         public override void OnExitState()
         {
             //MyMessage.rHeadIkWeight = 1;
-            MyMessage.CombatModule.ResetGun(_weapon);
             Debug.Log("Exit Reloading");
         }
     }

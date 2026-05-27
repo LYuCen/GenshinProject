@@ -1915,6 +1915,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1878991226}
   m_SourcePrefab: {fileID: 100100000, guid: 27755e1c1d8f618418b62e14225c36e0, type: 3}
+--- !u!4 &601633949 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1307679783716237291, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
+  m_PrefabInstance: {fileID: 5980482629888394860}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &650321682
 GameObject:
   m_ObjectHideFlags: 0
@@ -17700,6 +17705,14 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: -0.03842919
       objectReference: {fileID: 0}
+    - target: {fileID: 5745422508634482262, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 56.1375
+      objectReference: {fileID: 0}
+    - target: {fileID: 5745422508634482262, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 13.1625
+      objectReference: {fileID: 0}
     - target: {fileID: 5762803781530342173, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.08161994
@@ -17876,6 +17889,10 @@ PrefabInstance:
       propertyPath: aim
       value: 
       objectReference: {fileID: 1306571241}
+    - target: {fileID: 6166532963192323988, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
+      propertyPath: weaponPivot
+      value: 
+      objectReference: {fileID: 601633949}
     - target: {fileID: 6166532963192323988, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
       propertyPath: cameraController
       value: 
@@ -18688,6 +18705,10 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: 0.16799344
       objectReference: {fileID: 0}
+    - target: {fileID: 9072564047603118739, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: fddc464e1970bb84da33494fadfcd9ce, type: 3}
     - target: {fileID: 9131505031687968326, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.20687094

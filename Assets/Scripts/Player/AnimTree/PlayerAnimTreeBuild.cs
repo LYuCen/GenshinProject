@@ -16,7 +16,7 @@ namespace Player.AnimTree
 
         public PlayerAnimTreeBuild(PlayerManager manager, AnimGraphData defaultTree, PlayerAnimSlot slot)
         {
-            _graph = PlayableGraph.Create("PlayerAnimGraph");
+            _graph = PlayableGraph.Create($"PlayerAnimGraph_{manager.state.playerId}");
         
             // 1. 创建根插槽
             _rootNode = new PlayerAnimSlotTreeRoot(manager);

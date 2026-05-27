@@ -18,8 +18,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         
         public override void OnEnterState()
         {
-            MyManager.IkModule.SetAimIk(0);
-            MyManager.IkModule.SetHandIk(0);
             MyManager.gunCube.SetParent(MyManager.hand);
         }
 
@@ -29,9 +27,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 
         public override void OnExitState()
         {
-            WeaponQuery query = MyManager.CombatModule.GetQuery();
-            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Shoot) ? 1 : 0);
-            MyManager.IkModule.SetHandIk(1);
+            
         }
     }
 }

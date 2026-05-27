@@ -1,8 +1,8 @@
 ﻿using Connect.Data;
 using mController;
+using mEnum.Flags;
 using mEnum.Query;
 using mInterface;
-using mSystem.InputSystem.Context;
 using mSystem.StatusSystem;
 using Player;
 using Player.AnimPro;
@@ -28,7 +28,6 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public CharacterController characterController;
         public Animator animator;
         public CameraController cameraController;
-        public FirearmController firearmController;
         public PlayerAnimController AnimController;
         public EntityStatusUI entityStatusUI;
         public AimIK aimIK;
@@ -36,91 +35,88 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public AnimGraphData graphData;
         public CharacterEffectManager characterEffectManager;
         public FullBodyBipedIK bodyIk;
+        public Transform weaponPivot;
         
         private IPlayerLogic _logic;
-        private InputContext _context;
-        private PlayerContext _playerContext;
-        private CombatContext _combatContext;
-        private MoveContext _moveContext;
-        private PlayerIkContext _ikContext;
+        public PlayerContext PlayerContext;
+        public CombatContext CombatContext;
+        public MoveContext MoveContext;
+        public PlayerIkContext IKContext;
+        public PlayerHpContext HpContext;
         public PlayerViewModule ViewModule;
         public PlayerBagModule BagModule;
         public PlayerCombatModule CombatModule;
         public PlayerHpModule HpModule;
         public PlayerMoveModule MoveModule;
         public PlayerIkModule IkModule;
+        private bool _isLocal;
         
-        public void Init(bool isLocal, InputContext context = null)
+        public void Init(bool isLocal)
         {
-            _context = context;
             state.bRots = bones;
             animator.applyRootMotion = false;
             AnimController = new PlayerAnimController(this, graphData);
-            _playerContext = new PlayerContext
+            PlayerContext = new PlayerContext
             {
                 StateData = state,
+                CharacterEffectManager = characterEffectManager,
             };
-            _combatContext = new CombatContext
+
+            HpContext = new PlayerHpContext()
             {
-                FirearmController = firearmController,
-                CameraController = cameraController,
-                InputContext = context,
-                GunCube = gunCube,
+                StateData = state,
+                CharacterEffectManager = characterEffectManager,
+                EntityStatusUI = entityStatusUI
             };
-            CombatModule = new PlayerCombatModule(_combatContext);
-            _moveContext = new MoveContext
+            
+            // 本地远程公共模块
+            HpModule = new PlayerHpModule(HpContext);
+            CombatContext = new CombatContext
+            {
+                CameraController = cameraController,
+                GunCube = gunCube,
+                AnimController = AnimController,
+                IsLocal = isLocal
+            };
+            MoveContext = new MoveContext
             {
                 CameraController = cameraController,
                 CharacterController = characterController,
                 PlayerTransform = transform,
-                CombatModule = CombatModule
             };
-            _ikContext = new PlayerIkContext
+            IKContext = new PlayerIkContext
             {
                 CameraController = cameraController,
                 AimIK = aimIK,
-                BodyBipedIK = bodyIk
+                BodyBipedIK = bodyIk,
+                IsLocal = isLocal
             };
-            MoveModule = new PlayerMoveModule(_moveContext);
-            ViewModule = new PlayerViewModule(_playerContext);
-            BagModule = new PlayerBagModule(_playerContext);
-            IkModule = new PlayerIkModule(_ikContext);
-            HpModule = new PlayerHpModule(_playerContext);
-            firearmController.Init(_playerContext);
-            if (isLocal) _logic = new LocalPlayerLogic();
-            else _logic = new RemotePlayerLogic();
+
+            // 主控玩家模块
+            if (isLocal)
+            {
+                _logic = new LocalPlayerLogic();
+            }
+            else
+            {
+                _logic = new RemotePlayerLogic();
+            }
+            _logic.Init(this);
             
-                                                                                               
+            // 初始化
             entityStatusUI.InitStatus(ref state);
-            _logic.Init(this, _context);
-            BagModule.Init();
-            CombatModule.Init();
-            MoveModule.Init();
-            IkModule.Init();
-            ViewModule.Init();
         }
 
         private void FixedUpdate()
         { 
             _logic?.OnFixedUpdate();
+            HpModule?.OnFixedUpdate();
         }
 
         private void Update()
         { 
             _logic?.OnUpdate();
-            
-            /*
-            bodyIk.solver.IKPositionWeight = Mathf.MoveTowards(
-                bodyIk.solver.IKPositionWeight, 
-                rHeadIkWeight, 
-                7 * Time.deltaTime
-            );
-            */
-            
-            ViewModule.OnUpdate();
-            CombatModule.OnUpdate();
-            MoveModule.OnUpdate();
-            IkModule.OnUpdate();
+            HpModule?.OnUpdate();
         }
 
         private void LateUpdate()
@@ -137,6 +133,29 @@ namespace GameFSM.LevelFSM.PlayerFSM
                 logic.UnRegister();
             }
         }
+        
+        public float GetAimIkTarget()
+        {
+            PlayerMoveQuery move = MoveModule?.GetQuery() ?? default;
+            if(move.HasState(PlayerMoveFlags.Sprint)) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Reload) == true) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Bolt) == true) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Throw) == true) return 0;
+
+            return 1;
+        }
+
+        public float GetHandIkTarget()
+        {
+            PlayerMoveQuery move = MoveModule?.GetQuery() ?? default;
+            if(move.HasState(PlayerMoveFlags.Sprint)) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Reload) == true) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Bolt) == true) return 0;
+            if(CombatModule?.GetQuery()?.HasState(WeaponFlags.Throw) == true) return 0;
+
+            return 1;
+        }
+
 
         private void OnDestroy()
         {

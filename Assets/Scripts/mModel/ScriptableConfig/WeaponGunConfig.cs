@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Firearms;
 using mEnum;
 using Player.AnimPro;
 using UnityEngine;
@@ -8,8 +9,11 @@ namespace mModel.ScriptableConfig
     [System.Serializable]
     public struct TagClipPair
     {
-        public string tag;         // 对应编辑器里的 Lookup Tag，如 "Reload"
-        public AnimationClip clip; // 对应的动画文件
+        public string tag;
+        public AnimationClip clip;
+        public float animSpeed;
+        public bool useTagOnly;
+        public WeaponClipAsset clipAsset;
     }
 
     

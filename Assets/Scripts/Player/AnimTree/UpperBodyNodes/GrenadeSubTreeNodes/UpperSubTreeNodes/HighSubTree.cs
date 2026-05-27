@@ -11,7 +11,7 @@ namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
 
         public override bool CheckState(bool parentActive)
         {
-            return parentActive && !MyMessage.firearmController.isDownThrow;
+            return parentActive;
         }
     }
 }

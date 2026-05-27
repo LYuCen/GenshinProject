@@ -17,6 +17,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
             States.Add("Reload", new PlayerReloadState(MyManager, new PlayerReloadStateCondition(MyManager,  "Reload")));
             States.Add("Throw", new PlayerThrowState(MyManager, new PlayerThrowStateCondition(MyManager, "Throw")));
             States.Add("Empty", new PlayerEmptyState(MyManager, new PlayerEmptyStateCondition(MyManager, "Empty")));
+            States.Add("Bolt", new PlayerBoltState(MyManager, new PlayerBoltStateCondition(MyManager, "Bolt")));
             IsBuilt = true;
         }
     }

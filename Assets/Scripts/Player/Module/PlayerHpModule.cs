@@ -1,4 +1,6 @@
-﻿using Connect.Data;
+﻿using System;
+using Connect;
+using Connect.Data;
 using Connect.FlatDTO;
 using mSystem.HurtSystem;
 using Player.Context;
@@ -8,9 +10,11 @@ namespace Player.Module
 {
     public class PlayerHpModule : IModule
     {
-        private PlayerContext _context;
+        private PlayerHpContext _context;
         private PlayerStateData _state;
-        public PlayerHpModule(PlayerContext context)
+        private float _waitSecond = 3f;
+        private bool _isDead;
+        public PlayerHpModule(PlayerHpContext context)
         {
             _context = context;
             _state = context.StateData;
@@ -23,7 +27,33 @@ namespace Player.Module
 
         public void OnUpdate()
         {
+            if (_state.curHp <= 0)
+            {
+                if (!_isDead)
+                {
+                    _isDead = true;
+                    _waitSecond = 3f;
+                }
+
+                _waitSecond -= Time.deltaTime;
+                if (_waitSecond <= 0)
+                {
+                    _isDead = false;
+                    _waitSecond = 3f;
+                    Revive();
+                }
+            }
+        }
+
+        private void Revive()
+        {
+            _state.curShield = _state.maxShield;
+            _state.curHp = _state.maxHp;
             
+            _context.EntityStatusUI.SetShield(_state.curShield);
+            _context.EntityStatusUI.SetHp(_state.curHp);
+
+            NetworkService.Bridge.SendToServer(new Message("Revive", BitConverter.GetBytes(_state.playerId)));
         }
 
         public void OnFixedUpdate()
@@ -36,10 +66,10 @@ namespace Player.Module
             float hurt = component.Harm;
             if(_state.curShield > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.cyan);
             else if(_state.curHp > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.red);
+            
             if (hurt <= _state.curShield)
             {
                 _state.curShield = Mathf.Clamp(_state.curShield - hurt, 0, _state.maxShield);
-                
             }
             else
             {
@@ -51,25 +81,14 @@ namespace Player.Module
         
         public void SyncStatus(PlayerDataFlat dto)
         {
-            // FlatBuffers 生成的属性是 PascalCase（首字母大写）
+            if (_isDead) return; // 死亡过程不更新 hp
+            
             _state.curHp = dto.CurHp;
             _state.maxHp = dto.MaxHp;
             _state.curShield = dto.CurShield;
             _state.maxShield = dto.MaxShield;
 
-            /* todo
-            // 2. 更新 UI 表现
-            if (entityStatusUI)
-            {
-                entityStatusUI.SyncValues(dto.CurHp, dto.MaxHp, dto.CurShield, dto.MaxShield);
-            }
-            if (state.curHp == 0 && gameObject.activeSelf)
-            {
-                Debug.Log($"[PlayerManager] {state.playerId} 玩家死亡");
-                gameObject.SetActive(false);
-                CreateSnapshot();
-            }
-            */
+            _context.EntityStatusUI.SyncValues(dto.CurHp, dto.MaxHp, dto.CurShield, dto.MaxShield);
         }
     }
 }

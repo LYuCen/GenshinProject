@@ -99,11 +99,7 @@ namespace Connect
                         {
                             if (PlayerPool.Instance.Models.TryGetValue(tempFlat.ShooterId, out var m))
                             {
-                                // 调用修改后的 RemoteShoot
-                                if (m.firearmController.Weapon is AbstractGun gun)
-                                {
-                                    gun.RemoteShoot(msg.data);
-                                }
+                                
                             }
                         }
                     }
@@ -111,7 +107,6 @@ namespace Connect
                 case "AllPlayerInfo":
                     // 解析全量玩家列表
                     var playerListFlat = PlayerList.GetRootAsPlayerList(bb);
-                    // 这里你可以直接传这个对象给 PlayerPool，或者转成列表
                     PlayerPool.Instance.UpdatePlayer(playerListFlat); 
                     break;
 

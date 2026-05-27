@@ -20,8 +20,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
             WeaponQuery query = MyManager.CombatModule.GetQuery();
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.MoveModule.SetSpeed(0f);
-            MyManager.IkModule.SetHandIk(!query.HasState(WeaponFlags.Reload) ? 1 : 0);
-            MyManager.IkModule.SetAimIk(query.HasState(WeaponFlags.Reload) ? 0 : 1);
+            MyManager.IkModule.SetHandIk(MyManager.GetHandIkTarget());
+            MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
     }
 }

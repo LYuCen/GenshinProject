@@ -17,6 +17,8 @@ namespace mWeapon
                     return new AudioComponent(audio);
                 case TransformComponentData trans:
                     return new TransformComponent(trans);
+                case AnimComponentData anim:
+                    return new AnimComponent(anim);
             }
             return null;
         }

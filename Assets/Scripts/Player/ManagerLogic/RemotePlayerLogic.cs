@@ -1,11 +1,13 @@
-﻿using Connect;
-using Connect.FlatDTO; // 必须引用 FlatBuffers 生成的命名空间
-
+﻿using AssetBundleFramework.Core.Resource;
+using Connect;
+using Connect.FlatDTO;
 using GameFSM.LevelFSM.PlayerFSM;
-using mEnum.Flags;
-using mEnum.Query;
-using mSystem.InputSystem.Context;
-using Player.Context;
+using mModel.ScriptableConfig;
+using mWeapon;
+using mWeapon.ComponentData;
+using mWeapon.Presenter;
+using Player.AnimTree.UpperBodyNodes;
+using Player.Module;
 using UnityEngine;
 
 namespace Player.ManagerLogic
@@ -21,14 +23,81 @@ namespace Player.ManagerLogic
         private float _lastPacketTime;       // 上次收到包的时间
         private bool _isFirstPacket = true;  // 是否是第一个包
 
-        private const float MaxSnapDistance = 2.0f; 
+        private const float MaxSnapDistance = 2.0f;
+        private PlayerFsm _playerFsm;
+        private WeaponPresenter weapon;
 
-        public void Init(PlayerManager manager, InputContext context = null)
+        public void Init(PlayerManager manager)
         {
+            Debug.Log("创建其他玩家");
             _m = manager;
-            WeaponQuery query = _m.CombatModule.GetQuery();
+
+            // 1. 上下文
+            manager.CombatContext.InputContext = null;
+            manager.CombatContext.StateData = manager.state;
+            manager.CombatContext.IsLocal = false;
+            manager.IKContext.ListenEvents = false;
+            manager.IKContext.IsLocal = false;
+
+            // 2. 模块
+            manager.CombatModule = new PlayerCombatModule(manager.CombatContext);
+            manager.MoveModule = new PlayerMoveModule(manager.MoveContext);
+            manager.IkModule = new PlayerIkModule(manager.IKContext);
+
             _lastPacketTime = Time.time;
-            
+
+            manager.CombatModule.Init();
+            manager.MoveModule.Init();
+            manager.IkModule.Init();
+
+            // 3. 武器（动画树依赖 MoveModule，IK 依赖武器 Transform）
+            InitTransformPosition("FnIws");
+            manager.IkModule.SetMuzzle(weapon.muzzle);
+            manager.IkModule.SetHandIk(weapon.hand);
+
+            // 4. FSM（依赖 MoveModule）
+            _playerFsm = new PlayerFsm(manager);
+
+        }
+
+        private void InitTransformPosition(string name)
+        {
+            var ir2 = ResourceManager.instance.Load
+                ($"Assets/AssetBundle/ScriptableObject/Weapon/{name}/{name}.asset", false);
+            var data = ir2.GetAsset<WeaponData>();
+            IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/Remote/{data.weaponName}.prefab", false);
+            GameObject prefab = Object.Instantiate(ir.GetAsset<GameObject>(), _m.gunCube, false);
+            weapon = prefab.GetComponent<WeaponPresenter>();
+            var ir3 = ResourceManager.instance.Load(
+                $"Assets/AssetBundle/ScriptableObject/Weapon/{data.name}/{name}_Trans.asset",false);
+            var trans = ir3.GetAsset<TransformComponentData>();
+            prefab.transform.localPosition = trans.pos;
+            prefab.transform.localRotation = Quaternion.Euler(trans.rot.x, trans.rot.y, trans.rot.z);
+
+            var ir4 = ResourceManager.instance.Load(
+                $"Assets/AssetBundle/ScriptableObject/Weapon/{name}/{name}_Anim.asset", false);
+            var anim = ir4.GetAsset<AnimComponentData>();
+            Debug.Log($"[Bot] Graph valid before switch:{_m.AnimController.Graph.IsValid()}");
+            _m.AnimController.SwitchWeaponGraph(anim.animGraphData, data.weaponType);
+            TagClipPair tagClipPair = new TagClipPair();
+            for (int i = 0; i < anim.animMappings.Count; i++)
+            {
+                if (anim.animMappings[i].tag == "Reload")
+                {
+                    tagClipPair = anim.animMappings[i];
+                    break;
+                }
+            }
+            _m.AnimController.InstallSlotAction("UpperSlot", manager =>
+            {
+                var node = new ReloadTreeLeafNode(manager);
+                node.AnimSpeed = tagClipPair.animSpeed;
+                node.Tag = tagClipPair.tag;
+                node.UseTagOnly = false;
+                node.DefaultClip = tagClipPair.clip;
+                node.CurrentData = tagClipPair.clipAsset;
+                return node;
+            });
         }
 
         // 修改参数为 PlayerDataFlat
@@ -68,11 +137,11 @@ namespace Player.ManagerLogic
                 _lastServerPos = newPos;
                 _lastPacketTime = Time.time;
             
-                // 4. 更新 Aim 目标位置 (注意：字段名根据你的 .fbs 生成)
+                // 4. 用服务器同步的 aim 位置驱动 IK 目标
                 if (dto.AimPosition != null)
                 {
                     var aimPos = dto.AimPosition.Value;
-                    //_m.aim.position = new Vector3(aimPos.X, aimPos.Y, aimPos.Z);
+                    _m.IkModule.SetAimTargetPosition(new Vector3(aimPos.X, aimPos.Y, aimPos.Z));
                 }
 
                 // 5. 更新 IK 状态
@@ -122,19 +191,23 @@ namespace Player.ManagerLogic
 
         public void OnUpdate()
         {
+            _playerFsm.Update();
+            _m.AnimController.Update();
+            
             // 这里的预测插值算法逻辑保持不变...
             Vector3 predictionMove = _currentVelocity * Time.deltaTime;
             Vector3 correction = (_lastServerPos - _m.transform.position) * 0.15f;
 
             _m.transform.position += predictionMove + correction;
             _m.transform.rotation = Quaternion.Slerp(_m.transform.rotation, _targetRot, Time.deltaTime * 15f);
-
-            _m.AnimController.Update();
+            
+            _m.IkModule?.OnUpdate();
             
             if (Time.time - _lastPacketTime > 0.2f)
             {
                 _currentVelocity = Vector3.Lerp(_currentVelocity, Vector3.zero, Time.deltaTime * 5f);
             }
+            
         }
 
         public void OnFixedUpdate() { }

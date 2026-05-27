@@ -16,7 +16,6 @@ namespace GameFSM.FSM.WeaponFSM.SPR2.State
         public override void OnEnterState()
         {
             _boltTime = MyManager.GetWeaponConfig().boltCd;
-            this.SendEvent(new BoltEvent());
         }
 
         public override void OnUpdateState()
@@ -30,7 +29,6 @@ namespace GameFSM.FSM.WeaponFSM.SPR2.State
 
         public override void OnExitState()
         {
-            this.SendEvent(new BoltEndEvent());
         }
 
         public IArchitecture GetArchitecture()

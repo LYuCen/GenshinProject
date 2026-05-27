@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using mEnum;
 using mModel;
 using mWeapon.Component;
+using mWeapon.Presenter;
 using mWeapon.WeaponFeature;
 using QFramework;
 
@@ -14,6 +16,9 @@ namespace mWeapon
 
         private WeaponRuntime _runtime;
         public WeaponTaskRunner TaskRunner { get; private set; }
+        public WeaponType WeaponType => _data.weaponType;
+        public string WeaponName => _data.weaponName;
+        public WeaponPresenter Presenter = null;
 
         private readonly List<IWeaponFeature> _features = new();
         private readonly Dictionary<Type, object> _components = new();

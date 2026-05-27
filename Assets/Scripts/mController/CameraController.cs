@@ -3,6 +3,7 @@ using AI.VisualRequest.VisualRequest;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mModel;
 using QFramework;
 using UnityEngine;
 
@@ -42,11 +43,15 @@ namespace mController
         private int _originalMask;
         private int _headLayerIndex;
         PointVisualRequest _request = new PointVisualRequest();
+
+        private BagModel _bagModel;
         
         private void Start()
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            _bagModel = this.GetModel<BagModel>();
             
             Vector3 euler = transform.eulerAngles;
             _yaw = euler.y;  
@@ -128,7 +133,7 @@ namespace mController
 
             if (query.HasState(WeaponFlags.Shoot) && !query.HasState(WeaponFlags.Shoulder)
                                                   && !query.HasState(WeaponFlags.Throw)
-                                                  && !query.HasState(WeaponFlags.Blot))
+                                                  && !query.HasState(WeaponFlags.Bolt))
             {
                 // 瞄准视角
                 transform.position = scopeCamera.position;

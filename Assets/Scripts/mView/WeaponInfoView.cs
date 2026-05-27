@@ -59,6 +59,7 @@ namespace mView
                 elementBullets[i].text = $"{bullet.Val:D3}";
             }
 
+            gunName.text = _bagModel.Weapon.WeaponName;
             bulletText.text =
                 $"{_bagModel.Weapon.Runtime.Component.BulletVal:D3}/" +
                 $"{_bagModel.GetBullet(_bagModel.Weapon.Runtime.Component.ElementEnum).Val:D3}";

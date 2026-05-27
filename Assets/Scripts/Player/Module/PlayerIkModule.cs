@@ -23,32 +23,56 @@ namespace Player.Module
             _target = new GameObject("Aim").transform;
             _context.AimIK.solver.target = _target;
             _context.BodyBipedIK.solver.leftHandEffector.target = _hand;
-            this.RegisterEvent<BoltEvent>(_ => _aimIkWeight = 0)
-                .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
-            this.RegisterEvent<BoltEndEvent>(_ => _aimIkWeight = 1)
-                .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
+
+            if (_context.ListenEvents)
+            {
+                this.RegisterEvent<BoltEvent>(_ =>
+                    {
+                        _context.AimIK.solver.IKPositionWeight = 0;
+                        _aimIkWeight = 0;
+                    })
+                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
+                this.RegisterEvent<BoltEndEvent>(_ =>
+                    {
+                        _aimIkWeight = 1;
+                    })
+                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
+                this.RegisterEvent<OnReloadEvent>(_ =>
+                    {
+                        _context.AimIK.solver.IKPositionWeight = 0;
+                        _aimIkWeight = 0;
+                        _context.BodyBipedIK.solver.IKPositionWeight = 0;
+                        _handIkWeight = 0;
+                    })
+                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
+            }
         }
 
         public void OnUpdate()
         {
+            if (_context.IsLocal)
+            {
+                Transform camera = _context.CameraController.transform;
+                Vector3 aimDir = (_context.CameraController.rayEnd - camera.position).normalized;
+                _target.position = camera.position + aimDir * 100f;
+            }
+
             _context.AimIK.solver.IKPositionWeight = Mathf.MoveTowards(
-                _context.AimIK.solver.IKPositionWeight, 
-                _aimIkWeight, 
+                _context.AimIK.solver.IKPositionWeight,
+                _aimIkWeight,
                 7 * Time.deltaTime
             );
-            
+
             _context.BodyBipedIK.solver.IKPositionWeight = Mathf.MoveTowards(
-                _context.BodyBipedIK.solver.IKPositionWeight, 
-                _handIkWeight, 
+                _context.BodyBipedIK.solver.IKPositionWeight,
+                _handIkWeight,
                 7 * Time.deltaTime
             );
-            
-            _target.position = Vector3.SmoothDamp(
-                _target.position, 
-                _context.CameraController.rayEnd, 
-                ref _velocity, 
-                0.03f
-            );
+        }
+
+        public void SetAimTargetPosition(Vector3 pos)
+        {
+            _target.position = pos;
         }
 
         public void SetAimIk(float weight)
@@ -65,6 +89,11 @@ namespace Player.Module
         {
             _hand = trans;
             _context.BodyBipedIK.solver.leftHandEffector.target = _hand;
+        }
+
+        public void SetMuzzle(Transform muzzle)
+        {
+            _context.AimIK.solver.transform = muzzle;
         }
 
         public void OnFixedUpdate()

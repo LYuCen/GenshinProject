@@ -1,6 +1,4 @@
 using GameFSM.LevelFSM.PlayerFSM;
-using mSystem.InputSystem;
-using mSystem.InputSystem.Context;
 using QFramework;
 using UnityEngine;
 
@@ -12,16 +10,10 @@ namespace Player
         
         public PlayerManager manager;
         private PlayerFsm _playerFsm;
-        private IInputSystem _inputSystem;
-        private InputContext _context;
-        [SerializeField] private InputContextHolder holder;
 
         private void Start()
         {
-            _context = new InputContext();
-            _inputSystem = new InputSystem(_context);
-            holder.Context = _context;
-            manager.Init(true, _context);
+            manager.Init(true);
             Debug.Log("PlayerController Start 被执行");
             Debug.Log($"manager 是否为空: {manager == null}");
             try
@@ -38,7 +30,6 @@ namespace Player
         private void Update()
         {
             _playerFsm.Update();
-            _inputSystem.SetKeyCode();
         }
 
         public IArchitecture GetArchitecture()
