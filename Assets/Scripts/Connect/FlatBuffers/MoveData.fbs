@@ -1,0 +1,14 @@
+﻿namespace Connect.MoveDTO;
+
+struct Vec3 { x:float; y:float; z:float; }
+struct Quat { x:float; y:float; z:float; w:float; } 
+
+table MoveDataFlat {
+    player_id:int;
+    position:Vec3;
+    rotation:Quat;
+    input_x:float;
+    input_y:float;
+    move_x:float;
+    move_y:float;
+}

@@ -69,34 +69,59 @@ namespace mView
             
 
         /// <summary>
-        /// 更新武器
+        /// 更新武器：次武器从副框位置+大小，过渡到主框位置+大小
         /// </summary>
         /// <param name="index">武器下标</param>
         private void UpdateWeapon(int index)
         {
             if (index == _useWeaponIndex || index > 1) return;
 
-            RectTransform prevRt = weapon[_useWeaponIndex];
-            prevRt.SetParent(auxiliaryRt);
-            prevRt.gameObject.SetActive(false);
-            prevRt.localScale /= 4;
-            RectTransform rt = weapon[index];
-            rt.SetParent(mainRt);
-            
+            RectTransform prevRt = weapon[_useWeaponIndex]; // 当前主武器
+            RectTransform nextRt = weapon[index];            // 要切换的武器（在副框）
+
+            // 计算两个框中心的世界坐标偏移
+            Vector3 offset = auxiliaryRt.position - mainRt.position;
+
+            // 新武器移到主框：拉伸锚点填满，初始缩放到副框大小，偏移到副框位置
+            nextRt.SetParent(mainRt);
+            SetStretchFill(nextRt);
+            nextRt.localScale = Vector3.one / 3.33f;
+            nextRt.localPosition = offset;
+
+            Image prevImg = prevRt.GetComponent<Image>();
+
             Sequence seq = DOTween.Sequence();
 
-            // 同时进行（Join）
-            seq.Join(rt.DOAnchorPos(new Vector2(0, 0), 0.6f).SetEase(Ease.OutCubic));
-            seq.Join(rt.DOScale(4f, 0.6f));
+            // 从小变大 + 从副框位置移到主框中心
+            seq.Join(nextRt.DOScale(1f, 0.6f).SetEase(Ease.OutCubic));
+            seq.Join(nextRt.DOLocalMove(Vector3.zero, 0.6f).SetEase(Ease.OutCubic));
+            // 主武器淡出
+            if (prevImg != null)
+                seq.Join(prevImg.DOFade(0f, 0.4f));
 
-            // 播放完后回调
             seq.OnComplete(() =>
             {
-                Debug.Log("切换结束");
-                prevRt.anchoredPosition = Vector2.zero;
-                prevRt.gameObject.SetActive(true);
+                // 旧主武器移到副框：拉伸填满副框，恢复大小和位置
+                prevRt.SetParent(auxiliaryRt);
+                SetStretchFill(prevRt);
+                prevRt.localScale = Vector3.one;
+                prevRt.localPosition = Vector3.zero;
+                if (prevImg)
+                    prevImg.DOFade(1f, 0.2f);
+
                 _useWeaponIndex = index;
             });
+        }
+
+        /// <summary>
+        /// 设置 RectTransform 锚点拉伸填满父节点
+        /// </summary>
+        private static void SetStretchFill(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
 
         /// <summary>

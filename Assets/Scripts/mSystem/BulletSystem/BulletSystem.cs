@@ -2,6 +2,7 @@
 using Connect;
 using Connect.Converter;
 using Connect.DTO;
+using Connect.Protocol;
 using Firearms.Bullet;
 using mEnum;
 using Player;
@@ -57,7 +58,7 @@ namespace mSystem.BulletSystem
                         if (bullet.shooterId == NetworkService.Bridge.GetMyId())
                         {
                             // 检查是否打中自己（如果起点在体内可能发生）
-                            if (hitBox.Owner.EntityId != bullet.shooterId)
+                            if (NetworkService.Instance.isSinglePlayer && hitBox.Owner.EntityId != bullet.shooterId)
                             {
                                 HitDto hitDto = new HitDto
                                 {
@@ -72,7 +73,7 @@ namespace mSystem.BulletSystem
                                 
                                 Debug.Log($"玩家{hitDto.victimId} 被 玩家{hitDto.attackerId} 击中 {hitBox.part}");
                                 
-                                NetworkService.Bridge.SendToServer(new Message("DamageConfirm", HitDataConverter.ToBinary(hitDto)));
+                                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerHit, HitDataConverter.ToBinary(hitDto)));
                             }
                         }
                     }

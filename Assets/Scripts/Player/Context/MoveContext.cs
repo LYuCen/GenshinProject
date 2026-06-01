@@ -10,5 +10,6 @@ namespace Player.Context
         public CharacterController CharacterController;
         public Transform PlayerTransform;
         public PlayerCombatModule CombatModule;
+        public bool IsLocal = true;
     }
 }

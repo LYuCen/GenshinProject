@@ -12,6 +12,8 @@ namespace mWeapon.FeatureData
         public float fireRate;
         [Header("伤害")]
         public int damage;
+        [Header("元素量")]
+        public int measure = 1;
         [Header("枪口初速")]
         public int muzzleVelocity;
         [Header("全/半 自动")]

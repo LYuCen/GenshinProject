@@ -4,7 +4,6 @@ using BaseClass;
 using Enemy;
 using Enemy.Anim;
 using Firearms;
-using Firearms.Gun;
 using Firearms.Magazine;
 using Firearms.WeaponInterface;
 using GameFSM.LevelFSM.EnemyFSM.LevelFSMState;
@@ -58,7 +57,7 @@ namespace GameFSM.LevelFSM.EnemyFSM
         {
             AbstractMagazine magazine = new BaseMagazine(30, 30, 20, ElementEnum.Fire);
 
-            _weapon = new XM7();
+            //_weapon = new XM7();
             _weapon.Init();
             gun = _weapon.GetWeapon();
             gun.SetParent(head);

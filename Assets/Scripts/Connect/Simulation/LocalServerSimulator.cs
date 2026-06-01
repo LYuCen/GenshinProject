@@ -4,7 +4,7 @@ using Connect.Converter;
 using Connect.Data;
 using Connect.DTO;
 using Connect.FlatDTO;
-
+using Connect.Protocol;
 using GameFSM.LevelFSM.PlayerFSM;
 using Google.FlatBuffers;
 using UnityEngine;
@@ -44,19 +44,19 @@ namespace Connect.Simulation
         {
             switch (msg.type)
             {
-                case "PlayerShoot":
+                case MessageType.C2S_PlayerShoot:
                     // 模拟服务器广播：直接把消息传给客户端的消息监听器
                     // 此处也可配置延迟
                     ReceiveAtClient(msg);
                     break;
-                case "AddBot":
+                case MessageType.Local_AddBot:
                     CreateFakeBot();
                     break;
-                case "DamageConfirm":
+                case MessageType.C2S_PlayerHit:
                     UpdateInternalBotState(msg.data);
                     ReceiveAtClient(msg);
                     break;
-                case "Revive":
+                case MessageType.C2S_Revive:
                     int reviveId = BitConverter.ToInt32(msg.data, 0);
                     if (reviveId == _myId)
                     {
@@ -76,7 +76,7 @@ namespace Connect.Simulation
                     break;
             }
             byte[] listData = PackAllPlayers(_fakeBots);
-            ReceiveAtClient(new Message("AllPlayerInfo", listData));
+            ReceiveAtClient(new Message(MessageType.S2C_AllPlayerInfo, listData));
         }
         
         private void CreateFakeBot()

@@ -9,7 +9,7 @@ namespace mController.Player.InputController.Inputs.ActionHandler
 
         protected override void OnDown()
         {
-            MyManager.MoveModule.Sprint();
+            MyManager.MoveModule.RequestSprint();
         }
     }
 }

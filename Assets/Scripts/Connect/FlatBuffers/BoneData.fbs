@@ -1,0 +1,12 @@
+﻿namespace Connect.BoneDTO;
+
+table BoneDataFlat {
+    player_id:int;
+    aim_x:float;
+    aim_y:float;
+    aim_z:float;
+    hips_x:float;
+    hips_y:float;
+    hips_z:float;
+    bone_rots:[ushort];
+}

@@ -50,6 +50,7 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public PlayerMoveModule MoveModule;
         public PlayerIkModule IkModule;
         private bool _isLocal;
+        public bool IsLocal => _isLocal;
         
         public void Init(bool isLocal)
         {

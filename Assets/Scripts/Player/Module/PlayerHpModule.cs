@@ -1,6 +1,4 @@
-﻿using System;
-using Connect;
-using Connect.Data;
+﻿using Connect.Data;
 using Connect.FlatDTO;
 using mSystem.HurtSystem;
 using Player.Context;
@@ -12,8 +10,6 @@ namespace Player.Module
     {
         private PlayerHpContext _context;
         private PlayerStateData _state;
-        private float _waitSecond = 3f;
-        private bool _isDead;
         public PlayerHpModule(PlayerHpContext context)
         {
             _context = context;
@@ -27,33 +23,7 @@ namespace Player.Module
 
         public void OnUpdate()
         {
-            if (_state.curHp <= 0)
-            {
-                if (!_isDead)
-                {
-                    _isDead = true;
-                    _waitSecond = 3f;
-                }
-
-                _waitSecond -= Time.deltaTime;
-                if (_waitSecond <= 0)
-                {
-                    _isDead = false;
-                    _waitSecond = 3f;
-                    Revive();
-                }
-            }
-        }
-
-        private void Revive()
-        {
-            _state.curShield = _state.maxShield;
-            _state.curHp = _state.maxHp;
             
-            _context.EntityStatusUI.SetShield(_state.curShield);
-            _context.EntityStatusUI.SetHp(_state.curHp);
-
-            NetworkService.Bridge.SendToServer(new Message("Revive", BitConverter.GetBytes(_state.playerId)));
         }
 
         public void OnFixedUpdate()
@@ -81,8 +51,6 @@ namespace Player.Module
         
         public void SyncStatus(PlayerDataFlat dto)
         {
-            if (_isDead) return; // 死亡过程不更新 hp
-            
             _state.curHp = dto.CurHp;
             _state.maxHp = dto.MaxHp;
             _state.curShield = dto.CurShield;

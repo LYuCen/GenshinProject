@@ -20,6 +20,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
                 gun.localPosition = Vector3.zero;
                 gun.localEulerAngles = Vector3.zero;
             }
+            MyManager.IkModule.SetAimIk(0, true);
         }
 
         public override void OnUpdateState()

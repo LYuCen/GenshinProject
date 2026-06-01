@@ -1,4 +1,5 @@
-﻿using Connect;
+﻿using System;
+using Connect;
 using Connect.Converter;
 using Connect.Simulation;
 using GameFSM.LevelFSM.PlayerFSM;
@@ -9,11 +10,10 @@ using mSystem.InputSystem;
 using mSystem.InputSystem.Context;
 using mWeapon;
 using mWeapon.Component;
-using mWeapon.ComponentData;
-using Player.AnimTree;
 using Player.Module;
 using QFramework;
 using UnityEngine;
+using MessageType = Connect.Protocol.MessageType;
 
 namespace Player.ManagerLogic
 {
@@ -31,6 +31,11 @@ namespace Player.ManagerLogic
         
         private InputContext _context;
         private IInputSystem _inputSystem;
+
+        private float _moveTimer;
+        private float _boneTimer;
+
+        private int _lastFlags = -1;
         
         public void Init(PlayerManager manager)
         {
@@ -61,8 +66,7 @@ namespace Player.ManagerLogic
             manager.MoveModule.Init();
             manager.IkModule.Init();
             manager.ViewModule.Init();
-            
-            }
+        }
 
         public void OnUpdate()
         {
@@ -71,7 +75,18 @@ namespace Player.ManagerLogic
             _m.state.aimPosition = _m.cameraController.rayEnd;
 
             _m.AnimController.Update();
-            SendPositionToServer();
+            
+            int currentId = NetworkService.Bridge.GetMyId();
+            if (currentId != -1)
+            {
+                _m.state.playerId = currentId;
+                _m.state.position = _m.transform.position;  
+                _m.state.rotation = _m.transform.rotation;  
+                _m.MoveModule.WriteToState(_m.state);       
+                _m.CombatModule.WriteToState(_m.state);   
+                CheckState();
+            }
+
             if(_context.Reload.Down) TryReload();
             
             // 监听输入
@@ -85,7 +100,25 @@ namespace Player.ManagerLogic
 
         public void OnFixedUpdate()
         {
-            
+            int currentId = NetworkService.Bridge.GetMyId();
+            if (currentId == -1) return;
+
+            // 20 tick: 位置+旋转+输入
+            _moveTimer += Time.fixedDeltaTime;
+            if (_moveTimer >= 0.05f)
+            {
+                _moveTimer -= 0.05f;
+                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Move, PlayerDataConverter.PackMove(_m.state)));
+            }
+
+            // 10 tick: 骨骼
+            _boneTimer += Time.fixedDeltaTime;
+            if (_boneTimer >= 0.1f)
+            {
+                _boneTimer -= 0.1f;
+                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Bones, PlayerDataConverter.PackBones(_m.state)));
+            }
+
         }
 
         public void OnLateUpdate()
@@ -116,24 +149,44 @@ namespace Player.ManagerLogic
             _m.IkModule.SetMuzzle(e.Muzzle);
         }
 
-        /// <summary>
-        /// 发给服务端位置信息
-        /// </summary>
-        private void SendPositionToServer()
+        private void CheckState()
         {
-            // 从桥接层获取当前 ID (单机时是 1000, 联机时是服务器分配的)
-            int currentId = NetworkService.Bridge.GetMyId();
-    
-            // 如果还没拿到 ID（联机中途），则不发包
-            if (currentId == -1) return; 
-    
-            // 同步状态
-            _m.state.playerId = currentId;
-            _m.state.position = _m.transform.position;
-            _m.state.rotation = _m.transform.rotation;
+            int currentFlags = 0;
+            if (_m.state.isGround)  currentFlags |= PlayerStateBoolBit.BIT_GROUND;
+            if (_m.state.isJump)    currentFlags |= PlayerStateBoolBit.BIT_JUMP;
+            if (_m.state.isShoot)   currentFlags |= PlayerStateBoolBit.BIT_SHOOT;
+            if (_m.state.isReload)  currentFlags |= PlayerStateBoolBit.BIT_RELOAD;
+            if (_m.state.isSprint)  currentFlags |= PlayerStateBoolBit.BIT_SPRINT;
+            if (_m.state.isThrow)   currentFlags |= PlayerStateBoolBit.BIT_THROW;
+            if (_m.state.isCrouch)  currentFlags |= PlayerStateBoolBit.BIT_CROUCH;
+            if (_m.state.isSliding) currentFlags |= PlayerStateBoolBit.BIT_SLIDING;
 
-            NetworkService.Bridge.SendToServer(new Message("UpdatePosition", PlayerDataConverter.ToDto(_m.state)));
+            // 状态变化时发送
+            if (currentFlags != _lastFlags)
+            {
+                Debug.Log($"状态变更: {_lastFlags} -> {currentFlags} | isGround={_m.state.isGround}, isJump={_m.state.isJump}, isShoot={_m.state.isShoot}");
+                _lastFlags = currentFlags;
+                byte[] flagData = BitConverter.GetBytes(currentFlags);
+                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));
+            }
+        }
 
+        public void InitState()
+        {
+            int currentFlags = 0;
+            if (_m.state.isGround)  currentFlags |= PlayerStateBoolBit.BIT_GROUND;
+            if (_m.state.isJump)    currentFlags |= PlayerStateBoolBit.BIT_JUMP;
+            if (_m.state.isShoot)   currentFlags |= PlayerStateBoolBit.BIT_SHOOT;
+            if (_m.state.isReload)  currentFlags |= PlayerStateBoolBit.BIT_RELOAD;
+            if (_m.state.isSprint)  currentFlags |= PlayerStateBoolBit.BIT_SPRINT;
+            if (_m.state.isThrow)   currentFlags |= PlayerStateBoolBit.BIT_THROW;
+            if (_m.state.isCrouch)  currentFlags |= PlayerStateBoolBit.BIT_CROUCH;
+            if (_m.state.isSliding) currentFlags |= PlayerStateBoolBit.BIT_SLIDING;
+            
+            Debug.Log($"状态变更: {_lastFlags} -> {currentFlags} | isGround={_m.state.isGround}, isJump={_m.state.isJump}, isShoot={_m.state.isShoot}");
+            _lastFlags = currentFlags;
+            byte[] flagData = BitConverter.GetBytes(currentFlags);
+            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));
         }
 
         public void UnRegister()

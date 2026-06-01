@@ -28,6 +28,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
 
         public override void OnExitState()
         {
+            MyManager.MoveModule.Sprint();
             MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
     }

@@ -1,4 +1,5 @@
 ﻿using AssetBundleFramework.Core.Resource;
+using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
 using mEvent;
@@ -20,6 +21,7 @@ namespace Player.Module
         private CombatContext _context;
         private WeaponQuery _query;
         private BagModel _bagModel;
+        public WeaponPresenter RemoteWeapon;
         
         public PlayerCombatModule(CombatContext context)
         {
@@ -59,10 +61,15 @@ namespace Player.Module
         
         public void ResetGun()
         {
+            if (!_context.IsLocal)
+            {
+                if (RemoteWeapon) RemoteWeapon.transform.SetParent(_context.GunCube, true);
+                return;
+            }
             Transform weapon = _bagModel.Weapon?.Presenter?.transform;
             if (!weapon) return;
-            weapon.SetParent(_context.GunCube, true);
-            _bagModel.Weapon.Presenter.ResetTrans();
+            weapon.SetParent(_context.GunCube, true);       
+            _bagModel.Weapon.Presenter.ResetTrans();  
         }
 
         public void GetPrimaryWeapon()
@@ -146,9 +153,29 @@ namespace Player.Module
                 if(state.isShoot) _query.AddFlags(WeaponFlags.Shoot);
                 if(state.isReload) _query.AddFlags(WeaponFlags.Reload);
                 if(state.isThrow) _query.AddFlags(WeaponFlags.Throw);
-
             }
             return _query;
+        }
+        
+        /// <summary>
+        /// 网络同步状态
+        /// </summary>
+        public void SyncFromState(PlayerStateData state)
+        {
+            _context.StateData.isShoot = state.isShoot;
+            _context.StateData.isThrow = state.isThrow;
+            _context.StateData.isReload = state.isReload;
+        }
+
+        /// <summary>
+        /// 写入网络状态
+        /// </summary>
+        public void WriteToState(PlayerStateData state)
+        {
+            var query = GetQuery();
+            state.isShoot = query.HasState(WeaponFlags.Shoot);
+            state.isReload = query.HasState(WeaponFlags.Reload);
+            state.isThrow = query.HasState(WeaponFlags.Throw);
         }
 
         public void DownSecondaryAction()
@@ -173,7 +200,8 @@ namespace Player.Module
 
         public Transform GetWeapon()
         {
-            return _bagModel.Weapon?.Presenter?.transform;
+            if (_context.IsLocal) return _bagModel.Weapon?.Presenter?.transform;
+            return RemoteWeapon.transform;
         }
 
         public IArchitecture GetArchitecture()

@@ -1,4 +1,8 @@
-﻿using Connect;
+﻿using System;
+using Connect;
+using Connect.Converter;
+using Connect.Data;
+using Connect.Protocol;
 using Firearms.Bullet;
 using mController;
 using mModel;
@@ -30,7 +34,7 @@ namespace mWeapon.Presenter
             
             GameObject obj = BulletGameObjectPool.Instance.GetObj();
             obj.transform.position = _muzzle.position;
-            obj.transform.forward = (_cameraController.rayEnd - _muzzle.position).normalized;
+            obj.transform.forward = (_cameraController.hitEnd - _muzzle.position).normalized;
 
             Bullet bullet = new Bullet()
             {
@@ -39,8 +43,8 @@ namespace mWeapon.Presenter
                 baseHit = fireFeature.Data.damage * damageProfile.BodyMultiplier,
                 headHit = fireFeature.Data.damage * damageProfile.HeadMultiplier,
                 element = (int)mag.ElementEnum,
-                elementMeasure = 1f,
-                moveNormalize = (_cameraController.rayEnd - _muzzle.position).normalized,
+                elementMeasure = fireFeature.Data.measure,
+                moveNormalize = (_cameraController.hitEnd - _muzzle.position).normalized,
                 speed = fireFeature.Data.muzzleVelocity,
                 MoveTime = 3f
             };
@@ -52,6 +56,26 @@ namespace mWeapon.Presenter
             
             // 加入子弹系统
             BulletSystem.Instance.EnQueue(bullet);
+            
+            // 网络
+            if (NetworkService.Bridge != null && NetworkService.Bridge.GetMyId() != -1)
+            {
+                ShootData data = new ShootData
+                {
+                    shooterId = NetworkService.Bridge.GetMyId(),
+                    position = _muzzle.position,
+                    forward = (_cameraController.hitEnd - _muzzle.position).normalized,
+                    speed = fireFeature.Data.muzzleVelocity,    
+                    baseHit = fireFeature.Data.damage * damageProfile.BodyMultiplier,
+                    headHit = fireFeature.Data.damage * damageProfile.HeadMultiplier,
+                    element = (int)mag.ElementEnum,
+                    elementMeasure = fireFeature.Data.measure,
+                    moveTime = 3f,
+                    serverTick = DateTime.UtcNow.Ticks,
+                };
+                
+                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerShoot, ShootDataConverter.ToDto(data)));
+            }
         }
         
         public void OnEnter()

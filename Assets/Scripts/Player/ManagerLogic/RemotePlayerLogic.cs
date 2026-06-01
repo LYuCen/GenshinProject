@@ -22,8 +22,7 @@ namespace Player.ManagerLogic
         private Quaternion _targetRot;       // 目标旋转
         private float _lastPacketTime;       // 上次收到包的时间
         private bool _isFirstPacket = true;  // 是否是第一个包
-
-        private const float MaxSnapDistance = 2.0f;
+        
         private PlayerFsm _playerFsm;
         private WeaponPresenter weapon;
 
@@ -38,6 +37,7 @@ namespace Player.ManagerLogic
             manager.CombatContext.IsLocal = false;
             manager.IKContext.ListenEvents = false;
             manager.IKContext.IsLocal = false;
+            manager.MoveContext.IsLocal = false;
 
             // 2. 模块
             manager.CombatModule = new PlayerCombatModule(manager.CombatContext);
@@ -73,7 +73,7 @@ namespace Player.ManagerLogic
             var trans = ir3.GetAsset<TransformComponentData>();
             prefab.transform.localPosition = trans.pos;
             prefab.transform.localRotation = Quaternion.Euler(trans.rot.x, trans.rot.y, trans.rot.z);
-
+            _m.CombatModule.RemoteWeapon = weapon;
             var ir4 = ResourceManager.instance.Load(
                 $"Assets/AssetBundle/ScriptableObject/Weapon/{name}/{name}_Anim.asset", false);
             var anim = ir4.GetAsset<AnimComponentData>();
@@ -121,11 +121,8 @@ namespace Player.ManagerLogic
 
                 if (_isFirstPacket)
                 {
-                    _m.transform.position = newPos;
-                    _m.transform.rotation = _targetRot;
                     _lastServerPos = newPos;
                     _isFirstPacket = false;
-                    return;
                 }
 
                 // 3. 计算预测速度
@@ -142,15 +139,6 @@ namespace Player.ManagerLogic
                 {
                     var aimPos = dto.AimPosition.Value;
                     _m.IkModule.SetAimTargetPosition(new Vector3(aimPos.X, aimPos.Y, aimPos.Z));
-                }
-
-                // 5. 更新 IK 状态
-                _m.aimIK.enabled = _m.state.isShoot;
-
-                // 6. 距离过大补偿
-                if (Vector3.Distance(_m.transform.position, newPos) > MaxSnapDistance)
-                {
-                    _m.transform.position = newPos;
                 }
             }
         }
@@ -191,16 +179,10 @@ namespace Player.ManagerLogic
 
         public void OnUpdate()
         {
+            _m.MoveModule.SyncFromState(_m.state);
+            _m.CombatModule.SyncFromState(_m.state);
             _playerFsm.Update();
             _m.AnimController.Update();
-            
-            // 这里的预测插值算法逻辑保持不变...
-            Vector3 predictionMove = _currentVelocity * Time.deltaTime;
-            Vector3 correction = (_lastServerPos - _m.transform.position) * 0.15f;
-
-            _m.transform.position += predictionMove + correction;
-            _m.transform.rotation = Quaternion.Slerp(_m.transform.rotation, _targetRot, Time.deltaTime * 15f);
-            
             _m.IkModule?.OnUpdate();
             
             if (Time.time - _lastPacketTime > 0.2f)

@@ -1,13 +1,11 @@
 ﻿using System;
-using mEvent;
 using mWeapon.Component;
 using mWeapon.FeatureData;
 using mWeapon.Task;
-using QFramework;
 
 namespace mWeapon.WeaponFeature
 {
-    public class ReloadFeature : IWeaponFeature, ICanSendEvent
+    public class ReloadFeature : IWeaponFeature
     {
         private WeaponPro _weapon;
 
@@ -61,13 +59,7 @@ namespace mWeapon.WeaponFeature
                 );
             
             _weapon.TaskRunner.Run(task);
-            this.SendEvent(new OnReloadEvent());
             OnReload?.Invoke();
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

@@ -20,6 +20,7 @@ namespace mController
         [Header("平滑过渡速度")] public float smoothSpeed = 10f;
         public Transform scopeCamera; // 瞄准镜相机
         public Vector3 rayEnd; // 射击终点
+        public Vector3 hitEnd; // 命中位置
         
         public PlayerManager manager;
         public float sensitivity = 2f;  // 灵敏度
@@ -95,7 +96,9 @@ namespace mController
 
             // 获取射线
             if(_camera) _ray = _camera.ScreenPointToRay(screenCenter);
-            rayEnd = _ray.origin + _ray.direction * rayLength;
+            hitEnd = _ray.origin + _ray.direction * rayLength;
+            rayEnd = hitEnd;
+            
             
             if (Physics.Raycast(_ray, out RaycastHit hit, rayLength, _targetMask))
             {
@@ -104,24 +107,27 @@ namespace mController
                 if (dis < endDistance * endDistance)
                 {
                     // 如果离墙过近就指向远方
-                    rayEnd = _ray.origin + _ray.direction * rayLength;
+                    hitEnd = _ray.origin + _ray.direction * rayLength;
                 }
                 else
                 {
                     // 距离足够远，正常指向撞击点
-                    rayEnd = hit.point;
+                    hitEnd = hit.point;
                 }
             }
             else
             {
-                rayEnd = _ray.origin + _ray.direction * rayLength;
+                hitEnd = _ray.origin + _ray.direction * rayLength;
             }
+            
 
-            _request.PointPos = rayEnd;
+            _request.PointPos = hitEnd;
         }
         
         void LateUpdate()
         {
+            if (!playerTransform) return; 
+            
             _yaw += Input.GetAxis("Mouse X") * sensitivity;   // 获取鼠标 x输入
             _yaw = Mathf.Repeat(_yaw, 360f);
             _pitch -= Input.GetAxis("Mouse Y") * sensitivity; // 获取鼠标 y输入

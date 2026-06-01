@@ -19,6 +19,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
         public override void OnEnterState()
         {
             MyManager.gunCube.SetParent(MyManager.hand);
+            MyManager.IkModule.SetAimIk(0, true);
+            MyManager.IkModule.SetHandIk(0, true);
         }
 
         public override void OnUpdateState()

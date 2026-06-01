@@ -1,5 +1,4 @@
-﻿using mEvent;
-using Player.Context;
+﻿using Player.Context;
 using QFramework;
 using UnityEngine;
 
@@ -13,6 +12,9 @@ namespace Player.Module
         private Transform _target;
         private Transform _hand;
         private Vector3 _velocity;
+
+        private float _transitionTimer;
+        private Vector3 _targetVelocity;
         public PlayerIkModule(PlayerIkContext context)
         {
             _context = context;
@@ -23,29 +25,6 @@ namespace Player.Module
             _target = new GameObject("Aim").transform;
             _context.AimIK.solver.target = _target;
             _context.BodyBipedIK.solver.leftHandEffector.target = _hand;
-
-            if (_context.ListenEvents)
-            {
-                this.RegisterEvent<BoltEvent>(_ =>
-                    {
-                        _context.AimIK.solver.IKPositionWeight = 0;
-                        _aimIkWeight = 0;
-                    })
-                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
-                this.RegisterEvent<BoltEndEvent>(_ =>
-                    {
-                        _aimIkWeight = 1;
-                    })
-                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
-                this.RegisterEvent<OnReloadEvent>(_ =>
-                    {
-                        _context.AimIK.solver.IKPositionWeight = 0;
-                        _aimIkWeight = 0;
-                        _context.BodyBipedIK.solver.IKPositionWeight = 0;
-                        _handIkWeight = 0;
-                    })
-                    .UnRegisterWhenGameObjectDestroyed(_context.BodyBipedIK.transform);
-            }
         }
 
         public void OnUpdate()
@@ -54,7 +33,10 @@ namespace Player.Module
             {
                 Transform camera = _context.CameraController.transform;
                 Vector3 aimDir = (_context.CameraController.rayEnd - camera.position).normalized;
-                _target.position = camera.position + aimDir * 100f;
+                float dist = Vector3.Distance(camera.position, _context.CameraController.rayEnd);
+                float minDist = 3f;
+                //_target.position = camera.position + aimDir * Mathf.Max(dist, minDist);
+                _target.position = _context.CameraController.rayEnd;
             }
 
             _context.AimIK.solver.IKPositionWeight = Mathf.MoveTowards(
@@ -75,12 +57,12 @@ namespace Player.Module
             _target.position = pos;
         }
 
-        public void SetAimIk(float weight)
+        public void SetAimIk(float weight, bool both = false)
         {
             _aimIkWeight = weight;
         }
 
-        public void SetHandIk(float weight)
+        public void SetHandIk(float weight, bool both = false)
         {
             _handIkWeight = weight;
         }

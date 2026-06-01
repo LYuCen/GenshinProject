@@ -854,6 +854,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SPR2
       objectReference: {fileID: 0}
+    - target: {fileID: 2545774194350255541, guid: 7b0640ab1653a1849806b7878c37fd2f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8470953921520436543, guid: 7b0640ab1653a1849806b7878c37fd2f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -7608,7 +7612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 1620193927055122146}
   idleAnim: {fileID: 7400000, guid: 456966df347e16f46a1846a289305e70, type: 2}
-  walkAnim: {fileID: 7400000, guid: d8600093cd0206042b172e113a0bac6b, type: 2}
+  walkAnim: {fileID: 7400000, guid: aa6f9b39688d293449871cfc2b016e00, type: 2}
   reloadAnim: {fileID: 7400000, guid: ebb1779a71e26b24fb3a1b667eb8e337, type: 2}
   avatarMask: {fileID: 31900000, guid: 70ed7049a7a851b4ebfbbf866c6f04ca, type: 2}
   layerWeight: 0

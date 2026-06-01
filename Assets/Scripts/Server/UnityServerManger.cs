@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using UnityEngine;
 using System.Collections.Concurrent;
 using Connect;
+using Connect.Converter;
 using Connect.FlatDTO;
+using Connect.Protocol;
 using Google.FlatBuffers;
 
 namespace Server
@@ -15,7 +16,7 @@ namespace Server
     {
         public static UnityServerManager Instance; // 单例方便全局访问
         public GameObject serverPlayerPrefab;
-        
+
         private Socket _listener;
         private Dictionary<int, ServerPlayerObject> _players = new Dictionary<int, ServerPlayerObject>();
         private Dictionary<Socket, int> _socketToId = new Dictionary<Socket, int>();
@@ -25,6 +26,9 @@ namespace Server
         // 主线程任务队列 
         private ConcurrentQueue<Action> _mainThreadTasks = new ConcurrentQueue<Action>();
 
+        private Dictionary<int, float> _lastHeartbeatTime = new Dictionary<int, float>();
+        private const float HeartbeatTimeout = 10f;
+
         void Awake() => Instance = this;
 
         void Start()
@@ -33,10 +37,10 @@ namespace Server
             _listener.Bind(new IPEndPoint(IPAddress.Any, 8888));
             _listener.Listen(10);
             Debug.Log("<color=green>Unity Dedicated Server Started on port 8888...</color>");
-        
+
             // 异步接收玩家连接
             _listener.BeginAccept(OnAccept, null);
-            
+
             // 服务器广播 20 tick服务器
             InvokeRepeating(nameof(BroadcastWorldState), 0.05f, 0.05f);
         }
@@ -48,6 +52,7 @@ namespace Server
             {
                 task.Invoke();
             }
+            CheckHeartbeatTimeout();
         }
 
         /// <summary>
@@ -58,28 +63,44 @@ namespace Server
         {
             try
             {
+                
                 Socket client = _listener.EndAccept(ar);
-                client.NoDelay = true;         // 禁用 Nagle 算法，解决 TCP 延迟合并包的问题
+                client.NoDelay = true; // 禁用 Nagle 算法，解决 TCP 延迟合并包的问题
                 client.SendBufferSize = 65536; // 调大发送缓冲区
                 client.ReceiveBufferSize = 65536; // 调大接收缓冲区
                 
-                int id = _nextId++;
-
-                _mainThreadTasks.Enqueue(() => {
+                _mainThreadTasks.Enqueue(() =>
+                {
+                    int id = _nextId++;
+                    _lastHeartbeatTime[id] = Time.time;
+                    
                     GameObject go = Instantiate(serverPlayerPrefab);
                     ServerPlayerObject spo = go.GetComponent<ServerPlayerObject>();
                     spo.Init(id, client);
-                    
+
                     _players.Add(id, spo);
                     _socketToId.Add(client, id);
-                    
+
                     // 发送二进制 ID
-                    SendToClient(client, new Message("AllocId", BitConverter.GetBytes(id)));
+                    SendToClient(client, new Message(MessageType.S2C_AllocId, BitConverter.GetBytes(id)));
+
+                    // 通知所有在线玩家，新玩家加入
+                    byte[] spawnData = PlayerDataConverter.PackSinglePlayer(spo.State);
+                    BroadcastExcept(new Message(MessageType.S2C_PlayerSpawn, spawnData), id);
+
+                    // 通知新玩家：所有现有玩家信息
+                    byte[] allInfo = PlayerDataConverter.PackAllPlayers(_players);
+                    SendToClient(client, new Message(MessageType.S2C_AllPlayerInfo, allInfo));
+
+                    Debug.Log($"玩家{id}加入服务器");
                 });
 
                 _listener.BeginAccept(OnAccept, null);
             }
-            catch (Exception ex) { Debug.LogError("Accept Error: " + ex.Message); }
+            catch (Exception ex)
+            {
+                Debug.LogError("Accept Error: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -89,31 +110,8 @@ namespace Server
         {
             if (_players.Count == 0) return;
 
-            // 1. 准备 Builder
-            _builder.Clear();
-            List<Offset<PlayerDataFlat>> playerOffsets = new List<Offset<PlayerDataFlat>>();
-
-            // 2. 收集所有玩家当前的 Offset
-            foreach (var p in _players.Values)
-            {
-                // 调用我们之前在 ServerPlayerObject 中定义的 GetCurrentOffset
-                playerOffsets.Add(p.GetCurrentOffset(_builder));
-            }
-
-            // 3. 构建 PlayerList 数组
-            var vectorOffset = PlayerList.CreatePlayersVector(_builder, playerOffsets.ToArray());
-
-            // 4. 构建 Root Table
-            PlayerList.StartPlayerList(_builder);
-            PlayerList.AddPlayers(_builder, vectorOffset);
-            var root = PlayerList.EndPlayerList(_builder);
-
-            // 5. 完成构建并获取字节流
-            _builder.Finish(root.Value);
-            byte[] finalBytes = _builder.SizedByteArray();
-
-            // 6. 广播二进制消息
-            Broadcast(new Message("AllPlayerInfo", finalBytes));
+            byte[] data = PlayerDataConverter.PackPositions(_players); 
+            Broadcast(new Message(MessageType.S2C_Position, data));
         }
 
         /// <summary>
@@ -127,30 +125,37 @@ namespace Server
             {
                 if (s == null || !s.Connected) return;
 
-                // 1. 准备 Type 字符串
-                byte[] typeBytes = Encoding.UTF8.GetBytes(m.type);
                 // 2. 准备数据内容
                 byte[] dataBytes = m.data;
 
-                // 包体大小 = 4字节(typeLen) + Type长度 + 数据长度
-                int bodySize = 4 + typeBytes.Length + dataBytes.Length;
+                // 包体大小 = 2字节(type) + 数据长度
+                int bodySize = 2 + dataBytes.Length;
                 // 总长度 = 4字节(全包长度头) + 包体大小
                 byte[] fullPacket = new byte[4 + bodySize];
 
                 // 写入全包长度
                 Buffer.BlockCopy(BitConverter.GetBytes(bodySize), 0, fullPacket, 0, 4);
                 // 写入 Type 长度
-                Buffer.BlockCopy(BitConverter.GetBytes(typeBytes.Length), 0, fullPacket, 4, 4);
-                // 写入 Type 字符串内容
-                Buffer.BlockCopy(typeBytes, 0, fullPacket, 8, typeBytes.Length);
-                // 写入 FlatBuffers 数据
-                Buffer.BlockCopy(dataBytes, 0, fullPacket, 8 + typeBytes.Length, dataBytes.Length);
+                Buffer.BlockCopy(BitConverter.GetBytes((ushort)m.type), 0, fullPacket, 4, 2);
+                // 写入 FlatBuffers 字符串内容
+                Buffer.BlockCopy(dataBytes, 0, fullPacket, 6, dataBytes.Length);
 
-                s.BeginSend(fullPacket, 0, fullPacket.Length, SocketFlags.None, (ar) => {
-                    try { s.EndSend(ar); } catch { /* 处理掉线 */ }
+                s.BeginSend(fullPacket, 0, fullPacket.Length, SocketFlags.None, (ar) =>
+                {
+                    try
+                    {
+                        s.EndSend(ar);
+                    }
+                    catch
+                    {
+                        /* 处理掉线 */
+                    }
                 }, null);
             }
-            catch { CloseClient(s); }
+            catch
+            {
+                CloseClient(s);
+            }
         }
 
         /// <summary>
@@ -160,7 +165,7 @@ namespace Server
         public void CloseClient(Socket sclient)
         {
             // 同样需要确保在主线程销毁物体
-            _mainThreadTasks.Enqueue(() => 
+            _mainThreadTasks.Enqueue(() =>
             {
                 if (_socketToId.TryGetValue(sclient, out int playerId))
                 {
@@ -169,22 +174,25 @@ namespace Server
                         Destroy(spo.gameObject); // 销毁物理假人
                         _players.Remove(playerId);
                     }
+
                     _socketToId.Remove(sclient);
                     
                     Debug.Log($"客户端 {playerId} 断开连接，已清理物体.");
                     byte[] exitIdBytes = BitConverter.GetBytes(playerId);
-                    Broadcast(new Message("PlayerExit", exitIdBytes));
+                    Broadcast(new Message(MessageType.S2C_PlayerExit, exitIdBytes));
+                    _lastHeartbeatTime.Remove(playerId);
                 }
 
-                try 
-                { 
-                    if(sclient.Connected) sclient.Shutdown(SocketShutdown.Both); 
-                    sclient.Close(); 
+                try
+                {
+                    if (sclient.Connected) sclient.Shutdown(SocketShutdown.Both);
+                    sclient.Close();
                 }
                 catch (Exception)
                 {
                     // ignored
                 }
+                
             });
         }
 
@@ -201,7 +209,7 @@ namespace Server
                 SendToClient(sc, msg);
             }
         }
-        
+
         /// <summary>
         /// 提交任务
         /// </summary>
@@ -212,6 +220,52 @@ namespace Server
             {
                 _mainThreadTasks.Enqueue(task);
             }
+        }
+
+        private void CheckHeartbeatTimeout()
+        {
+            float now = Time.time;
+            List<int> timeoutPlayers = new List<int>();
+
+            foreach (var kv in _lastHeartbeatTime)
+            {
+                if (now - kv.Value > HeartbeatTimeout)
+                {
+                    timeoutPlayers.Add(kv.Key);
+                }
+            }
+
+            foreach (var id in timeoutPlayers)
+            {
+                Debug.Log($"玩家 {id} 心跳超时，断开连接");
+
+                if (_players.TryGetValue(id, out var spo))
+                {
+                    CloseClient(spo.ClientSocket);
+                }
+            }
+        }
+
+        public ServerPlayerObject GetPlayer(int id)
+        {
+            _players.TryGetValue(id, out var value);
+            return value;
+        }
+
+        public void BroadcastExcept(Message msg, int excludePlayerId)
+        {
+            foreach (var kv in _socketToId)
+            {
+                if (kv.Value != excludePlayerId)
+                {
+                    SendToClient(kv.Key, msg);
+                }
+            }
+        }
+
+        public void UpdateHeartbeat(int playerId)
+        {
+            _lastHeartbeatTime[playerId] = Time.time;
         }
     }
 }

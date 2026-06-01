@@ -1,21 +1,41 @@
-﻿using Connect.Simulation;
+﻿using System;
+using Connect.Core;
+using Connect.Simulation;
 using GameFSM.LevelFSM.PlayerFSM;
+using Player.ManagerLogic;
 using UnityEngine;
 
 namespace Connect
 {
     public class NetworkService : MonoBehaviour
     {
+        public static NetworkService Instance;
+        
         public static INetworkBridge Bridge;
-        public bool isSinglePlayer = true;
-        public PlayerManager playerManager;
+        public ConnectionStateMachine StateMachine { get; private set; }
+        public HeartbeatService Heartbeat { get; private set; }
+        public UserClient Client { get; private set; }
 
         // 配置服务器信息
+        public bool isSinglePlayer = true;
         public string serverIp = "127.0.0.1";
         public int serverPort = 8888;
+        public PlayerManager playerManager;
+        
+        private float _reconnectTimer;
+        private bool _reconnecting;
+
 
         private void Awake()
         {
+            Instance = this;
+            StateMachine = new ConnectionStateMachine();
+            Heartbeat = new HeartbeatService();
+
+            StateMachine.OnTryConnect = TryConnectToServer;
+            StateMachine.OnDisconnect = DisconnectClient;
+            StateMachine.OnStateChanged += OnConnectionStateChanged;
+            
             // 初始化默认模式
             if (isSinglePlayer)
             {
@@ -29,6 +49,22 @@ namespace Connect
 
         private void Update()
         {
+            // 已连接时驱动心跳
+            if (StateMachine.CurrentState == ConnectionState.Connected)
+            {
+                Heartbeat.Tick(Time.deltaTime);
+            }
+            else if (StateMachine.CurrentState == ConnectionState.Reconnecting)
+            {
+                _reconnectTimer += Time.deltaTime;
+                if (_reconnectTimer >= StateMachine.ReconnectInterval)
+                {
+                    _reconnectTimer = 0;
+                    Debug.Log($"[网络] 尝试重连({StateMachine.CurrentReconnectCount + 1}/{StateMachine.MaxReconnectAttempts})...");
+                    StateMachine.OnTryConnect?.Invoke();
+                }
+            }
+            
             // 监听键盘 T 键按下
             if (Input.GetKeyDown(KeyCode.T))
             {
@@ -51,8 +87,12 @@ namespace Connect
         {
             isSinglePlayer = true;
             Bridge = new LocalServerSimulator();
-            UserClient.MyId = Bridge.GetMyId();
-            Debug.Log("单机模式启动，ID: " + UserClient.MyId);
+
+            if (playerManager != null && !PlayerPool.Instance.Models.ContainsKey(Bridge.GetMyId()))
+            {
+                PlayerPool.Instance.RegisterLocalPlayer(Bridge.GetMyId(), playerManager);
+            }
+            Debug.Log("单机模式启动，ID: " + Bridge.GetMyId());
         }
 
         /// <summary>
@@ -60,24 +100,61 @@ namespace Connect
         /// </summary>
         public void ConnectToServer()
         {
-            try 
+            if (StateMachine.CurrentState == ConnectionState.Connected) return;
+            StateMachine.Connect();
+        }
+
+        private bool TryConnectToServer()
+        {
+            try
             {
-                // 1. 联机前先清空旧的玩家池（销毁单机模式的假人）
+                Client = new UserClient();
+                Client.Connect(serverIp, serverPort);
+
+                // 绑定 Listener 到这个新的客户端
+                Listener.Instance.BindToClient(Client);
+                StateMachine.OnConnectSuccess();
                 PlayerPool.Instance.ClearPool();
-
-                UserClient.MyId = -1;
-                UserClient.Connect(serverIp, serverPort, playerManager);
-        
-                Bridge = new RealNetworkBridge();
                 isSinglePlayer = false;
-
-                Debug.Log("正在连接服务器...");
+                if (playerManager.GetLogic() is LocalPlayerLogic logic)
+                {
+                    logic.InitState();
+                }
+                return true;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                Debug.LogError("连接失败: " + e.Message);
-                StartSinglePlayer();
+                Debug.LogError($"连接失败：{e.Message}");
+                StateMachine.OnConnectFailed();
+                return false;
             }
+        }
+
+        private void DisconnectClient()
+        {
+            Client?.Disconnect();
+            Client = null;
+        }
+
+        private void OnConnectionStateChanged(ConnectionState old, ConnectionState @new)
+        {
+            Debug.Log($"[网络] {old} -> {@new}");
+
+            switch (@new)
+            {
+                case ConnectionState.Connected:
+                    Bridge = new RealNetworkBridge(Client);
+                    break;
+                case ConnectionState.Disconnected:
+                case ConnectionState.Reconnecting:
+                    Bridge = null;
+                    break;
+            }
+        }
+
+        public void OnClientDisconnected()
+        {
+            StateMachine.OnConnectionLost();
         }
     }
 }

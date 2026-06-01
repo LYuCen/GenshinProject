@@ -82,22 +82,58 @@ namespace Player.Module
         /// </summary>
         public void SyncFromState(PlayerStateData state)
         {
-            _isCrouch = state.isCrouch;
-            _isSprint = state.isSprint;
-            _move = state.inputMove;
+            _isGround  = state.isGround;
+            _isJump    = state.isJump;
+            _isSprint  = state.isSprint;
+            _isCrouch  = state.isCrouch;
+            _isSliding = state.isSliding;
+            _move      = state.inputMove;
+        }
+
+        /// <summary>
+        /// 写入网络状态
+        /// </summary>
+        public void WriteToState(PlayerStateData state)
+        {
+            state.isGround  = _isGround;
+            state.isJump    = _isJump;
+            state.isSprint  = _isSprint;
+            state.isCrouch  = _isCrouch;
+            state.isSliding = _isSliding;
+            state.inputMove = _move;
+        }
+
+        private bool _sprintRequested;
+
+        public void RequestSprint()
+        {
+            if(!_context.IsLocal) return;
+            _sprintRequested = true;
+            Sprint();
         }
 
         public void Sprint()
         {
+            if(!_context.IsLocal) return;
+
             PlayerMoveQuery query = GetQuery();
             WeaponQuery weaponQuery = _context.CombatModule.GetQuery();
-            // 移动输入不为 0，并且为三个正方向的移动才能进行奔跑
-            _isSprint = query.HasState(PlayerMoveFlags.Move) &&
-                        (query.HasState(PlayerMoveFlags.Forward) ||
-                         query.HasState(PlayerMoveFlags.ForwardLeft) ||
-                         query.HasState(PlayerMoveFlags.ForwardRight));
-            _isSprint &= !weaponQuery.HasState(WeaponFlags.Shoot);
-            _isSprint &= !weaponQuery.HasState(WeaponFlags.Shoulder);
+
+            bool movingForward = query.HasState(PlayerMoveFlags.Forward) ||
+                                 query.HasState(PlayerMoveFlags.ForwardLeft) ||
+                                 query.HasState(PlayerMoveFlags.ForwardRight);
+            bool blocked = weaponQuery.HasState(WeaponFlags.Shoot) ||
+                           weaponQuery.HasState(WeaponFlags.Shoulder);
+
+            if (_sprintRequested && movingForward && !blocked)
+            {
+                _isSprint = true;
+            }
+            else if (!movingForward || blocked)
+            {
+                _isSprint = false;
+                _sprintRequested = false;
+            }
         }
 
         public void Crouch()

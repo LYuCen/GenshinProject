@@ -26,6 +26,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 
         public override void OnUpdateState()
         {
+            if (!MyManager.IsLocal) return;
             float targetYaw = MyManager.cameraController.Yaw;
             
             Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
@@ -39,6 +40,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.UpperFSMState
 
         public override void OnExitState()
         {
+            if (!MyManager.IsLocal) return;
             float targetYaw = MyManager.cameraController.Yaw;
             
             Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
