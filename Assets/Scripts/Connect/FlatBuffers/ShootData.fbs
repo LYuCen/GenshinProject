@@ -16,7 +16,7 @@ table ShootDataFlat{
     head_hit: float;
     element_measure: float;
     move_time: float;
-    server_tick: long;
+    client_time: float;
 }
 
 root_type ShootDataFlat;

@@ -116,6 +116,7 @@ namespace Player.ManagerLogic
             if (_boneTimer >= 0.1f)
             {
                 _boneTimer -= 0.1f;
+                _m.state.clientTime = Time.time;
                 NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Bones, PlayerDataConverter.PackBones(_m.state)));
             }
 
@@ -164,7 +165,6 @@ namespace Player.ManagerLogic
             // 状态变化时发送
             if (currentFlags != _lastFlags)
             {
-                Debug.Log($"状态变更: {_lastFlags} -> {currentFlags} | isGround={_m.state.isGround}, isJump={_m.state.isJump}, isShoot={_m.state.isShoot}");
                 _lastFlags = currentFlags;
                 byte[] flagData = BitConverter.GetBytes(currentFlags);
                 NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));
@@ -183,7 +183,6 @@ namespace Player.ManagerLogic
             if (_m.state.isCrouch)  currentFlags |= PlayerStateBoolBit.BIT_CROUCH;
             if (_m.state.isSliding) currentFlags |= PlayerStateBoolBit.BIT_SLIDING;
             
-            Debug.Log($"状态变更: {_lastFlags} -> {currentFlags} | isGround={_m.state.isGround}, isJump={_m.state.isJump}, isShoot={_m.state.isShoot}");
             _lastFlags = currentFlags;
             byte[] flagData = BitConverter.GetBytes(currentFlags);
             NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));

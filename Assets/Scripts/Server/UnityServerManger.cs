@@ -29,6 +29,9 @@ namespace Server
         private Dictionary<int, float> _lastHeartbeatTime = new Dictionary<int, float>();
         private const float HeartbeatTimeout = 10f;
 
+        // 客户端时间偏移量
+        public Dictionary<int, float> TimeOffset = new();
+
         void Awake() => Instance = this;
 
         void Start()
@@ -251,6 +254,8 @@ namespace Server
             _players.TryGetValue(id, out var value);
             return value;
         }
+
+        public Dictionary<int, ServerPlayerObject> AllPlayers => _players;
 
         public void BroadcastExcept(Message msg, int excludePlayerId)
         {

@@ -32,7 +32,7 @@ namespace Connect.Converter
             ShootDataFlat.AddHeadHit(_bulletBuilder, data.headHit);
             ShootDataFlat.AddElementMeasure(_bulletBuilder, data.elementMeasure);
             ShootDataFlat.AddMoveTime(_bulletBuilder, data.moveTime);
-            ShootDataFlat.AddServerTick(_bulletBuilder, data.serverTick);
+            ShootDataFlat.AddClientTime(_bulletBuilder, data.clientTime);
 
             var offset = ShootDataFlat.EndShootDataFlat(_bulletBuilder);
             _bulletBuilder.Finish(offset.Value);
@@ -64,7 +64,7 @@ namespace Connect.Converter
             
             data.speed = flat.Speed;
             data.element = flat.Element;
-            data.serverTick = flat.ServerTick;
+            data.clientTime = flat.ClientTime;
             data.baseHit = flat.BaseHit;
             data.headHit = flat.HeadHit;
             data.elementMeasure = flat.ElementMeasure;

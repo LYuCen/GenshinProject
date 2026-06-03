@@ -16,6 +16,7 @@ namespace Connect.Data
         public float maxHp;
         public float curShield;
         public float maxShield;
-        public Transform[] bRots; 
+        public Transform[] bRots;
+        public float clientTime;
     }
 }

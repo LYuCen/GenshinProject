@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using Connect;
@@ -6,6 +7,7 @@ using Connect.Converter;
 using Connect.Data;
 using Connect.DTO;
 using Connect.FlatDTO;
+using Connect.HitRewind;
 using Connect.Protocol;
 using Connect.ShootDTO;
 using Google.FlatBuffers;
@@ -25,6 +27,9 @@ namespace Server
         public Socket ClientSocket;
         public Transform[] bones;
         public PlayerStateData State = new PlayerStateData();
+        public HitColliderEntry[] hitColliders = new HitColliderEntry[11];
+        private HitHistoryBuffer _hitHistory;
+        private HitShape[] _currentShapes;
 
         public void Init(int id, Socket s)
         {
@@ -37,11 +42,20 @@ namespace Server
             State.curHp = 200f;
             State.maxShield = 100f;
             State.curShield = 100f;
+            _hitHistory = new HitHistoryBuffer(8);
+            _currentShapes = new HitShape[11];
             
             // 启动接收线程
             Thread t = new Thread(ReceiveLoop);
             t.IsBackground = true;
             t.Start();
+            
+            foreach (var entry in hitColliders)
+            {
+                if (entry.collider != null)
+                    entry.collider.enabled = false;
+            }
+
         }
 
         private void ReceiveLoop()
@@ -103,17 +117,25 @@ namespace Server
                     UnityServerManager.Instance.BroadcastExcept(shootMsg,  playerId);
                     ByteBuffer bb = new ByteBuffer(data);
                     var shootFlat = ShootDataFlat.GetRootAsShootDataFlat(bb);
-                    ServerAuthoritativeRaycast(shootFlat);
+                    RewindHitCheck(shootFlat);
                     break;
                 
                 case MessageType.Both_Heartbeat:
                     UnityServerManager.Instance.UpdateHeartbeat(playerId);
                     float serverTime = Time.time;
+                    float clientSendTime = BitConverter.ToSingle(data, 0);
+
+                    float halfRtt = (serverTime - clientSendTime) * 0.5f;
+                    float offset = serverTime - clientSendTime - halfRtt;
+                    UnityServerManager.Instance.TimeOffset[playerId] = offset;
+                    
+                    
                     byte[] response = new byte[8];
                     Buffer.BlockCopy(data, 0, response, 0, 4);
                     Buffer.BlockCopy(BitConverter.GetBytes(serverTime), 0, response, 4, 4);
 
                     // 回传客户端时间 + 服务端时间
+                    
                     Message heartbeatAck = new Message(MessageType.Both_Heartbeat, response);
                     UnityServerManager.Instance.SendToClient(ClientSocket, heartbeatAck);
                     break;
@@ -125,8 +147,10 @@ namespace Server
                     
                     break;
                 
+                
                 case MessageType.C2S_Bones:
                     PlayerDataConverter.UnpackBone(data, State);
+                    CacheSnapshotFromColliders();
                     break;
                 
                 case MessageType.C2S_Revive:
@@ -170,62 +194,184 @@ namespace Server
             return PlayerDataConverter.CreateSinglePlayerOffset(builder, State);
         }
 
-        private void ServerAuthoritativeRaycast(ShootDataFlat shoot)
+        private void CacheSnapshotFromColliders()
+        {
+            HitShapeExtractor.Extract(hitColliders, _currentShapes);
+            float offset = UnityServerManager.Instance.TimeOffset.GetValueOrDefault(playerId, 0f);
+            float serverBoneTime = State.clientTime + offset;
+            _hitHistory.Add(new HitSnapshot
+            {
+                ServerTime = serverBoneTime,
+                Shapes = _currentShapes
+            });
+        }
+
+        private void RewindHitCheck(ShootDataFlat shoot)
         {
             if (shoot.Position == null || shoot.Forward == null) return;
-            
+            if (shoot.ShooterId == 0) return;
+
             Vector3 origin = new Vector3(shoot.Position.Value.X, shoot.Position.Value.Y, shoot.Position.Value.Z);
             Vector3 forward = new Vector3(shoot.Forward.Value.X, shoot.Forward.Value.Y, shoot.Forward.Value.Z);
+            Ray ray = new Ray(origin, forward);
 
-            float maxRange = 100f;
+            // 估算射击时刻的服务端时间（延迟补偿）
+            float shooterOffset = UnityServerManager.Instance.TimeOffset.GetValueOrDefault(shoot.ShooterId, 0f);
+            float serverShotTime = shoot.ClientTime + shooterOffset;
 
-            int hitboxMask = 1 << LayerMask.NameToLayer("Hitbox");
+            float closestDist = float.MaxValue;
+            int bestVictimId = 0;
+            HitPart bestPart = HitPart.Body;
 
-            if (Physics.Raycast(origin, forward, out RaycastHit hit, maxRange, hitboxMask))
+            foreach (var kv in UnityServerManager.Instance.AllPlayers)
             {
-                var hitBox = hit.collider.GetComponent<HitBox>();
-                if (hitBox == null || hitBox.Owner == null) return;
-                
-                int victimId = hitBox.Owner.EntityId;
-                if (victimId == shoot.ShooterId) return;
+                int victimId = kv.Key;
+                if (victimId == shoot.ShooterId) continue;
+                var victim = kv.Value;
 
-                int damage = (hitBox.part == HitPart.Head) ? (int)shoot.HeadHit : (int)shoot.BaseHit;
+                // 粗筛：包围球
+                if (!CapsuleRayMath.RayBoundingSphere(origin, forward, victim.State.position, 2f))
+                    continue;
 
-                var victim = UnityServerManager.Instance.GetPlayer(victimId);
-                victim.State.curShield -= damage;
-                if (victim.State.curShield < 0)
+                // 取最接近射击时刻的快照
+                if (!victim._hitHistory.FindClosest(serverShotTime, out var snap)) continue;
+                if (snap.Shapes == null) continue;
+
+                // 遍历受害者所有判定框
+                foreach (var shape in snap.Shapes)
                 {
-                    victim.State.curHp += victim.State.curShield;
-                    victim.State.curShield = 0;
-                }
-
-                HitDto dto = new HitDto()
-                {
-                    attackerId = shoot.ShooterId,
-                    victimId = victimId,
-                    damage = damage,
-                    element = shoot.Element,
-                    elementMeasure = shoot.ElementMeasure,
-                    hitType = (int)hitBox.part
-                };
-
-                UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_DamageConfirm,
-                    HitDataConverter.ToBinary(dto)));
-
-                var hpMsg = PlayerDataConverter.PackHp(victimId, victim.State.curHp, victim.State.curShield, victim.State.maxHp, victim.State.maxShield);        
-                UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_Hp, hpMsg));
-
-                
-                if (victim.State.curHp <= 0)
-                {
-                    victim.State.curHp = 0;
-                    victim.State.curShield = 0;
-
-                    // 通知所有客户端该玩家死亡
-                    byte[] deathData = BitConverter.GetBytes(victimId);
-                    UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_PlayerDeath, deathData));
+                    float t = CapsuleRayMath.Intersect(ray, shape);
+                    if (t > 0f && t < closestDist && t < 100f)
+                    {
+                        closestDist = t;
+                        bestVictimId = victimId;
+                        bestPart = shape.Part;
+                    }
                 }
             }
+
+            if (bestVictimId == 0) return;
+
+            // 应用伤害
+            int damage = bestPart == HitPart.Head
+                ? (int)shoot.HeadHit
+                : (int)shoot.BaseHit;
+
+            var target = UnityServerManager.Instance.GetPlayer(bestVictimId);
+            target.State.curShield -= damage;
+            if (target.State.curShield < 0)
+            {
+                target.State.curHp += target.State.curShield;
+                target.State.curShield = 0;
+            }
+
+            HitDto dto = new HitDto()
+            {
+                attackerId = shoot.ShooterId,
+                victimId = bestVictimId,
+                damage = damage,
+                element = shoot.Element,
+                elementMeasure = shoot.ElementMeasure,
+                hitType = (int)bestPart
+            };
+
+            UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_DamageConfirm,
+                HitDataConverter.ToBinary(dto)));
+
+            var hpMsg = PlayerDataConverter.PackHp(bestVictimId,
+                target.State.curHp, target.State.curShield,
+                target.State.maxHp, target.State.maxShield);
+            UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_Hp, hpMsg));
+
+            if (target.State.curHp <= 0)
+            {
+                target.State.curHp = 0;
+                target.State.curShield = 0;
+                byte[] deathData = BitConverter.GetBytes(bestVictimId);
+                UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_PlayerDeath, deathData));
+            }
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (hitColliders == null) return;
+
+            foreach (var entry in hitColliders)
+            {
+                if (entry.collider == null) continue;
+
+                Gizmos.color = GetPartColor(entry.hitPart);
+                Transform t = entry.collider.transform;
+
+                if (entry.collider is CapsuleCollider cc) DrawCapsuleGizmo(t, cc);
+                else if (entry.collider is SphereCollider sc) DrawSphereGizmo(t, sc);
+                else if (entry.collider is BoxCollider bc) DrawBoxGizmo(t, bc);
+            }
+        }
+
+        static Color GetPartColor(HitPart part)
+        {
+            return part switch
+            {
+                HitPart.Head => Color.red,
+                HitPart.Body => Color.cyan,
+                HitPart.Arm  => Color.green,
+                HitPart.Leg  => Color.green,
+                _            => Color.gray
+            };
+        }
+
+        static void DrawBoxGizmo(Transform t, BoxCollider bc)
+        {
+            Gizmos.matrix = Matrix4x4.TRS(
+                t.TransformPoint(bc.center),
+                t.rotation,
+                Vector3.Scale(bc.size, t.lossyScale));
+            Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            Gizmos.matrix = Matrix4x4.identity;
+        }
+
+        static void DrawSphereGizmo(Transform t, SphereCollider sc)
+        {
+            float r = sc.radius * Mathf.Max(t.lossyScale.x, Mathf.Max(t.lossyScale.y, t.lossyScale.z));
+            Gizmos.DrawWireSphere(t.TransformPoint(sc.center), r);
+        }
+
+        static void DrawCapsuleGizmo(Transform t, CapsuleCollider cc)
+        {
+            float scale = t.lossyScale.y;
+            float halfH = Mathf.Max(0, cc.height * 0.5f - cc.radius) * scale;
+            float r = cc.radius * Mathf.Max(t.lossyScale.x, t.lossyScale.z);
+
+            Vector3 worldCenter = t.TransformPoint(cc.center);
+            Vector3 axis = cc.direction switch
+            {
+                0 => t.right,
+                1 => t.up,
+                2 => t.forward,
+                _ => t.up
+            };
+
+            Vector3 top = worldCenter + axis * halfH;
+            Vector3 bottom = worldCenter - axis * halfH;
+
+            // 两端球体
+            Gizmos.DrawWireSphere(top, r);
+            Gizmos.DrawWireSphere(bottom, r);
+
+            // 圆柱体连接线
+            Vector3 perp = Vector3.Cross(axis, t.forward).normalized;
+            if (perp.sqrMagnitude < 0.01f) perp = Vector3.Cross(axis, t.right).normalized;
+            Vector3 perp2 = Vector3.Cross(axis, perp).normalized;
+
+            for (int i = 0; i < 8; i++)
+            {
+                float angle = i * Mathf.PI * 0.25f;
+                Vector3 offset = (Mathf.Cos(angle) * perp + Mathf.Sin(angle) * perp2) * r;
+                Gizmos.DrawLine(bottom + offset, top + offset);
+            }
+        }
+#endif
     }
 }

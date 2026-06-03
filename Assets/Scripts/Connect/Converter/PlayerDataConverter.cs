@@ -266,6 +266,7 @@ namespace Connect.Converter
                 BoneDataFlat.AddBoneRots(builder, boneVector);
             }
 
+            BoneDataFlat.AddClientTime(builder, data.clientTime);
             var offset = BoneDataFlat.EndBoneDataFlat(builder);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
@@ -278,8 +279,9 @@ namespace Connect.Converter
 
             data.playerId = flat.PlayerId;
             data.aimPosition = new Vector3(flat.AimX, flat.AimY, flat.AimZ);
-
-            return;
+            data.clientTime = flat.ClientTime;
+            
+            //return;
             int boneCount = flat.BoneRotsLength / 4;
             if (data.bRots != null && boneCount > 0)
             {
@@ -292,7 +294,11 @@ namespace Connect.Converter
                             CompressionUtility.Decompress(flat.BoneRots(i * 4 + 2)), 
                             CompressionUtility.Decompress(flat.BoneRots(i * 4 + 3)));
                 }
+
+                // 重心骨骼
+                data.bRots[1].localPosition = new Vector3(flat.HipsX, flat.HipsY, flat.HipsZ);
             }
+            
         }
         
         /// <summary>

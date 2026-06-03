@@ -9,4 +9,5 @@ table BoneDataFlat {
     hips_y:float;
     hips_z:float;
     bone_rots:[ushort];
+    client_time:float;
 }

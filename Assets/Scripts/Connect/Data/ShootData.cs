@@ -14,6 +14,6 @@ namespace Connect.Data
         public float headHit;           // 爆头伤害
         public float elementMeasure;    // 元素量
         public float moveTime;  // 最长运动时间
-        public long serverTick;     // 发射时间戳
+        public float clientTime;     // 发射时间戳
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Connect;
 using IUtility;
 using UnityEngine;
 
@@ -48,7 +49,13 @@ namespace mView
             // 消息队列统计
             string queueColor = monitor.CurrentQueueCount > 15 ? "red" : "white";
             GUILayout.Label($"消息积压: <color={queueColor}>{monitor.CurrentQueueCount} msgs</color>", _richTextStyle);
-            
+
+            // RTT
+            var heartbeat = NetworkService.Instance?.Heartbeat;
+            float rtt = heartbeat != null ? heartbeat.RTT * 1000f : 0f;
+            string rttColor = rtt > 150f ? "red" : rtt > 80f ? "yellow" : "lime";
+            GUILayout.Label($"网络延迟: <color={rttColor}>{rtt:F0} ms</color>", _richTextStyle);
+
             GUILayout.EndVertical();
 
             GUILayout.Space(10);

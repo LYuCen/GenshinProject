@@ -71,7 +71,7 @@ namespace mWeapon.Presenter
                     element = (int)mag.ElementEnum,
                     elementMeasure = fireFeature.Data.measure,
                     moveTime = 3f,
-                    serverTick = DateTime.UtcNow.Ticks,
+                    clientTime = Time.time,
                 };
                 
                 NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerShoot, ShootDataConverter.ToDto(data)));
