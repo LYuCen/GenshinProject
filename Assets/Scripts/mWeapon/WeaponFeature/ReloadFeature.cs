@@ -1,4 +1,5 @@
 ﻿using System;
+using mSystem.BuffSystem.ElementBuff;
 using mWeapon.Component;
 using mWeapon.FeatureData;
 using mWeapon.Task;
@@ -28,7 +29,7 @@ namespace mWeapon.WeaponFeature
         {
             if(!action.Reload.IsActive()) return;
             
-            if(action.Reload.Down) TryReload();
+            if(action.Reload.Up) TryReload();
         }
 
         public void Tick()
@@ -50,7 +51,12 @@ namespace mWeapon.WeaponFeature
             WeaponRuntime runtime = _weapon.InternalRuntime;
 
             if(runtime.HasState(WeaponStateTags.Reloading)) return;
-            if (_weapon.GetComponent<MagazineComponent>().IsFull) return;
+
+            MagazineComponent mag = _weapon.GetComponent<MagazineComponent>();
+            ElementEnum chosen = _weapon.BagModel.GetBullet();
+
+            // 满弹且同元素
+            if (mag.IsFull && mag.ElementEnum == chosen) return;
             
             ReloadTask task = new ReloadTask(
                     runtime,

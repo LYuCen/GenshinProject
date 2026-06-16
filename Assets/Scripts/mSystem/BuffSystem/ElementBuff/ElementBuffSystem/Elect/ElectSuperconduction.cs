@@ -13,7 +13,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
         {
             if (controller.Elements[6].Enable) // 遇到冰
             {
-                float val = controller.GetElement(1);
+                float val = controller.GetElement(6);
                 controller.ConsumeElement(6, attackGauge);
                 attackGauge = Mathf.Max(0, attackGauge - val);
 

@@ -34,7 +34,6 @@ namespace GameFSM.FSM.WeaponFSM.FN_IWS.State
             else if (MyManager.Magazine.IsEmpty())
             {
                 this.SendEvent<ShootEvent>();
-                this.SendEvent<ReloadEvent>();
             }
             
         }

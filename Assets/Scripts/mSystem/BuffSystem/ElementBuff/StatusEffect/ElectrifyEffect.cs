@@ -1,39 +1,51 @@
-﻿using mSystem.HurtSystem;
+﻿using AssetBundleFramework.Core.Resource;
+using mSystem.ServerTimeSystem;
+using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.StatusEffect
 {
     /// <summary>
     /// 感电持续反应效果逻辑
     /// </summary>
-    public class ElectrifyEffect : IStatusEffect
+    public class ElectrifyEffect : IStatusEffect, ITimeEvent
     {
-        private int _electCd;
-        private int _electStep;
         public bool IsFinished { get; private set; }
+        public float Progress => 0f;
+        public double TriggerTime { get; private set; }
 
-        public void OnUpdate(ElementBuffController buff)
+        private double _interval = 0.5;
+        private ElementBuffController _controller;
+        private bool _cancelled;
+
+        public ElectrifyEffect(double now, ElementBuffController controller)
         {
-            if (buff.Elements[2].Enable && buff.Elements[4].Enable && _electCd == 0)
-            {
-                _electCd = (int)(50 * 0.5f); // 0.5s 触发一次感电
-                buff.ConsumeElement(2, 0.4f);
-                buff.ConsumeElement(4, 0.4f);
-                HurtComponent component = new HurtComponent()
-                {
-                    victimId = buff.id,
-                    Element = 4,
-                    ElementMeasure = 0,
-                    Harm = 20,
-                    HitType = 0,
-                    Transform = buff.transform
-                };
-                HurtSystem.HurtSystem.Instance.EnQueue(component);
-            }
-
-            IsFinished = !buff.Elements[2].Enable || !buff.Elements[4].Enable;
-            _electCd--;
+            TriggerTime = now;
+            _controller = controller;
+            TimeSystem.Instance.Add(this);
         }
+        public void OnRemove() { _cancelled = true; }
+        public Sprite GetSprite()
+        {
+            var ir = ResourceManager.instance.Load("Assets/AssetBundle/Icon/Buff/Electrify.png", false);
+            return ir.GetAsset<Sprite>();
+        }
+        
+        public void Execute()
+        {
+            if (_cancelled) return;
 
-        public void OnRemove() { /* 清理特效 */ }
+            if (!_controller.Elements[(int)ElementEnum.Water].Enable ||
+                !_controller.Elements[(int)ElementEnum.Elect].Enable)
+            {
+                _controller.RemoveEffectByType(typeof(ElectrifyEffect));
+                return;
+            }
+            
+            // 消耗 0.4 单位水和雷
+            _controller.ConsumeElement((int)ElementEnum.Water, 0.4f);
+            _controller.ConsumeElement((int)ElementEnum.Elect, 0.4f);
+            TriggerTime += _interval;
+            TimeSystem.Instance.Add(this);
+        }
     }
 }

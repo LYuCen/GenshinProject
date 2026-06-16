@@ -1,4 +1,5 @@
-﻿using mSystem.HitTextSystem;
+﻿using mSystem.BuffSystem.ElementBuff.StatusEffect;
+using mSystem.HitTextSystem;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Frost
@@ -20,7 +21,13 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Frost
                     transform = target, element = 6, Text = "冻结", textType = 2
                 });
 
-                return new ReactionResult { IsReaction = true, DamageMultiplier = 1f };
+                return new ReactionResult
+                {
+                    IsReaction = true, 
+                    DamageMultiplier = 1f,
+                    BonusDamage = 0,
+                    TriggeredEffect = new FreezeEffect(controller.TimeProvider(), controller),
+                };
             }
             return ReactionResult.None;
         }

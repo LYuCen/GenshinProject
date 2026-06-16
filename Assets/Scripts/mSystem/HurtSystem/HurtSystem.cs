@@ -14,7 +14,7 @@ namespace mSystem.HurtSystem
     public class HurtComponentSystem : ComponentSystem<HurtComponent>, ICanSendEvent
     {
         // 使用重构后的元素反应系统
-        private IElementBuffSystem _buffSystem = new ElementBuffSystem();
+        private static IElementBuffSystem _buffSystem = new ElementBuffSystem();
 
         protected override void UpdateComponent()
         {
@@ -27,43 +27,13 @@ namespace mSystem.HurtSystem
 
                 // 获取或添加元素控制器
                 var controller = component.Transform.GetComponent<ElementBuffController>();
-                if (!controller)
-                {
-                    continue;
-                }
+                if (!controller) continue;
 
-                // 运行元素反应系统
-                var result = _buffSystem.Reaction(
-                    component.Transform, 
-                    component.Element,
-                    ref component.ElementMeasure, 
-                    controller
-                );
-
-                // 处理反应结果
-                if (result.IsReaction)
+                if (!component.SkipReaction)
                 {
-                    // 计算最终伤害：(基础伤害 * 反应倍率) + 反应固定伤害
-                    component.Harm = (int)(component.Harm * result.DamageMultiplier + result.BonusDamage);
-
-                    // 如果反应产生了持续性效果（如感电、燃烧、冻结），挂载到控制器上
-                    if (result.TriggeredEffect != null)
-                    {
-                        controller.AddEffect(result.TriggeredEffect);
-                    }
-                }
-                else
-                {
-                    // 如果没有发生反应，则尝试进行元素附着
-                    // 只有攻击元素量大于0时才附着（某些反应可能会在无反应的情况下消耗掉元素量）
-                    if (component.ElementMeasure > 0)
-                    {
-                        controller.AddElement(component);
-                    }
+                    ProcessElementReaction(component, controller);
                 }
                 
-                ElementSystem.Instance.EnQueue(controller);
-                // 4. 最终执行扣血和伤害飘字
                 LoseHp(component);
             }
         }
@@ -97,6 +67,32 @@ namespace mSystem.HurtSystem
             {
                 BodyController body = component.Transform.GetComponent<BodyController>();
                 if (body) body.LoseHp(component.Harm);
+            }
+        }
+
+        public static void ProcessElementReaction(HurtComponent component, ElementBuffController controller)
+        {
+            var result = _buffSystem.Reaction(component.Transform, component.Element, ref component.ElementMeasure,
+                controller);
+
+            if (result.IsReaction)
+            {
+                component.Harm = (int)(component.Harm * result.DamageMultiplier + result.BonusDamage);
+                // 如果反应携带 Buff
+                if (result.TriggeredEffect != null)
+                {
+                    Debug.Log($"新增 {result.TriggeredEffect} Buff");
+                    controller.AddEffect(result.TriggeredEffect);
+                }
+            }
+            else
+            {
+                // 如果没有发生反应，则尝试进行元素附着
+                // 只有攻击元素量大于0时才附着（某些反应可能会在无反应的情况下消耗掉元素量）
+                if (component.ElementMeasure > 0)
+                {
+                    controller.AddElement(component);
+                }
             }
         }
 

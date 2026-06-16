@@ -1,4 +1,5 @@
-﻿using AssetBundleFramework.Core.Resource;
+﻿using System.Collections.Generic;
+using AssetBundleFramework.Core.Resource;
 using Firearms;
 using mSystem.BuffSystem.ElementBuff;
 using mWeapon;
@@ -20,7 +21,7 @@ namespace mModel
     
     public class BagModel : AbstractModel
     {
-        private BulletInfo[] _bullets;
+        private List<BulletInfo> _bullets;
         private AbstractGun _primaryWeapon;
         private AbstractGun _secondaryWeapon;
         private WeaponPro _fnIws;
@@ -29,7 +30,7 @@ namespace mModel
         private int _index;
         protected override void OnInit()
         {
-            _bullets = new BulletInfo[3];
+            _bullets = new List<BulletInfo>();
             var ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FnIws/FnIws.asset",
                 false);
             _fnIws = new WeaponPro(ir.GetAsset<WeaponData>());
@@ -55,7 +56,7 @@ namespace mModel
 
         public BulletInfo GetBullet(ElementEnum e)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < _bullets.Count; i++)
             {
                 if (_bullets[i].Data == e) return _bullets[i];
             }
@@ -63,25 +64,53 @@ namespace mModel
             return new BulletInfo();
         }
 
+        public void SetBulletIndex(int val)
+        {
+            _index = val;
+        }
+
+        public ElementEnum GetBullet()
+        {
+            return _bullets[_index].Data;
+        }
+
         public void SetBullet(int i, ElementEnum data, int val)
         {
-            _bullets[i] = new BulletInfo { Data = data, Val = val };
+            while (_bullets.Count <= i) _bullets.Add(new BulletInfo());       
+            var bullet = _bullets[i];
+            bullet.Data = data;
+            bullet.Val = val;
+            _bullets[i] = bullet;
         }
+
 
         public void ReturnBullet(BulletInfo info)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < _bullets.Count; i++)
             {
-                if (_bullets[i].Data == info.Data) _bullets[i].Val += info.Val;
+                if (_bullets[i].Data == info.Data)
+                {
+                    var bullet = _bullets[i];
+                    bullet.Val += info.Val;      
+                    _bullets[i] = bullet;        
+                }
             }
         }
 
         public void DeductBullet(BulletInfo info)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < _bullets.Count; i++)
             {
-                if (_bullets[i].Data == info.Data) _bullets[i].Val -= info.Val;
+                if (_bullets[i].Data == info.Data)
+                {
+                    var bullet = _bullets[i];    
+                    bullet.Val -= info.Val;      
+                    _bullets[i] = bullet;        
+                }
             }
+
         }
+
+        public int BulletCount => _bullets.Count;
     }
 }

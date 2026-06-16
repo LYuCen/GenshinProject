@@ -15,9 +15,6 @@ namespace mView
         [SerializeField] private TextMeshProUGUI bulletText;
         [SerializeField] private Image weaponElementImg;
         [SerializeField] private Image grenadeElementImg;
-        [SerializeField] private Image[] elementBulletImg;
-        [SerializeField] private Image[] elementIconImg;
-        [SerializeField] private TextMeshProUGUI[] elementBullets;
         [SerializeField] private RectTransform[] weapon;
 
         [SerializeField] private GameObject frontSight;
@@ -39,10 +36,6 @@ namespace mView
                 weaponElementImg.sprite =
                     ElementModel.Instance.elementUI[(int)_bagModel.Weapon.Runtime.Component.ElementEnum];
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
-            this.RegisterEvent<ViewUpdateElement>(e =>
-            {
-                UpdateElementBullets(e.Offset);
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
             this.RegisterEvent<WeaponDataUpdateEvent>(_ => UpdateUI())
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
             this.RegisterEvent<FrontSightEvent>(_ =>
@@ -52,13 +45,6 @@ namespace mView
 
         private void UpdateUI()
         {
-            for (int i = 0; i < 3; i++)
-            {
-                var bullet = _bagModel.GetBullet(i);
-                elementIconImg[i].sprite = ElementModel.Instance.elementUI[(int)bullet.Data];
-                elementBullets[i].text = $"{bullet.Val:D3}";
-            }
-
             gunName.text = _bagModel.Weapon.WeaponName;
             bulletText.text =
                 $"{_bagModel.Weapon.Runtime.Component.BulletVal:D3}/" +
@@ -122,17 +108,6 @@ namespace mView
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
-        }
-
-        /// <summary>
-        /// 切换元素
-        /// </summary>
-        /// <param name="add">偏移量 （土1）</param>
-        private void UpdateElementBullets(int add)
-        {
-            elementBulletImg[_prevIndex].color = new Color(0.721f, 0.721f, 0.721f, 0.7f);
-            _prevIndex = (_prevIndex + add + 3) % 3;
-            elementBulletImg[_prevIndex].color = new Color(0.866f, 0.714f, 0.282f, 0.7f);
         }
 
         /// <summary>

@@ -7,7 +7,6 @@ namespace Player.Module
     public class PlayerViewModule : IModule, ICanSendEvent
     {
         private PlayerContext _context;
-        private int _chose;
         private int _weapon;
         public PlayerViewModule(PlayerContext context)
         {
@@ -16,7 +15,6 @@ namespace Player.Module
         
         public void Init()
         {
-            _chose = 0;
             _weapon = 0;
             this.SendEvent(new WeaponDataUpdateEvent());
         }
@@ -46,20 +44,6 @@ namespace Player.Module
             {
                 Index = 1
             });
-        }
-        
-        public void ChangeElement(int offset)
-        {
-            _chose = (_chose + offset + 3) % 3;
-            this.SendEvent(new ViewUpdateElement
-            {
-                Offset = offset
-            });
-        }
-
-        public int GetChose()
-        {
-            return _chose;
         }
 
         public IArchitecture GetArchitecture()

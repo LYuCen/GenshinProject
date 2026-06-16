@@ -36,7 +36,7 @@ namespace Editor.ElementEditor
 
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField($"{elementNames[i]}", GUILayout.Width(80));
-                EditorGUILayout.LabelField($"Val: {data.Val}", GUILayout.Width(100));
+                EditorGUILayout.LabelField($"Val: {(int)data.GetVal(UnityEngine.Time.time)}", GUILayout.Width(100));
                 EditorGUILayout.LabelField($"Lv: {data.Level}", GUILayout.Width(50));
                 EditorGUILayout.EndHorizontal();
 
@@ -89,12 +89,9 @@ namespace Editor.ElementEditor
             }
         }
 
-        // 利用反射获取私有字段 _statusEffects
         private Dictionary<Type, mSystem.BuffSystem.ElementBuff.StatusEffect.IStatusEffect> GetEffectsDict(ElementBuffController target)
         {
-            var field = typeof(ElementBuffController).GetField("_statusEffects", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return field?.GetValue(target) as Dictionary<Type, mSystem.BuffSystem.ElementBuff.StatusEffect.IStatusEffect>;
+            return target._statusEffects;
         }
     }
 }

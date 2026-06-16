@@ -1,4 +1,5 @@
-﻿using mSystem.HitTextSystem;
+﻿using mSystem.BuffSystem.ElementBuff.StatusEffect;
+using mSystem.HitTextSystem;
 using UnityEngine;
 
 namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Water
@@ -26,8 +27,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Water
                     IsReaction = true,
                     DamageMultiplier = 1f,
                     BonusDamage = 0,
-                    // 如果需要控制敌人无法行动，可以取消下面注释
-                    // TriggeredEffect = new FreezeEffect() 
+                    TriggeredEffect = new FreezeEffect(controller.TimeProvider(), controller),
                 };
             }
 

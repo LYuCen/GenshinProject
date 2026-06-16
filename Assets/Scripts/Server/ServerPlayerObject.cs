@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
+using BaseClass;
 using Connect;
 using Connect.Converter;
 using Connect.Data;
@@ -13,13 +14,15 @@ using Connect.ShootDTO;
 using Google.FlatBuffers;
 using mEnum;
 using mInterface;
+using mSystem.BuffSystem.ElementBuff;
+using mSystem.BuffSystem.ElementBuff.ElementBuffSystem;
+using mSystem.HurtSystem;
 using mSystem.StatusSystem;
-using Player;
 using UnityEngine;
 
 namespace Server
 {
-    public class ServerPlayerObject : MonoBehaviour, IEntityIdentity
+    public class ServerPlayerObject : MonoBehaviour, IEntityIdentity, IManager
     {
         public int EntityId => playerId;
         public EntityStatusUI EntityStatusUI => null;
@@ -30,6 +33,9 @@ namespace Server
         public HitColliderEntry[] hitColliders = new HitColliderEntry[11];
         private HitHistoryBuffer _hitHistory;
         private HitShape[] _currentShapes;
+
+        private IElementBuffSystem _buffSystem;
+        private ElementBuffController _buffController;
 
         public void Init(int id, Socket s)
         {
@@ -55,6 +61,11 @@ namespace Server
                 if (entry.collider != null)
                     entry.collider.enabled = false;
             }
+            
+            _buffController = gameObject.GetComponent<ElementBuffController>();
+            if (!_buffController) _buffController = gameObject.AddComponent<ElementBuffController>();
+            _buffController.id = id;
+            _buffSystem = new ElementBuffSystem();
 
         }
 
@@ -220,7 +231,7 @@ namespace Server
             float serverShotTime = shoot.ClientTime + shooterOffset;
 
             float closestDist = float.MaxValue;
-            int bestVictimId = 0;
+            int bestVictimId = -1;
             HitPart bestPart = HitPart.Body;
 
             foreach (var kv in UnityServerManager.Instance.AllPlayers)
@@ -250,26 +261,32 @@ namespace Server
                 }
             }
 
-            if (bestVictimId == 0) return;
+            if (bestVictimId == -1) return;
 
             // 应用伤害
             int damage = bestPart == HitPart.Head
                 ? (int)shoot.HeadHit
                 : (int)shoot.BaseHit;
-
             var target = UnityServerManager.Instance.GetPlayer(bestVictimId);
-            target.State.curShield -= damage;
-            if (target.State.curShield < 0)
-            {
-                target.State.curHp += target.State.curShield;
-                target.State.curShield = 0;
-            }
 
+            HurtComponent component = new HurtComponent
+            {
+                attackerId = playerId,
+                Element = shoot.Element,
+                ElementMeasure = shoot.ElementMeasure,
+                Harm = damage,
+                HitType = (int)bestPart,
+                Transform = target.transform,
+                victimId = bestVictimId
+            };
+
+            HurtComponentSystem.ProcessElementReaction(component, target._buffController);
+            
             HitDto dto = new HitDto()
             {
                 attackerId = shoot.ShooterId,
                 victimId = bestVictimId,
-                damage = damage,
+                damage = component.Harm,
                 element = shoot.Element,
                 elementMeasure = shoot.ElementMeasure,
                 hitType = (int)bestPart
@@ -277,6 +294,8 @@ namespace Server
 
             UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_DamageConfirm,
                 HitDataConverter.ToBinary(dto)));
+            component.SkipReaction = true;
+            HurtSystem.Instance.EnQueue(component);
 
             var hpMsg = PlayerDataConverter.PackHp(bestVictimId,
                 target.State.curHp, target.State.curShield,
@@ -373,5 +392,27 @@ namespace Server
             }
         }
 #endif
+        public void UpdateHp(float val)
+        {
+            State.curShield -= val;
+            if (State.curShield < 0)
+            {
+                State.curHp += State.curShield;   
+                State.curShield = 0;
+            }
+
+            var hpMsg = PlayerDataConverter.PackHp(playerId, State.curHp, State.curShield, State.maxHp, State.maxShield);
+
+            UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_Hp, hpMsg));
+
+            if (State.curHp <= 0)
+            {
+                State.curHp = 0;
+                State.curShield = 0;
+                byte[] deathData = BitConverter.GetBytes(playerId);
+                UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_PlayerDeath, deathData));
+            }
+        }
+
     }
 }

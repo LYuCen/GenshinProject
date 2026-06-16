@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
-using QFramework;
-using Vector2 = UnityEngine.Vector2;
+using UnityEngine;
 
 namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
-    public class MoveHandler : KeyHandler, ICanSendEvent
+    public class MoveHandler : KeyHandler
     {
         private Vector2 _move = Vector2.zero;
 
@@ -30,11 +29,6 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 else if (key.GetKeyName() == "MoveRight") _move.x += 1;
             }
             Context.Move = _move;
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

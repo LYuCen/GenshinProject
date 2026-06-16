@@ -8,12 +8,13 @@ using mEvent;
 using mModel;
 using mSystem.InputSystem;
 using mSystem.InputSystem.Context;
-using mWeapon;
-using mWeapon.Component;
+using mView.BulletChose;
 using Player.Module;
 using QFramework;
 using UnityEngine;
+using UnityEngine.UI;
 using MessageType = Connect.Protocol.MessageType;
+using Object = UnityEngine.Object;
 
 namespace Player.ManagerLogic
 {
@@ -25,7 +26,6 @@ namespace Player.ManagerLogic
         
         
         private PlayerInputController _inputController;
-        private IUnRegister _mReloadEvent;
         private IUnRegister _mSetHandEvent;
         private BagModel _bagModel;
         
@@ -36,6 +36,8 @@ namespace Player.ManagerLogic
         private float _boneTimer;
 
         private int _lastFlags = -1;
+        private AnnulusView _annulusView; // 轮盘选择
+        private float _timer;
         
         public void Init(PlayerManager manager)
         {
@@ -58,7 +60,6 @@ namespace Player.ManagerLogic
             {
                 lss.InitPlayerManager(manager);
             }
-            _mReloadEvent = this.RegisterEvent<ReloadEvent>(_ => TryReload());
             _mSetHandEvent = this.RegisterEvent<SetHandIkTargetEvent>(InitHandIK);
             
             manager.BagModule.Init();
@@ -66,6 +67,20 @@ namespace Player.ManagerLogic
             manager.MoveModule.Init();
             manager.IkModule.Init();
             manager.ViewModule.Init();
+            
+            _annulusView = Object.FindObjectOfType<AnnulusView>(true); // 场景里找        
+            if (_annulusView)
+            {
+                int count = _bagModel.BulletCount;
+                _annulusView.Init(count, 1);
+                for (int i = 0; i < count; i++)
+                {
+                    var bullet = _bagModel.GetBullet(i);
+                    var img = _annulusView.icons[i].GetComponent<Image>();
+                    if (img && ElementModel.Instance) img.sprite = ElementModel.Instance.elementUI[(int)bullet.Data];  
+                }
+                _annulusView.HideWheel();
+            }
         }
 
         public void OnUpdate()
@@ -86,8 +101,8 @@ namespace Player.ManagerLogic
                 _m.CombatModule.WriteToState(_m.state);   
                 CheckState();
             }
-
-            if(_context.Reload.Down) TryReload();
+            
+            Reload();
             
             // 监听输入
             _inputSystem.SetKeyCode();
@@ -122,26 +137,40 @@ namespace Player.ManagerLogic
 
         }
 
+        private void Reload()
+        {
+            if (_context.Reload.Down)
+            {
+                _timer = 0;
+            }
+
+            if (_context.Reload.Press)
+            {
+                _timer += Time.deltaTime;
+                if (_timer > 0.2f && !_annulusView.gameObject.activeSelf)
+                {
+                    _annulusView.ShowWheel();
+                }
+
+                if (_annulusView.gameObject.activeSelf)
+                {
+                    int idx = _annulusView.GetIndexByMouse(Input.mousePosition);
+                    _annulusView.SetHighLight(idx);
+                    if (idx >= 0)
+                    {
+                        _m.BagModule.SetChose(idx);
+                    } 
+                }
+            }
+            if (_context.Reload.Up)
+            {
+                _annulusView.HideWheel();
+            }
+        }
+
         public void OnLateUpdate()
         {
             _m.cameraController.UpdateForward();
-        }
-
-        private void TryReload()
-        {
-            WeaponPro weapon = _bagModel.Weapon;
-            if(weapon == null) return;
-            if(weapon.Runtime.HasState(WeaponStateTags.Reloading)) return;
-
-            int chose = _m.ViewModule.GetChose();
-            BulletInfo info = _m.BagModule.GetBulletInfo(chose);
-
-            // 没有该元素子弹
-            if(info.Val <= 0) return;
-            MagazineComponent mag = weapon.GetComponent<MagazineComponent>();
-            // 已装满且元素相同，不需要换弹
-            if(mag.IsFull && mag.ElementEnum == info.Data) return;
-            mag.ElementEnum = info.Data;
         }
 
         private void InitHandIK(SetHandIkTargetEvent e)
@@ -190,7 +219,6 @@ namespace Player.ManagerLogic
 
         public void UnRegister()
         {
-            _mReloadEvent.UnRegister();
             _mSetHandEvent.UnRegister();
         }
 

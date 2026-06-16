@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using Connect.Converter;
 using Connect.DTO;
@@ -7,13 +8,17 @@ using Connect.Protocol;
 using Connect.ShootDTO;
 using Firearms;
 using Firearms.Bullet;
+using Connect.ElementBuffDTO;
 using Firearms.Muzzle;
 using GameFSM.LevelFSM.PlayerFSM;
 using Google.FlatBuffers;
 using IUtility;
 using mModel;
+using mSystem.BuffSystem.ElementBuff;
+using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.BulletSystem;
 using mSystem.HurtSystem;
+using mSystem.ServerTimeSystem;
 using UnityEngine;
 
 namespace Connect
@@ -178,6 +183,15 @@ namespace Connect
                         statePm.CombatModule?.SyncFromState(s);
                     }
                     break;
+                case MessageType.S2C_ElementAttach:
+                    OnReceiveElementAttach(bb);
+                    break;
+                case MessageType.S2C_ElementDetach:
+                    OnReceiveElementDetach(bb);
+                    break;
+                case MessageType.S2C_StatusEffect:
+                    OnReceiveStatusEffect(bb);
+                    break;
                 case MessageType.Both_Heartbeat:
                     NetworkService.Instance?.Heartbeat?.OnHeartbeatResponse(msg.data);
                     break;
@@ -202,31 +216,23 @@ namespace Connect
         
         public void OnReceiveDamageConfirm(Message msg)
         {
-            // 1. 获取 FlatBuffers 根对象
             HitDto dto = new HitDto();
-            // 使用转换器解析二进制数据到 dto 对象中
             HitDataConverter.FillData(msg.data, dto);
-            
-            // 查找 id 判断是否有该玩家
+
             if (PlayerPool.Instance.Models.TryGetValue(dto.victimId, out var model))
             {
-                Debug.Log($"{model.EntityId} 被击中 (数据源: FlatBuffers)");
-
-                HurtComponent component = new HurtComponent()
+                HurtSystem.Instance.EnQueue(new HurtComponent
                 {
                     attackerId = dto.attackerId,
                     victimId = dto.victimId,
                     Harm = dto.damage,
+                    HitType = dto.hitType,
                     Element = dto.element,
                     ElementMeasure = dto.elementMeasure,
-                    HitType = dto.hitType,
-                    Transform = model.transform
-                };
-
-                // 进入 HurtSystem
-                HurtSystem.Instance.EnQueue(component);
+                    Transform = model.transform,
+                    SkipReaction = true
+                });
             }
-            else Debug.Log($"[Hurt] 未找到该玩家{dto.victimId}");
         }
         
         public static int MessageQueueCount
@@ -251,8 +257,91 @@ namespace Connect
             };
             client.OnDisconnected += () =>
             {
-                NetworkService.Instance.OnClientDisconnected();       
+                NetworkService.Instance.OnClientDisconnected();
             };
+        }
+
+        /// <summary>
+        /// 元素挂载
+        /// </summary>
+        private void OnReceiveElementAttach(ByteBuffer bb)
+        {
+            var flat = ElementAttachFlat.GetRootAsElementAttachFlat(bb);
+            if (!PlayerPool.Instance.Models.TryGetValue(flat.TargetId, out var pm)) return;
+
+            var controller = pm.GetComponent<ElementBuffController>();
+            if (!controller)
+            {
+                controller = pm.gameObject.AddComponent<ElementBuffController>();
+                controller.id = flat.TargetId;
+            }
+
+            int idx = flat.Element;
+            float now = Time.time;
+            float rate = ElementData.GetDecayRate(flat.Level);
+            float attachTime = rate > 0 ? now - (flat.Capacity - flat.Val) / rate : now;
+            controller.Elements[idx] = new ElementData
+            {
+                Level = flat.Level,
+                Capacity = flat.Capacity,
+                AttachTime = attachTime,
+                Enable = true
+            };
+            // 调度客户端元素衰减事件
+            TimeSystem.Instance.Add(new ElementDecayEvent(controller, idx, now));
+        }
+
+        /// <summary>
+        /// 元素移除
+        /// </summary>
+        private void OnReceiveElementDetach(ByteBuffer bb)
+        {
+            var flat = ElementDetachFlat.GetRootAsElementDetachFlat(bb);
+            if (!PlayerPool.Instance.Models.TryGetValue(flat.TargetId, out var pm)) return;
+
+            var controller = pm.GetComponent<ElementBuffController>();
+            if (!controller) return;
+
+            int idx = flat.Element;
+            controller.Elements[idx] = default;
+        }
+
+        private void OnReceiveStatusEffect(ByteBuffer bb)
+        {
+            var flat = StatusEffectFlat.GetRootAsStatusEffectFlat(bb);
+            if (!PlayerPool.Instance.Models.TryGetValue(flat.TargetId, out var pm)) return;
+
+            var controller = pm.GetComponent<ElementBuffController>();
+            if (!controller)
+            {
+                controller = pm.gameObject.AddComponent<ElementBuffController>();
+                controller.id = flat.TargetId;
+            }
+
+            if (flat.IsAdd)
+            {
+                IStatusEffect effect = flat.EffectType switch
+                {
+                    0 => new BurnEffect(controller.TimeProvider(), controller),
+                    1 => new ElectrifyEffect(controller.TimeProvider(), controller),
+                    2 => new SharpenEffect(controller.TimeProvider(), controller),
+                    3 => new FreezeEffect(controller.TimeProvider(), controller),
+                    _ => null
+                };
+                if (effect != null) controller.AddEffect(effect);
+            }
+            else
+            {
+                Type removeType = flat.EffectType switch
+                {
+                    0 => typeof(BurnEffect),
+                    1 => typeof(ElectrifyEffect),
+                    2 => typeof(SharpenEffect),
+                    3 => typeof(FreezeEffect),
+                    _ => null
+                };
+                if (removeType != null) controller.RemoveEffectByType(removeType);
+            }
         }
     }
 }

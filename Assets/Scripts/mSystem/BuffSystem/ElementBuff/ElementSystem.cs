@@ -41,53 +41,14 @@ namespace mSystem.BuffSystem.ElementBuff
             }
         }
     }
-
-    public class ElementBuffControllerComponentSystem : ComponentSystem<ElementBuffController>
-    {
-        protected override void UpdateComponent()
-        {
-            for (int i = Queue.Count; i > 0; i--)
-            {
-                var controller = Queue.Dequeue();
-                if (!controller) continue;
-
-                // 驱动控制器逻辑
-                controller.Tick();
-
-                // 如果控制器还有附着元素或者还有运行中的 Effect，则继续保留在队列中
-                if (controller.IsAlive())
-                {
-                    Queue.Enqueue(controller);
-                }
-                else
-                {
-                    controller.inQueue = false;
-                }
-            }
-        }
-    }
     
     public class ElementSystem : AbstractSingleton<ElementSystem>
     {
         private ElementComponentSystem _elementCs = new();
-        private ElementBuffControllerComponentSystem _controllerCs = new();
-
-        public void EnQueue(ElementComponent component)
-        {
-            _elementCs.EnQueue(component);
-        }
-
-        public void EnQueue(ElementBuffController component)
-        {
-            if (component.inQueue) return;
-            component.inQueue = true;
-            _controllerCs.EnQueue(component);
-        }
 
         private void FixedUpdate()
         {
-            _elementCs.FixedUpdate();
-            _controllerCs.FixedUpdate();
+            _elementCs.FixedUpdate(); ;
         }
     }
 }

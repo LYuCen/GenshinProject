@@ -6,9 +6,9 @@ using UnityEngine;
 using System.Collections.Concurrent;
 using Connect;
 using Connect.Converter;
-using Connect.FlatDTO;
 using Connect.Protocol;
-using Google.FlatBuffers;
+using mSystem.BuffSystem.ElementBuff;
+using mSystem.BuffSystem.ElementBuff.StatusEffect;
 
 namespace Server
 {
@@ -20,7 +20,6 @@ namespace Server
         private Socket _listener;
         private Dictionary<int, ServerPlayerObject> _players = new Dictionary<int, ServerPlayerObject>();
         private Dictionary<Socket, int> _socketToId = new Dictionary<Socket, int>();
-        private FlatBufferBuilder _builder = new FlatBufferBuilder(2048);
         private int _nextId = 1000;
 
         // 主线程任务队列 
@@ -31,6 +30,7 @@ namespace Server
 
         // 客户端时间偏移量
         public Dictionary<int, float> TimeOffset = new();
+        private Dictionary<int, bool[]> _prevElementState = new();
 
         void Awake() => Instance = this;
 
@@ -46,6 +46,7 @@ namespace Server
 
             // 服务器广播 20 tick服务器
             InvokeRepeating(nameof(BroadcastWorldState), 0.05f, 0.05f);
+            InvokeRepeating(nameof(TickElementBuffs), 0.02f, 0.02f);
         }
 
         void Update()
@@ -66,7 +67,6 @@ namespace Server
         {
             try
             {
-                
                 Socket client = _listener.EndAccept(ar);
                 client.NoDelay = true; // 禁用 Nagle 算法，解决 TCP 延迟合并包的问题
                 client.SendBufferSize = 65536; // 调大发送缓冲区
@@ -83,6 +83,19 @@ namespace Server
 
                     _players.Add(id, spo);
                     _socketToId.Add(client, id);
+
+                    // 订阅 Buff 变更回调，实时广播给客户端
+                    var ctrl = spo.GetComponent<ElementBuffController>();
+                    ctrl.OnEffectAdded += (type) =>
+                    {
+                        int effectType = EffectTypeToInt(type);
+                        Broadcast(ElementBuffConverter.PackStatusEffect(id, effectType, true, 0));
+                    };
+                    ctrl.OnEffectRemoved += (type) =>
+                    {
+                        int effectType = EffectTypeToInt(type);
+                        Broadcast(ElementBuffConverter.PackStatusEffect(id, effectType, false, 0));
+                    };
 
                     // 发送二进制 ID
                     SendToClient(client, new Message(MessageType.S2C_AllocId, BitConverter.GetBytes(id)));
@@ -116,6 +129,39 @@ namespace Server
             byte[] data = PlayerDataConverter.PackPositions(_players); 
             Broadcast(new Message(MessageType.S2C_Position, data));
         }
+        
+        void TickElementBuffs()
+        {
+            foreach (var kv in _players)
+            {
+                var ctrl = kv.Value.GetComponent<ElementBuffController>();
+                if (!ctrl) continue;
+
+                if (!_prevElementState.TryGetValue(kv.Key, out var prevState))
+                {
+                    prevState = new bool[8];
+                    _prevElementState[kv.Key] = prevState;
+                }
+
+                // 检测元素衰减      
+                for (int i = 0; i < 8; i++)
+                {
+                    bool nowEnabled = ctrl.Elements[i].Enable;
+                    if (!prevState[i] && nowEnabled)
+                    {
+                        var e = ctrl.Elements[i];
+                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(Time.time), e.Capacity));
+                    }
+                    else if (prevState[i] && !nowEnabled)
+                    {
+                        Broadcast(ElementBuffConverter.PackDetach(kv.Key, i));
+                    }
+
+                    prevState[i] = nowEnabled;
+                }
+            }
+        }
+
 
         /// <summary>
         /// 发送消息给特定客户端
@@ -176,6 +222,7 @@ namespace Server
                     {
                         Destroy(spo.gameObject); // 销毁物理假人
                         _players.Remove(playerId);
+                        _prevElementState.Remove(playerId);
                     }
 
                     _socketToId.Remove(sclient);
@@ -272,5 +319,15 @@ namespace Server
         {
             _lastHeartbeatTime[playerId] = Time.time;
         }
+        
+        private static int EffectTypeToInt(Type type)
+        {  
+            if (type == typeof(BurnEffect)) return 0;
+            if (type == typeof(ElectrifyEffect)) return 1;
+            if (type == typeof(SharpenEffect)) return 2;
+            if (type == typeof(FreezeEffect)) return 3;
+            return -1;
+        }
+
     }
 }

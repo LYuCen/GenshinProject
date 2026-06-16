@@ -1,0 +1,23 @@
+﻿namespace Connect.ElementBuffDTO;
+
+table ElementAttachFlat {
+    target_id:int;  // 被附着实体 ID
+    element:int;    // 元素类型
+    level:int;      // 衰减档位
+    val:int;        // 元素量
+    capacity:int;   // 容积
+}
+
+table ElementDetachFlat {
+    target_id:int;  // 目标实体名称
+    element:int;    // 元素类型
+}
+
+table StatusEffectFlat {
+    target_id:int;
+    effect_type:int;    // 0 = 燃烧， 1 = 感电， 2 = 激化， 3 = 冻结
+    is_add:bool;        // true = 添加， false = 移除
+    duration:int;       // 持续时间
+}
+
+root_type ElementAttachFlat;

@@ -6,7 +6,7 @@ namespace mController.Player.InputController.Inputs.ActionHandler
     {
         public override void Handle(InputContext context)
         {
-            MyManager.ViewModule.ChangeElement((int)context.MouseScroll);
+            
         }
     }
 }

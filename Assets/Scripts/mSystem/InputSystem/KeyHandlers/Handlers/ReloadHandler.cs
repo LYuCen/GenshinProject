@@ -21,6 +21,8 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 if (s.GetKeyName() == "Reload")
                 {
                     Context.Reload.Down = s.GetIsDown();
+                    Context.Reload.Press = s.GetIsPress();
+                    Context.Reload.Up = s.GetIsUp();
                 }
             }
         }

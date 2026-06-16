@@ -1,5 +1,6 @@
 ﻿using mEvent;
 using mModel;
+using mSystem.BuffSystem.ElementBuff;
 using mWeapon.Component;
 using QFramework;
 using UnityEngine;
@@ -36,13 +37,20 @@ namespace mWeapon.Task
         {
             _runtime.RemoveState(WeaponStateTags.Reloading);
             MagazineComponent mag = _weapon.GetComponent<MagazineComponent>();
-            BulletInfo info = new BulletInfo(mag.ElementEnum, mag.BulletVal);
-            _weapon.BagModel.ReturnBullet(info);
-            mag.BulletVal = Mathf.Min(_weapon.BagModel.GetBullet(mag.ElementEnum).Val, mag.MagSize);
-            info = new BulletInfo(mag.ElementEnum, mag.BulletVal);
-            _weapon.BagModel.DeductBullet(info);
-            this.SendEvent<WeaponDataUpdateEvent>();
+
+            // 归还子弹
+            var old = new BulletInfo(mag.ElementEnum, mag.BulletVal);
+            _weapon.BagModel.ReturnBullet(old);
+
+            ElementEnum chosen = _weapon.BagModel.GetBullet();
+            mag.ElementEnum = chosen;
+            mag.BulletVal = Mathf.Min(_weapon.BagModel.GetBullet(chosen).Val, mag.MagSize);
+            
+            var info = new BulletInfo(chosen, mag.BulletVal);
+            _weapon.BagModel.DeductBullet(info); 
+            this.SendEvent<WeaponDataUpdateEvent>(); 
             Finished = true;
+
         }
         
         public void Cancel()

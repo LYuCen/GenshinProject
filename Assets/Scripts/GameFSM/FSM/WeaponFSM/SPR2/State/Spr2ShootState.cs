@@ -24,7 +24,6 @@ namespace GameFSM.FSM.WeaponFSM.SPR2.State
             else
             {
                 this.SendEvent<ShootEvent>();
-                this.SendEvent<ReloadEvent>();
             }
             
         }

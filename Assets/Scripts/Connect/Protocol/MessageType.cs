@@ -24,6 +24,9 @@
         S2C_Bone                = 108,  // 骨骼
         S2C_Hp                  = 109,  // 血量
         S2C_StateChange         = 110,  // 状态同步
+        S2C_ElementAttach       = 111,  // 某实体被附着元素
+        S2C_ElementDetach       = 112,  // 某实体元素消失
+        S2C_StatusEffect        = 113,  // 状态效果变化
 
 
         // 双工

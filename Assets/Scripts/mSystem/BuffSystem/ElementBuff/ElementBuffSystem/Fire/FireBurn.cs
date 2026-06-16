@@ -14,12 +14,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Fire
         {
             if (controller.Elements[3].Enable) // 遇到草
             {
-                HurtComponent c = new HurtComponent()
-                {
-                    Element = 1,
-                    ElementMeasure = attackGauge
-                };
-                controller.AddElement(c);
+                controller.Elements[3].Enable = false;
 
                 HitTextSystem.HitTextSystem.Instance.EnQueue(new HitTextComponent {
                     transform = target, element = 1, Text = "燃烧", textType = 2
@@ -28,7 +23,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Fire
                 return new ReactionResult { 
                     IsReaction = true, 
                     DamageMultiplier = 1f,
-                    TriggeredEffect = new BurnEffect() 
+                    TriggeredEffect = new BurnEffect(controller.TimeProvider(), controller) 
                 };
             }
             return ReactionResult.None;

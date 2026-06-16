@@ -33,7 +33,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
                     IsReaction = true,
                     DamageMultiplier = 1f,
                     BonusDamage = 0,
-                    TriggeredEffect = new ElectrifyEffect() 
+                    TriggeredEffect = new ElectrifyEffect(controller.TimeProvider(), controller) 
                 };
             }
 

@@ -21,6 +21,8 @@ namespace Player.Module
             _bagModel.SetBullet(0, ElementEnum.Fire, 999);
             _bagModel.SetBullet(1, ElementEnum.Elect, 999);
             _bagModel.SetBullet(2, ElementEnum.Grass, 999);
+            _bagModel.SetBullet(3, ElementEnum.Water, 999);
+            _bagModel.SetBullet(4, ElementEnum.Frost, 999);
         }
 
         public void OnUpdate()
@@ -53,6 +55,11 @@ namespace Player.Module
         public void DeductBullet(BulletInfo info)
         {
             _bagModel.DeductBullet(info);
+        }
+
+        public void SetChose(int val)
+        {
+            _bagModel.SetBulletIndex(val);
         }
 
         public IArchitecture GetArchitecture()

@@ -27,7 +27,7 @@ namespace mSystem.BuffSystem.ElementBuff.ElementBuffSystem.Elect
                 return new ReactionResult { 
                     IsReaction = true, 
                     DamageMultiplier = multiplier,
-                    TriggeredEffect = new SharpenEffect() 
+                    TriggeredEffect = new SharpenEffect(controller.TimeProvider(), controller) 
                 };
             }
             
