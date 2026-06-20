@@ -1,7 +1,4 @@
 ﻿using GameFSM.FSM;
-using mEnum.Flags;
-using mEnum.Query;
-using UnityEngine;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer.StandLayer
 {

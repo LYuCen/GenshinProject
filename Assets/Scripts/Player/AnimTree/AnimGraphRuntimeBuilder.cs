@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 
@@ -9,12 +9,12 @@ namespace Player.AnimTree
 {
     public static class AnimGraphRuntimeBuilder
     {
-        public static AnimTreeNode<PlayerManager> Build(AnimGraphData data, PlayerManager manager, PlayerAnimSlot slotContainer)
+        public static AnimTreeNode<IAnimContext> Build(AnimGraphData data, IAnimContext ctx, PlayerAnimSlot slotContainer)
         {
             if (!data || data.Nodes.Count == 0) return null;
 
             // 1. 实例化所有节点并存储在字典中，Key 是 GUID
-            Dictionary<string, AnimTreeNode<PlayerManager>> nodeInstances = new();
+            Dictionary<string, AnimTreeNode<IAnimContext>> nodeInstances = new();
 
             foreach (var nodeData in data.Nodes)
             {
@@ -26,9 +26,8 @@ namespace Player.AnimTree
                     continue;
                 }
 
-                // 调用构造函数 (PlayerManager manager)
-                object[] args = new object[] { manager };
-                var instance = (AnimTreeNode<PlayerManager>)Activator.CreateInstance(type, args);
+                object[] args = new object[] { ctx };
+                var instance = (AnimTreeNode<IAnimContext>)Activator.CreateInstance(type, args);
 
                 // 2. 注入编辑器中配置的参数
                 instance.Tag = nodeData.Tag;
@@ -39,21 +38,21 @@ namespace Player.AnimTree
                 instance.Mask = nodeData.Mask;
 
                 // 判断是否为插槽节点并判断是否有 Tag
-                if (instance is AnimTreeSlotNode<PlayerManager> slotNode && !string.IsNullOrEmpty(instance.Tag))
+                if (instance is AnimTreeSlotNode<IAnimContext> slotNode && !string.IsNullOrEmpty(instance.Tag))
                 {
                     slotContainer.Register(instance.Tag, slotNode);
                 }
-                
-                if (instance is AnimTreeLeafNode<PlayerManager> leafNode)
+
+                if (instance is AnimTreeLeafNode<IAnimContext> leafNode)
                 {
-                    leafNode.CurrentData = nodeData.weaponAsset; 
+                    leafNode.CurrentData = nodeData.weaponAsset;
                 }
-                
+
                 nodeInstances.Add(nodeData.GUID, instance);
             }
 
             HashSet<string> childGuids = new();
-            
+
             foreach (var edge in data.Edges)
             {
                 if (nodeInstances.TryGetValue(edge.ParentGUID, out var parent) &&

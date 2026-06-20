@@ -1,13 +1,12 @@
-﻿
-using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes.UpperSubTreeNodes
 {
-    public class LowSubTreeNode : AnimTreeMixNode<PlayerManager>
+    public class LowSubTreeNode : AnimTreeMixNode<IAnimContext>
     {
-        
-        public LowSubTreeNode(PlayerManager myManager) : base(myManager)
+
+        public LowSubTreeNode(IAnimContext ctx) : base(ctx)
         {
         }
 

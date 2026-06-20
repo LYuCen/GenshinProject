@@ -17,7 +17,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InAir
         {
             nextState = "Air";
             PlayerMoveQuery query = MyManager.MoveModule.GetQuery();
-            return !query.HasState(PlayerMoveFlags.Ground);
+            return !query.HasState(PlayerMoveFlags.Ground) && !MyManager.HpModule.IsDead();
         }
     }
 }

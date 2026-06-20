@@ -3,6 +3,7 @@ using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
 using mEvent;
+using mInterface;
 using mModel;
 using mModel.ScriptableConfig;
 using mSystem.BulletSystem;
@@ -16,12 +17,13 @@ using UnityEngine;
 
 namespace Player.Module
 {
-    public class PlayerCombatModule : IModule, ICanSendEvent, ICanGetModel
+    public class PlayerCombatModule : IModule, ICanSendEvent, ICanGetModel, ICombatQueryProvider
     {
         private CombatContext _context;
         private WeaponQuery _query;
         private BagModel _bagModel;
         public WeaponPresenter RemoteWeapon;
+        private bool _enable;
         
         public PlayerCombatModule(CombatContext context)
         {
@@ -37,12 +39,14 @@ namespace Player.Module
                 GetPrimaryWeapon();
                 BulletGameObjectPool.Instance.Init(20);
             }
+
+            _enable = true;
         }
 
         public void OnUpdate()
         {
             // 非主控玩家直接跳过
-            if (!_context.IsLocal) return;
+            if (!_context.IsLocal || !_enable) return;
             
             WeaponAction action = new WeaponAction
             {
@@ -58,7 +62,7 @@ namespace Player.Module
         {
             
         }
-        
+
         public void ResetGun()
         {
             if (!_context.IsLocal)
@@ -140,6 +144,7 @@ namespace Player.Module
         public WeaponQuery GetQuery()
         {
             _query.SetState(0);
+            if (!_enable) return _query;
             if (_context.IsLocal)
             {
                 if(_bagModel.Weapon.Runtime.HasState(WeaponStateTags.Reloading)) _query.AddFlags(WeaponFlags.Reload);
@@ -202,6 +207,19 @@ namespace Player.Module
         {
             if (_context.IsLocal) return _bagModel.Weapon?.Presenter?.transform;
             return RemoteWeapon.transform;
+        }
+
+        public void SetEnable(bool enable)
+        {
+            _enable = enable;
+        }
+
+        public void Reset()
+        {
+            if (_context.IsLocal)
+            {
+                _bagModel.Weapon.Runtime.Reset();
+            }
         }
 
         public IArchitecture GetArchitecture()

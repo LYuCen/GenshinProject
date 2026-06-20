@@ -1,4 +1,5 @@
 ﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterruptState;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InAir;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer;
 
@@ -12,6 +13,7 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
         public PlayerGroundLayer(PlayerManager manager, AbstractCondition<PlayerManager> selfCondition) : base(manager, selfCondition)
         {
             AddCondition(new PlayerAirLayerCondition(MyManager, "Air"));
+            AddCondition(new GlobalInterruptLayerCondition(MyManager, "GlobalInterrupt"));
         }
 
         protected override void BuildState()

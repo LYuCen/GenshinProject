@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-
-// 替换成你逻辑节点所在的命名空间
 
 namespace Editor.AnimGraph
 {
@@ -30,9 +28,7 @@ namespace Editor.AnimGraph
                 new SearchTreeGroupEntry(new GUIContent("Create Node"), 0),
             };
 
-            // 利用 TypeCache (Unity 2019.2+) 自动获取所有节点类
-            // 注意：这里要填你的 AnimTreeNode 基类
-            var types = TypeCache.GetTypesDerivedFrom(typeof(AnimTreeNode<PlayerManager>));
+            var types = TypeCache.GetTypesDerivedFrom(typeof(AnimTreeNode<IAnimContext>));
 
             foreach (var type in types)
             {

@@ -76,8 +76,7 @@ namespace mWeapon
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T RequireFeature<T>()
-            where T : class, IWeaponFeature
+        public T RequireFeature<T>() where T : class, IWeaponFeature
         {
             T feature = GetFeature<T>();
 
@@ -103,8 +102,7 @@ namespace mWeapon
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T RequireComponent<T>()
-            where T : class
+        public T RequireComponent<T>() where T : class
         {
             T component = GetComponent<T>();
 

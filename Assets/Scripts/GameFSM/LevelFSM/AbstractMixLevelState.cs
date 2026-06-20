@@ -155,7 +155,7 @@ namespace GameFSM.LevelFSM
             if (nextState == _mCurrentState) return; // 避免同状态重复进入
             
             // 结束上一个状态，如果上个状态不为空
-            _mCurrentState?.OnExitState();
+            _mCurrentState?.Exit();
 
             if (nextState != null) // 如果下一个状态不为空
             {

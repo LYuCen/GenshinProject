@@ -30,7 +30,12 @@ namespace Server
 
         // 客户端时间偏移量
         public Dictionary<int, float> TimeOffset = new();
-        private Dictionary<int, bool[]> _prevElementState = new();
+        private struct ElementSyncState
+        {
+            public bool Enable;
+            public float AttachTime; // 攻击时刻
+        }
+        private Dictionary<int, ElementSyncState[]> _prevElementState = new();
 
         void Awake() => Instance = this;
 
@@ -139,25 +144,30 @@ namespace Server
 
                 if (!_prevElementState.TryGetValue(kv.Key, out var prevState))
                 {
-                    prevState = new bool[8];
+                    prevState = new ElementSyncState[8];
                     _prevElementState[kv.Key] = prevState;
                 }
 
-                // 检测元素衰减      
                 for (int i = 0; i < 8; i++)
                 {
-                    bool nowEnabled = ctrl.Elements[i].Enable;
-                    if (!prevState[i] && nowEnabled)
+                    var e = ctrl.Elements[i];
+                    bool nowEnabled = e.Enable;
+                    float nowAttachTime = e.AttachTime;
+
+                    if (!prevState[i].Enable && nowEnabled)
                     {
-                        var e = ctrl.Elements[i];
                         Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(Time.time), e.Capacity));
                     }
-                    else if (prevState[i] && !nowEnabled)
+                    else if (prevState[i].Enable && nowEnabled && !Mathf.Approximately(prevState[i].AttachTime, nowAttachTime))
+                    {
+                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(Time.time), e.Capacity));
+                    }
+                    else if (prevState[i].Enable && !nowEnabled)
                     {
                         Broadcast(ElementBuffConverter.PackDetach(kv.Key, i));
                     }
 
-                    prevState[i] = nowEnabled;
+                    prevState[i] = new ElementSyncState { Enable = nowEnabled, AttachTime = nowAttachTime };
                 }
             }
         }

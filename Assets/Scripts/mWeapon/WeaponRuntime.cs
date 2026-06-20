@@ -38,8 +38,14 @@ namespace mWeapon
         {
             if (Stance == stance) return;
             Stance = stance;
-            
+
             OnStateChanged?.Invoke();
+        }
+
+        public void Reset()
+        {
+            _states.Clear(); // 清除字典状态
+            Stance = WeaponStance.Normal; // 清除据枪状态
         }
 
         public IArchitecture GetArchitecture()

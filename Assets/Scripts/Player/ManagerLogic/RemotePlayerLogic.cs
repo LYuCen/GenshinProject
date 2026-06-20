@@ -133,48 +133,17 @@ namespace Player.ManagerLogic
             
                 _lastServerPos = newPos;
                 _lastPacketTime = Time.time;
-            
-                // 4. 用服务器同步的 aim 位置驱动 IK 目标
-                if (dto.AimPosition != null)
-                {
-                    var aimPos = dto.AimPosition.Value;
-                    _m.IkModule.SetAimTargetPosition(new Vector3(aimPos.X, aimPos.Y, aimPos.Z));
-                }
             }
         }
 
         // 辅助方法：将二进制对象解包到本地 State 对象
         private void UnpackFlatToState(PlayerDataFlat dto)
         {
-            // 位拆解
-            int s = dto.AllBoolState;
-            _m.state.isGround  = (s & PlayerStateBoolBit.BIT_GROUND) != 0;
-            _m.state.isJump    = (s & PlayerStateBoolBit.BIT_JUMP) != 0;
-            _m.state.isShoot   = (s & PlayerStateBoolBit.BIT_SHOOT) != 0;
-            _m.state.isReload  = (s & PlayerStateBoolBit.BIT_RELOAD) != 0;
-            _m.state.isSprint  = (s & PlayerStateBoolBit.BIT_SPRINT) != 0;
-            _m.state.isThrow   = (s & PlayerStateBoolBit.BIT_THROW) != 0;
-            _m.state.isCrouch  = (s & PlayerStateBoolBit.BIT_CROUCH) != 0;
-            _m.state.isSliding = (s & PlayerStateBoolBit.BIT_SLIDING) != 0;
-
             // 数值同步
             _m.state.curHp = dto.CurHp;
             _m.state.maxHp = dto.MaxHp;
             _m.state.curShield = dto.CurShield;
             _m.state.maxShield = dto.MaxShield;
-
-            // 移动同步 (Animation 参数使用)
-            if (dto.InputMove != null)
-            {
-                var input = dto.InputMove.Value;
-                _m.state.inputMove = new Vector2(input.X, input.Y);
-            }
-
-            if (dto.PlayerMove != null)
-            {
-                var pMove = dto.PlayerMove.Value;
-                _m.state.playerMove = new Vector2(pMove.X, pMove.Y);
-            }
         }
 
         public void OnUpdate()

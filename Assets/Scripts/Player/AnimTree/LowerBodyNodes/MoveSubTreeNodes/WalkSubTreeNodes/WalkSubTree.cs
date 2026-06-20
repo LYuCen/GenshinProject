@@ -1,6 +1,6 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
@@ -8,9 +8,9 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes
     /// <summary>
     /// 角色走路子树
     /// </summary>
-    public class WalkSubTree : AnimTreeMixNode<PlayerManager>
+    public class WalkSubTree : AnimTreeMixNode<IAnimContext>
     {
-        public WalkSubTree(PlayerManager myManager) : base(myManager) { }
+        public WalkSubTree(IAnimContext ctx) : base(ctx) { }
 
         public override bool CheckState(bool parentActive)
         {

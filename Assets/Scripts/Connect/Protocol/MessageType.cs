@@ -10,6 +10,7 @@
         C2S_Move                = 5,    // 位置旋转同步
         C2S_Bones               = 6,    // 骨骼同步
         C2S_StateChange         = 7,    // 状态
+        C2S_AnimationState      = 8,    // 动画状态同步
         
         
         // S2C: 服务器通知客户端
@@ -27,6 +28,8 @@
         S2C_ElementAttach       = 111,  // 某实体被附着元素
         S2C_ElementDetach       = 112,  // 某实体元素消失
         S2C_StatusEffect        = 113,  // 状态效果变化
+        S2C_AnimationState      = 114,  // 动画信息广播
+
 
 
         // 双工

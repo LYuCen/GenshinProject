@@ -1,18 +1,18 @@
-﻿using Firearms.ThrowWeapon;
-using GameFSM.LevelFSM.PlayerFSM;
+using Firearms.ThrowWeapon;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes
 {
-    public class InThrowLowerBodySubTree : AnimTreeMixNode<PlayerManager>
+    public class InThrowLowerBodySubTree : AnimTreeMixNode<IAnimContext>
     {
-        public InThrowLowerBodySubTree(PlayerManager myManager) : base(myManager)
+        public InThrowLowerBodySubTree(IAnimContext ctx) : base(ctx)
         {
         }
 
         public override bool CheckState(bool parentActive)
         {
-            
+
 
             return false;
         }

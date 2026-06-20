@@ -1,4 +1,4 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 
@@ -7,9 +7,9 @@ namespace Player.AnimTree.UpperBodyNodes
     /// <summary>
     /// 上半身混合节点
     /// </summary>
-    public class UpperBodySubTree : AnimTreeMixNode<PlayerManager>
+    public class UpperBodySubTree : AnimTreeMixNode<IAnimContext>
     {
-        public UpperBodySubTree(PlayerManager myManager) : base(myManager)
+        public UpperBodySubTree(IAnimContext ctx) : base(ctx)
         {
         }
 
@@ -23,9 +23,9 @@ namespace Player.AnimTree.UpperBodyNodes
             // 遍历所有子节点，检查是否有任何一个子节点满足触发条件
             for (int i = 0; i < Children.Count; i++)
             {
-                if (Children[i].CheckState(true)) 
+                if (Children[i].CheckState(true))
                 {
-                    return true; // 只要有一个子节点要播，我就激活自己
+                    return true;
                 }
             }
 

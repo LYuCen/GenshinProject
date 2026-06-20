@@ -1,10 +1,11 @@
-﻿using Player.Context;
+﻿using mInterface;
+using Player.Context;
 using QFramework;
 using UnityEngine;
 
 namespace Player.Module
 {
-    public class PlayerIkModule : IModule, ICanRegisterEvent
+    public class PlayerIkModule : IModule, ICanRegisterEvent, IIkProvider
     {
         private PlayerIkContext _context;
         private float _aimIkWeight;
@@ -57,12 +58,12 @@ namespace Player.Module
             _target.position = pos;
         }
 
-        public void SetAimIk(float weight, bool both = false)
+        public void SetAimIk(float weight)
         {
             _aimIkWeight = weight;
         }
 
-        public void SetHandIk(float weight, bool both = false)
+        public void SetHandIk(float weight)
         {
             _handIkWeight = weight;
         }
@@ -81,6 +82,12 @@ namespace Player.Module
         public void OnFixedUpdate()
         {
             
+        }
+
+        public void Reset()
+        {
+            _aimIkWeight = 0f;
+            _handIkWeight = 0f;
         }
 
         public IArchitecture GetArchitecture()

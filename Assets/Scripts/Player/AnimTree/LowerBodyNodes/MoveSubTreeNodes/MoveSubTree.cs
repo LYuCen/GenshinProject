@@ -1,6 +1,6 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
@@ -8,14 +8,14 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes
     /// <summary>
     /// 角色移动子树
     /// </summary>
-    public class MoveSubTree : AnimTreeMixNode<PlayerManager>
+    public class MoveSubTree : AnimTreeMixNode<IAnimContext>
     {
-        public MoveSubTree(PlayerManager myManager) : base(myManager)
+        public MoveSubTree(IAnimContext ctx) : base(ctx)
         {
         }
 
         public override bool CheckState(bool parentActive)
-        { 
+        {
             PlayerMoveQuery query = MyMessage.MoveModule.GetQuery();
 
             // 在地面且八方向移动

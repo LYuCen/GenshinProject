@@ -1,6 +1,6 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -8,9 +8,9 @@ using UnityEngine.Playables;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 {
-    public class SprintForwardRightTreeNode : AnimTreeLeafNode<PlayerManager>
+    public class SprintForwardRightTreeNode : AnimTreeLeafNode<IAnimContext>
     {
-        public SprintForwardRightTreeNode(PlayerManager myMessage) : base(myMessage)
+        public SprintForwardRightTreeNode(IAnimContext ctx) : base(ctx)
         {
         }
 
@@ -23,9 +23,8 @@ namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
-            // 直接使用基类里被解析器注入的变量
             var playable = AnimationClipPlayable.Create(graph, DefaultClip);
-            playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
+            playable.SetSpeed(this.AnimSpeed);
             return playable;
         }
     }

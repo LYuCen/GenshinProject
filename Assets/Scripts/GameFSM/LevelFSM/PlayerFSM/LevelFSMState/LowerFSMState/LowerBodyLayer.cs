@@ -1,4 +1,5 @@
 ﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterruptState;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InAir;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround;
 using UnityEngine;
@@ -17,7 +18,9 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState
         protected override void BuildState()
         {
             States.Add("Ground", new PlayerGroundLayer(MyManager, new PlayerGroundLayerCondition(MyManager, "Ground")));
-            //States.Add("Air", new PlayerAirLayer(MyManager, new PlayerAirLayerCondition(MyManager, "Air")));
+            States.Add("Air", new PlayerAirLayer(MyManager, new PlayerAirLayerCondition(MyManager, "Air")));
+            States.Add("GlobalInterrupt",
+                new GlobalInterruptLayer(MyManager, new GlobalInterruptLayerCondition(MyManager, "GlobalInterrupt")));
             IsBuilt = true;
         }
 

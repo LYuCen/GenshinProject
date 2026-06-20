@@ -3,12 +3,13 @@ using AI.VisualRequest.VisualRequest;
 using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.Context;
 using UnityEngine;
 
 namespace Player.Module
 {
-    public class PlayerMoveModule : IModule
+    public class PlayerMoveModule : IModule, IMoveQueryProvider
     {
         private MoveContext _context;
         private bool _isGround;
@@ -19,12 +20,15 @@ namespace Player.Module
         private float _moveSpeed;
         private Vector2 _move;
         private PlayerMoveQuery _query;
+        private bool _sprintRequested;
         
         private float _gravity = -15.0f; // 重力加速度（通常比现实大一点，手感更好）
         private float _terminalVelocity = -30f; // 终端速度（防止无限加速掉落导致穿模）
         private float _verticalVelocity; // 当前垂直速度
         private PointVisualRequest _request = new PointVisualRequest();
         private Vector3 _bottom;
+
+        private bool _enable;
         public PlayerMoveModule(MoveContext context)
         {
             _context = context;
@@ -34,10 +38,13 @@ namespace Player.Module
         {
             _request.Radius = 0.05f;
             VisualizerManager.Instance.Register(_request);
+            _enable = true;
         }
 
         public void OnUpdate()
         {
+            if (!_enable) return;
+            
             float targetYaw = _context.CameraController.Yaw;
             
             // Quaternion.Euler 为旋转矩阵  Quaternion.Euler(0, targetYaw, 0) 是向量为 y轴旋转 targetYaw度
@@ -65,6 +72,18 @@ namespace Player.Module
         public void OnFixedUpdate()
         {
             
+        }
+
+        public void Reset()
+        {
+            _move = Vector2.zero;
+            _isSprint = false;
+            _sprintRequested = false;
+            _isCrouch = false;
+            _isJump = false;
+            _verticalVelocity = -2.0f;
+            _isGround = false;
+            _moveSpeed = 0f;
         }
 
         public void InputMove(Vector2 vec)
@@ -102,8 +121,6 @@ namespace Player.Module
             state.isSliding = _isSliding;
             state.inputMove = _move;
         }
-
-        private bool _sprintRequested;
 
         public void RequestSprint()
         {
@@ -194,6 +211,9 @@ namespace Player.Module
         /// </summary>
         public PlayerMoveQuery GetQuery()
         {
+            _query.SetState(0);
+            if (!_enable) return _query;
+            
             // 初始化位掩码为 None (0)
             PlayerMoveFlags flags = PlayerMoveFlags.None;
 
@@ -232,6 +252,11 @@ namespace Player.Module
             _query.SetState((int)flags);
             
             return _query;
+        }
+
+        public void SetEnable(bool enable)
+        {
+            _enable = enable;
         }
     }
 }

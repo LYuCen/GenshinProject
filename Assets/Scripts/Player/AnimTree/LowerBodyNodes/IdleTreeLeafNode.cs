@@ -1,7 +1,6 @@
-﻿
-using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -12,11 +11,11 @@ namespace Player.AnimTree.LowerBodyNodes
     /// <summary>
     /// 待机节点
     /// </summary>
-    public class IdleTreeLeafNode : AnimTreeLeafNode<PlayerManager>
+    public class IdleTreeLeafNode : AnimTreeLeafNode<IAnimContext>
     {
         private AnimationClipPlayable _playable;
 
-        public IdleTreeLeafNode(PlayerManager myManager) : base(myManager)
+        public IdleTreeLeafNode(IAnimContext ctx) : base(ctx)
         {
         }
 
@@ -26,14 +25,14 @@ namespace Player.AnimTree.LowerBodyNodes
 
             // 在地面且没有八方向移动
             bool res = query.HasState(PlayerMoveFlags.Ground) && !query.HasState(PlayerMoveFlags.Move);
-            
+
             return parentActive && res;
         }
 
         public override Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
         {
             var playable = AnimationClipPlayable.Create(graph, DefaultClip);
-            playable.SetSpeed(this.AnimSpeed); // 使用基类的 AnimSpeed
+            playable.SetSpeed(this.AnimSpeed);
             return playable;
         }
     }

@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using BaseClass;
 using Connect;
+using Connect.AnimDTO;
 using Connect.Converter;
 using Connect.Data;
 using Connect.DTO;
@@ -13,11 +14,14 @@ using Connect.Protocol;
 using Connect.ShootDTO;
 using Google.FlatBuffers;
 using mEnum;
+using mEnum.Flags;
 using mInterface;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BuffSystem.ElementBuff.ElementBuffSystem;
 using mSystem.HurtSystem;
 using mSystem.StatusSystem;
+using Player.AnimPro;
+using Player.AnimTree;
 using UnityEngine;
 
 namespace Server
@@ -36,6 +40,12 @@ namespace Server
 
         private IElementBuffSystem _buffSystem;
         private ElementBuffController _buffController;
+
+        public Animator animator;
+        public AnimGraphData graphData;
+        private ServerAnimContext _animContext;
+        private ServerCombatProvider _combatProvider;
+        private PlayerAnimController _animController;
 
         public void Init(int id, Socket s)
         {
@@ -67,6 +77,16 @@ namespace Server
             _buffController.id = id;
             _buffSystem = new ElementBuffSystem();
 
+            // 初始化服务端动画系统
+            if (animator == null) animator = GetComponent<Animator>();
+            if (animator != null && graphData != null)
+            {
+                var moveProvider = new ServerMoveProvider(State);
+                _combatProvider = new ServerCombatProvider(State);
+                Transform weaponPivot = transform;
+                _animContext = new ServerAnimContext(moveProvider, _combatProvider, weaponPivot, animator);
+                _animController = new PlayerAnimController(_animContext, graphData);
+            }
         }
 
         private void ReceiveLoop()
@@ -191,6 +211,18 @@ namespace Server
                     Buffer.BlockCopy(BitConverter.GetBytes(flags), 0, flagBroadcast, 4, 4);
                     UnityServerManager.Instance.BroadcastExcept(new Message(MessageType.S2C_StateChange, flagBroadcast), playerId);
                     break;
+
+                case MessageType.C2S_AnimationState:
+                    ByteBuffer animBb = new ByteBuffer(data);
+                    var animFlat = AnimDataFlat.GetRootAsAnimDataFlat(animBb);
+                    UnpackAnimState(animFlat);
+                    _animController?.Update();
+                    CacheSnapshotFromColliders();
+
+                    // 广播动画状态给其他玩家
+                    UnityServerManager.Instance.BroadcastExcept(
+                        new Message(MessageType.S2C_AnimationState, data), playerId);
+                    break;
             }
         }
         
@@ -216,6 +248,25 @@ namespace Server
                 Shapes = _currentShapes
             });
         }
+
+        private void UnpackAnimState(AnimDataFlat dto)   
+        {
+            int s = dto.PlayerBoolState;
+            State.isGround  = (s & (int)PlayerMoveFlags.Ground)  != 0;
+            State.isJump    = (s & (int)PlayerMoveFlags.Jump)    != 0;
+            State.isSprint  = (s & (int)PlayerMoveFlags.Sprint)  != 0;
+            State.isCrouch  = (s & (int)PlayerMoveFlags.Crouch)  != 0;
+            State.isSliding = (s & (int)PlayerMoveFlags.Sliding) != 0;
+
+            int w = dto.WeaponBoolState;
+            State.isShoot   = (w & (int)WeaponFlags.Shoot)   != 0;
+            State.isReload  = (w & (int)WeaponFlags.Reload)   != 0;
+            State.isThrow   = (w & (int)WeaponFlags.Throw)    != 0;
+
+            _combatProvider?.SetWeaponBoolState(dto.WeaponBoolState);
+            State.clientTime = dto.ClientTime;
+        }
+
 
         private void RewindHitCheck(ShootDataFlat shoot)
         {

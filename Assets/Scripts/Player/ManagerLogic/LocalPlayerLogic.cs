@@ -126,13 +126,16 @@ namespace Player.ManagerLogic
                 NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Move, PlayerDataConverter.PackMove(_m.state)));
             }
 
-            // 10 tick: 骨骼
+            // 20 tick: 骨骼
             _boneTimer += Time.fixedDeltaTime;
-            if (_boneTimer >= 0.1f)
+            if (_boneTimer >= 0.05f)
             {
-                _boneTimer -= 0.1f;
+                _boneTimer -= 0.05f;
                 _m.state.clientTime = Time.time;
-                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Bones, PlayerDataConverter.PackBones(_m.state)));
+                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_AnimationState,
+                    PlayerDataConverter.PackAnimationState(_m.EntityId, _m.MoveModule.GetQuery().State,
+                        _m.CombatModule.GetQuery().State, (sbyte)_bagModel.Weapon.InternalRuntime.Stance,
+                        _m.cameraController.rayEnd, Time.time, _m.state.clientTime)));
             }
 
         }

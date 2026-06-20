@@ -10,6 +10,8 @@ namespace mWeapon
 
         bool HasState(WeaponStateTags tag);
 
+        void Reset();
+
         event Action OnAmmoChanged;
 
         event Action OnStateChanged;

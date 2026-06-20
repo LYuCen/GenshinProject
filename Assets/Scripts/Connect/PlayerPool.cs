@@ -53,15 +53,7 @@ namespace Connect
                                 ? new Quaternion(dto.Rotation.Value.X, dto.Rotation.Value.Y, dto.Rotation.Value.Z, dto.Rotation.Value.W)
                                 : pm.transform.rotation;
 
-                            var inputMove = dto.InputMove.HasValue
-                                ? new Vector2(dto.InputMove.Value.X, dto.InputMove.Value.Y)
-                                : Vector2.zero;
-
-                            var aimPos = dto.AimPosition.HasValue
-                                ? new Vector3(dto.AimPosition.Value.X, dto.AimPosition.Value.Y, dto.AimPosition.Value.Z)
-                                : pm.aimIK.solver.target.position;
-
-                            rp.OnServerUpdate(pos, rot, inputMove, aimPos);
+                            rp.OnServerUpdate(pos, rot, Vector2.zero, pm.aimIK.solver.target.position);
                         }
                         else
                         {
@@ -107,6 +99,8 @@ namespace Connect
             pm.state.playerId = dto.PlayerId;
             pm.state.curHp = dto.CurHp;
             pm.state.maxHp = dto.MaxHp;
+            pm.state.curShield = dto.CurShield; 
+            pm.state.maxShield = dto.MaxShield;
             pm.Init(false);
 
             if (pm.GetLogic() is RemotePlayerLogic remotePlayerLogic)

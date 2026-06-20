@@ -4,6 +4,7 @@ namespace mEnum.Query
 {
     public class WeaponQuery
     {
+        public int State => _state;
         private int _state;
         
         /// <summary>

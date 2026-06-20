@@ -1,7 +1,7 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
 using IUtility;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -9,14 +9,14 @@ using UnityEngine.Playables;
 
 namespace Player.AnimTree.UpperBodyNodes
 {
-    public class BoltTreeLeafNode : AnimTreeLeafNode<PlayerManager>
+    public class BoltTreeLeafNode : AnimTreeLeafNode<IAnimContext>
     {
         private AnimationClipPlayable _playable;
         private float _clipDuration;
         private float _handBlend;
         private bool _wasFullyActive;
 
-        public BoltTreeLeafNode(PlayerManager myMessage) : base(myMessage)
+        public BoltTreeLeafNode(IAnimContext ctx) : base(ctx)
         {
         }
 
@@ -55,7 +55,7 @@ namespace Player.AnimTree.UpperBodyNodes
             if (isFullyActive)
             {
                 if (_playable.GetTime() >= _clipDuration) { }
-                else if(CurrentData) LateUpdate();
+                else if (CurrentData) LateUpdate();
             }
             return currentWeight;
         }
@@ -68,51 +68,44 @@ namespace Player.AnimTree.UpperBodyNodes
                 Debug.LogError($"[ReloadNode] 找不到有效的动画剪辑！Tag: {Tag}");
                 return Playable.Null;
             }
-            
+
             _playable = AnimationClipPlayable.Create(graph, DefaultClip);
-            
+
             _playable.SetSpeed(AnimSpeed);
-            
+
             _clipDuration = DefaultClip.length;
             return _playable;
         }
-        
+
         void LateUpdate()
         {
-            // 获取时长和绝对时间
             float duration = _playable.GetAnimationClip().length;
             float t = (float)_playable.GetTime();
             float loopTime = Mathf.Clamp(t, 0, duration);
 
-            // 计算归一化时间 (0 到 1)
             float normalizedTime = loopTime / duration;
 
-            // 手部权重曲线使用归一化时间 (0 - 1) 采样
             if (CurrentData.handWeight != null && CurrentData.handWeight.length > 0)
             {
                 _handBlend = CurrentData.handWeight.Evaluate(normalizedTime);
-                //MyMessage.rHeadIkWeight = 1 - _handBlend;
             }
 
-            // 3. 烘焙曲线采样
             Vector3 rBP = CompressionUtility.GetPos(CurrentData.rPosX, CurrentData.rPosY, CurrentData.rPosZ, loopTime);
             Quaternion rBR = CompressionUtility.GetRot(CurrentData.rRotX, CurrentData.rRotY, CurrentData.rRotZ, loopTime);
             Vector3 lBP = CompressionUtility.GetPos(CurrentData.lPosX, CurrentData.lPosY, CurrentData.lPosZ, loopTime);
             Quaternion lBR = CompressionUtility.GetRot(CurrentData.lRotX, CurrentData.lRotY, CurrentData.lRotZ, loopTime);
 
-            // 应用手部偏移
             Vector3 finalRP = rBP + (rBR * CurrentData.rOffset);
             Quaternion finalRR = rBR * Quaternion.Euler(CurrentData.rRot);
             Vector3 finalLP = lBP + (lBR * CurrentData.lOffset);
             Quaternion finalLR = lBR * Quaternion.Euler(CurrentData.lRot);
-            
-            MyMessage.weaponPivot.localPosition = Vector3.Lerp(finalLP, finalRP, _handBlend);
-            MyMessage.weaponPivot.localRotation = Quaternion.Slerp(finalLR, finalRR, _handBlend);
+
+            MyMessage.WeaponPivot.localPosition = Vector3.Lerp(finalLP, finalRP, _handBlend);
+            MyMessage.WeaponPivot.localRotation = Quaternion.Slerp(finalLR, finalRR, _handBlend);
         }
-        
+
         public override void OnExitState()
         {
-            //MyMessage.rHeadIkWeight = 1;
             Debug.Log("Exit Reloading");
         }
     }

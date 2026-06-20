@@ -23,15 +23,15 @@ namespace BaseClass
             get
             {
                 if (_isShuttingDown) return null;
-                if (_instance == null)
+                if (!_instance)
                 {
                     lock (_lock)
                     {
-                        if (_instance == null)
+                        if (!_instance)
                         {
                             _instance = FindObjectOfType<T>();
 
-                            if (_instance == null)
+                            if (!_instance)
                             {
                                 GameObject singletonObj = new GameObject(typeof(T).Name);
                                 _instance = singletonObj.AddComponent<T>();

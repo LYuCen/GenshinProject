@@ -210,6 +210,10 @@ namespace Connect
                 case MessageType.S2C_PlayerDeath:
                     int deathId = BitConverter.ToInt32(msg.data, 0);
                     Debug.Log($"玩家 {deathId} 已死亡");
+                    if (PlayerPool.Instance.Models.TryGetValue(deathId, out var deadPm))
+                    {
+                        PlayerPool.Instance.ApplyHp(deathId, 0, 0, deadPm.state.maxHp, deadPm.state.maxShield);
+                    }
                     break;
             }
         }

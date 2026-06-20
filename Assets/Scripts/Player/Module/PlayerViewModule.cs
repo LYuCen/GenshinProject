@@ -28,6 +28,11 @@ namespace Player.Module
             
         }
 
+        public void Reset()
+        {
+            
+        }
+
         public void GetPrimaryWeapon()
         {
             _weapon = 0;

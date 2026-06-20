@@ -5,5 +5,6 @@
         void Init();
         void OnUpdate();
         void OnFixedUpdate();
+        void Reset();
     }
 }

@@ -35,6 +35,11 @@ namespace Player.Module
             
         }
 
+        public void Reset()
+        {
+            
+        }
+
         public BulletInfo GetBulletInfo(int chose)
         {
             return _bagModel.GetBullet(chose);

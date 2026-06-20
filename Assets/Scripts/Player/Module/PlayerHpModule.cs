@@ -30,7 +30,12 @@ namespace Player.Module
         {
             
         }
-        
+
+        public void Reset()
+        {
+            
+        }
+
         public void HurtHp(HurtComponent component)
         {
             float hurt = component.Harm;
@@ -58,5 +63,7 @@ namespace Player.Module
 
             _context.EntityStatusUI.SyncValues(dto.CurHp, dto.MaxHp, dto.CurShield, dto.MaxShield);
         }
+
+        public bool IsDead() => _state.curHp <= 0;
     }
 }

@@ -1,14 +1,14 @@
-﻿using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 using UnityEngine;
 
 namespace Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes
 {
-    public class SprintSubTree : AnimTreeMixNode<PlayerManager>
+    public class SprintSubTree : AnimTreeMixNode<IAnimContext>
     {
-        public SprintSubTree(PlayerManager myMessage) : base(myMessage)
+        public SprintSubTree(IAnimContext ctx) : base(ctx)
         {
         }
 

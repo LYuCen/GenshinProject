@@ -1,4 +1,5 @@
 ﻿using GameFSM.FSM;
+using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterruptState;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState
 {

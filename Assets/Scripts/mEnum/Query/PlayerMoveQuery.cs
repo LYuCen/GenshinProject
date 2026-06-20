@@ -7,6 +7,7 @@ namespace mEnum.Query
     /// </summary>
     public struct PlayerMoveQuery
     {
+        public int State => _state;
         private int _state;
         
         /// <summary>

@@ -18,5 +18,11 @@ namespace Enemy
                 _isEnd = true;
             }
         }
+        
+        public void ResetState()
+        {  
+            _disableTime = 1f;
+            _isEnd = false;
+        }
     }
 }

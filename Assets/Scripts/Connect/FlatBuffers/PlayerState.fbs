@@ -1,10 +1,4 @@
-﻿namespace Connect.FlatDTO;
-
-// 定义常用的几何结构体（struct 在 FlatBuffers 中性能极高）
-struct Vec2 {
-  x:float;
-  y:float;
-}
+namespace Connect.FlatDTO;
 
 struct Vec3 {
   x:float;
@@ -21,27 +15,16 @@ struct Quat {
 
 table PlayerDataFlat {
   player_id:int;
-  all_bool_state:int;
-  
-  // 使用 struct 组合字段
   position:Vec3;
   rotation:Quat;
-  aim_position:Vec3;
-  input_move:Vec2;
-  player_move:Vec2;
-  
   cur_hp:float;
   max_hp:float;
   cur_shield:float;
   max_shield:float;
-  
-  // 骨骼重心和旋转数组
-  hips_pos:Vec3;
-  bone_rots:[ushort]; // 旋转数组（x,y,z,w 平铺）
 }
 
 table PlayerList {
-  players:[PlayerDataFlat]; // 中括号表示这是一个 PlayerDataFlat 的数组/列表
+  players:[PlayerDataFlat];
 }
 
 root_type PlayerList;

@@ -1,12 +1,12 @@
 ﻿
-using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree
 {
-    public class PlayerAnimTreeRoot : AnimTreeLayerMixNode<PlayerManager>
+    public class PlayerAnimTreeRoot : AnimTreeLayerMixNode<IAnimContext>
     {
-        public PlayerAnimTreeRoot(PlayerManager myMessage) : base(myMessage)
+        public PlayerAnimTreeRoot(IAnimContext ctx) : base(ctx)
         {
         }
 

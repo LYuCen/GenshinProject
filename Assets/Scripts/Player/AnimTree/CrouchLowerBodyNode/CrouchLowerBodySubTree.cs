@@ -1,7 +1,6 @@
-﻿
-using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
+using mInterface;
 using Player.AnimPro;
 
 namespace Player.AnimTree.CrouchLowerBodyNode
@@ -9,9 +8,9 @@ namespace Player.AnimTree.CrouchLowerBodyNode
     /// <summary>
     /// 蹲下半身动画树
     /// </summary>
-    public class CrouchLowerBodySubTree : AnimTreeMixNode<PlayerManager>
+    public class CrouchLowerBodySubTree : AnimTreeMixNode<IAnimContext>
     {
-        public CrouchLowerBodySubTree(PlayerManager myManager) : base(myManager) { }
+        public CrouchLowerBodySubTree(IAnimContext ctx) : base(ctx) { }
 
         public override bool CheckState(bool parentActive)
         {

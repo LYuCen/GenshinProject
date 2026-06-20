@@ -1,15 +1,15 @@
-﻿using Firearms.ThrowWeapon;
+using Firearms.ThrowWeapon;
 
-using GameFSM.LevelFSM.PlayerFSM;
+using mInterface;
 using Player.AnimPro;
 
 
 namespace Player.AnimTree.UpperBodyNodes.GrenadeSubTreeNodes
 {
-    public sealed class GrenadeThrowSubTree : AnimTreeMixNode<PlayerManager>
+    public sealed class GrenadeThrowSubTree : AnimTreeMixNode<IAnimContext>
     {
-        
-        public GrenadeThrowSubTree(PlayerManager myManager) : base(myManager)
+
+        public GrenadeThrowSubTree(IAnimContext ctx) : base(ctx)
         {
         }
 
