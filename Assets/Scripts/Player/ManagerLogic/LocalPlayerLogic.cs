@@ -1,7 +1,7 @@
 ﻿using System;
 using Connect;
-using Connect.Converter;
 using Connect.Simulation;
+using Connect.Sync;
 using GameFSM.LevelFSM.PlayerFSM;
 using mController.Player.InputController;
 using mEvent;
@@ -38,6 +38,8 @@ namespace Player.ManagerLogic
         private int _lastFlags = -1;
         private AnnulusView _annulusView; // 轮盘选择
         private float _timer;
+
+        private PlayerSyncManager _syncManager;
         
         public void Init(PlayerManager manager)
         {
@@ -45,7 +47,8 @@ namespace Player.ManagerLogic
             _m = manager;
             _bagModel = this.GetModel<BagModel>();
             _context = new InputContext();
-            _inputSystem = new InputSystem(_context);
+            _inputSystem = this.GetSystem<IInputSystem>();
+            _inputSystem.InitHandler(_context);
             
             manager.CombatContext.InputContext = _context;
             manager.CombatModule = new PlayerCombatModule(manager.CombatContext);
@@ -81,11 +84,18 @@ namespace Player.ManagerLogic
                 }
                 _annulusView.HideWheel();
             }
+
+            _syncManager = new PlayerSyncManager();
+            _syncManager.Register(new MoveSyncChannel(_m.EntityId));
+            _syncManager.Register(new AnimSyncChannel(_m.EntityId, _bagModel));
         }
 
         public void OnUpdate()
         {
-            _inputController.Process(_context);
+            if (_inputSystem.GamePlayEnable)
+                _inputController.Process(_context);
+            else
+                _m.MoveModule.InputMove(Vector2.zero);
 
             _m.state.aimPosition = _m.cameraController.rayEnd;
 
@@ -104,13 +114,12 @@ namespace Player.ManagerLogic
             
             Reload();
             
-            // 监听输入
-            _inputSystem.SetKeyCode();
-            
             _m.ViewModule?.OnUpdate();
             _m.CombatModule?.OnUpdate();
             _m.MoveModule?.OnUpdate();
             _m.IkModule?.OnUpdate();
+            
+            _syncManager.OnFixedUpdate(_m);
         }
 
         public void OnFixedUpdate()
@@ -119,6 +128,7 @@ namespace Player.ManagerLogic
             if (currentId == -1) return;
 
             // 20 tick: 位置+旋转+输入
+            /*
             _moveTimer += Time.fixedDeltaTime;
             if (_moveTimer >= 0.05f)
             {
@@ -137,6 +147,7 @@ namespace Player.ManagerLogic
                         _m.CombatModule.GetQuery().State, (sbyte)_bagModel.Weapon.InternalRuntime.Stance,
                         _m.cameraController.rayEnd, Time.time, _m.state.clientTime)));
             }
+            */
 
         }
 

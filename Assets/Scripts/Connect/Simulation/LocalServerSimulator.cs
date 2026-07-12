@@ -90,7 +90,6 @@ namespace Connect.Simulation
                 rotation = _playerManager.transform.rotation,
                 maxHp = 100, curHp = 100,
                 maxShield = 150, curShield = 150,
-                bRots = Array.Empty<Transform>()
             };
 
             // 加入模拟服务器的列表

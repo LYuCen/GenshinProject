@@ -215,6 +215,24 @@ namespace Connect
                         PlayerPool.Instance.ApplyHp(deathId, 0, 0, deadPm.state.maxHp, deadPm.state.maxShield);
                     }
                     break;
+                
+                case MessageType.S2C_Revive:
+                    int pid = BitConverter.ToInt32(msg.data, 0);
+                    Vector3 posRev = new Vector3(
+                        BitConverter.ToSingle(msg.data, 4),    
+                        BitConverter.ToSingle(msg.data, 8),    
+                        BitConverter.ToSingle(msg.data, 12));  
+                    float curHpRev =
+                        BitConverter.ToSingle(msg.data, 16);
+                    float curShieldRev =
+                        BitConverter.ToSingle(msg.data, 20);
+                    float maxHpRev =
+                        BitConverter.ToSingle(msg.data, 24);
+                    float maxShieldRev =
+                        BitConverter.ToSingle(msg.data, 28);
+
+                    PlayerPool.Instance.ApplyRevive(pid, posRev, curHpRev, curShieldRev, maxHpRev, maxShieldRev);
+                    break;
             }
         }
         

@@ -31,22 +31,28 @@ namespace mModel
         protected override void OnInit()
         {
             _bullets = new List<BulletInfo>();
-            var ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FnIws/FnIws.asset",
-                false);
-            _fnIws = new WeaponPro(ir.GetAsset<WeaponData>());
-            var ir2 = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/Spr2/Spr2.asset",
-                false);
-            _spr2 = new WeaponPro(ir2.GetAsset<WeaponData>());
             Weapon = _fnIws;
         }
 
         public void SetPrimaryWeapon()
         {
+            if (_fnIws == null)
+            {
+                var ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FnIws/FnIws.asset",
+                    false);
+                _fnIws = new WeaponPro(ir.GetAsset<WeaponData>());
+            }
             Weapon = _fnIws;
         }
 
         public void SetSecondaryWeapon()
         {
+            if (_spr2 == null)
+            {
+                var ir2 = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/Spr2/Spr2.asset",
+                    false);
+                _spr2 = new WeaponPro(ir2.GetAsset<WeaponData>());
+            }
             Weapon = _spr2;
         }
 

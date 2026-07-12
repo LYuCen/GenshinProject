@@ -3,7 +3,7 @@ using AI.VisualRequest.VisualRequest;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
 using mEnum.Query;
-using mModel;
+using mSystem.InputSystem;
 using QFramework;
 using UnityEngine;
 
@@ -16,8 +16,6 @@ namespace mController
         [Header("射线长度")] public float rayLength;
         [Header("相机碰撞白名单")] [SerializeField] private LayerMask obstacleMask;
         [Header("相机碰撞阈值")] [SerializeField] private float wallOffset = 0.1f;
-        [Header("枪口上抬偏移量")] public float liftOffset = 2f; // 往撞击点上方偏移多少
-        [Header("平滑过渡速度")] public float smoothSpeed = 10f;
         public Transform scopeCamera; // 瞄准镜相机
         public Vector3 rayEnd; // 射击终点
         public Vector3 hitEnd; // 命中位置
@@ -34,7 +32,6 @@ namespace mController
 
         private float _yaw;
         public float Yaw => _yaw;   // XOZ平面与 z轴正方向偏转角
-        public float Pitch => _pitch;
         private float _pitch;       // YOZ平面与 z轴正方向偏转角
         private float _nowDistance; // 当前相机离角色距离
         
@@ -44,15 +41,15 @@ namespace mController
         private int _originalMask;
         private int _headLayerIndex;
         PointVisualRequest _request = new PointVisualRequest();
-
-        private BagModel _bagModel;
         
+        private IInputSystem _inputSystem;
+
         private void Start()
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-
-            _bagModel = this.GetModel<BagModel>();
+            
+            _inputSystem = this.GetSystem<IInputSystem>();
             
             Vector3 euler = transform.eulerAngles;
             _yaw = euler.y;  
@@ -126,8 +123,9 @@ namespace mController
         
         void LateUpdate()
         {
-            if (!playerTransform) return; 
-            
+            if (!playerTransform) return;
+            if (!_inputSystem.GamePlayEnable) return;
+
             _yaw += Input.GetAxis("Mouse X") * sensitivity;   // 获取鼠标 x输入
             _yaw = Mathf.Repeat(_yaw, 360f);
             _pitch -= Input.GetAxis("Mouse Y") * sensitivity; // 获取鼠标 y输入

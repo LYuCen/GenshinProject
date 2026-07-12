@@ -32,7 +32,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterrupt
 
             if (Input.GetKeyDown(KeyCode.O))
             {
-                MyManager.EnableModule();
                 MyManager.SendReviveRequest();
             }
         }

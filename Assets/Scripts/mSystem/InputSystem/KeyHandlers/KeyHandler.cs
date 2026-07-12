@@ -9,7 +9,7 @@ namespace mSystem.InputSystem.KeyHandlers
         protected InputContext Context;
         public bool Enable = true;
 
-        public KeyHandler(InputContext context)
+        public KeyHandler(InputContext context = null)
         {
             Context = context;
         }

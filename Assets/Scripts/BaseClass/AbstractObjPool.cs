@@ -64,7 +64,7 @@ namespace BaseClass
             {
                 Pool.Enqueue(obj);
                 obj.gameObject.SetActive(false);
-                obj.transform.SetParent(transform);
+                obj.transform.SetParent(transform, false);
             }
             else Destroy(obj);
         }

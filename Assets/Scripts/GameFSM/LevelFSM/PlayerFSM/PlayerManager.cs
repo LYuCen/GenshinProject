@@ -6,7 +6,6 @@ using mController;
 using mEnum.Flags;
 using mEnum.Query;
 using mInterface;
-using mInterface;
 using mSystem.StatusSystem;
 using Player;
 using Player.AnimPro;
@@ -27,7 +26,6 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public PlayerMoveQuery Query;
         public int EntityId => state.playerId;
         public EntityStatusUI EntityStatusUI => entityStatusUI;
-        [Header("角色骨骼")] public Transform[] bones;
         [Header("死亡材质")]  public Material deathSnapshotMaterial;
         
         [Header("组件引用")]
@@ -61,7 +59,6 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public void Init(bool isLocal)
         {
             _isLocal = isLocal;
-            state.bRots = bones;
             animator.applyRootMotion = false;
             AnimController = new PlayerAnimController(this, graphData);
             PlayerContext = new PlayerContext

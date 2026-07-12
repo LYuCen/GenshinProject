@@ -20,6 +20,7 @@ namespace QFramework
             // if config is created
             if (Config)
             {
+                
                 InitArchitecture();
             }
         }

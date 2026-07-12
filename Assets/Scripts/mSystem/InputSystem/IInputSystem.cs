@@ -1,38 +1,54 @@
 ﻿using System.Collections.Generic;
+using mModel.SettingModel;
 using mSystem.InputSystem.Context;
 using mSystem.InputSystem.KeyHandlers;
 using mSystem.InputSystem.KeyHandlers.Handlers;
 using mSystem.InputSystem.mKey;
+using QFramework;
 
 namespace mSystem.InputSystem
 {
-    public interface IInputSystem
+    public interface IInputSystem : ISystem
     {
         public bool Enable { get; set; }
+        public bool GamePlayEnable { get; set; }
         void SetKeyCode();
+        void InitHandler(InputContext context);
     }
 
-    public class InputSystem : IInputSystem 
+    public class InputSystem : AbstractSystem, IInputSystem
     {
-        private List<KeyHandler> _handlers;
+        private List<KeyHandler> _gameplayHandlers;
+        private List<KeyHandler> _globalHandlers;
         private List<KeyState> _keyStates;
+        private IKeyModel _keyModel;
         public bool Enable { get; set; }
-        public InputSystem(InputContext context)
+        public bool GamePlayEnable { get; set; }
+        
+        protected override void OnInit()
         {
-            KeyModel model = new KeyModel();
-            _handlers = new List<KeyHandler>();
-            _keyStates = model.GetKeys();
-            _handlers.Add(new MoveHandler(context));
-            _handlers.Add(new AttackHandler(context));
-            _handlers.Add(new ShootHandler(context));
-            _handlers.Add(new JumpHandler(context));
-            _handlers.Add(new MouseScrollHandler(context));
-            _handlers.Add(new ReloadHandler(context));
-            _handlers.Add(new ChangeWeaponHandler(context));
-            _handlers.Add(new RunHandler(context));
-            _handlers.Add(new ThrowGrenadeHandler(context));
-            _handlers.Add(new CrouchHandler(context));
+            _keyModel = this.GetModel<IKeyModel>();
+            _keyModel.LoadKeyState(this.GetModel<ISettingModel>());
+            _globalHandlers = new List<KeyHandler>();
+            _gameplayHandlers = new List<KeyHandler>();
+            _globalHandlers.Add(new SettingHandler());
+            _keyStates = _keyModel.GetKeys();
             Enable = true;
+            GamePlayEnable = true;
+        }
+        
+        public void InitHandler(InputContext context)
+        {
+            _gameplayHandlers.Add(new MoveHandler(context));
+            _gameplayHandlers.Add(new AttackHandler(context));
+            _gameplayHandlers.Add(new ShootHandler(context));
+            _gameplayHandlers.Add(new JumpHandler(context));
+            _gameplayHandlers.Add(new MouseScrollHandler(context));
+            _gameplayHandlers.Add(new ReloadHandler(context));
+            _gameplayHandlers.Add(new ChangeWeaponHandler(context));
+            _gameplayHandlers.Add(new RunHandler(context));
+            _gameplayHandlers.Add(new ThrowGrenadeHandler(context));
+            _gameplayHandlers.Add(new CrouchHandler(context));
         }
 
         public void SetKeyCode()
@@ -42,7 +58,13 @@ namespace mSystem.InputSystem
             {
                 key.UpdateState();
             }
-            foreach (var handler in _handlers)
+            foreach (var handler in _globalHandlers)
+            {
+                handler.Handle(_keyStates);
+            }
+
+            if (!GamePlayEnable) return;
+            foreach (var handler in _gameplayHandlers)
             {
                 handler.Handle(_keyStates);
             }

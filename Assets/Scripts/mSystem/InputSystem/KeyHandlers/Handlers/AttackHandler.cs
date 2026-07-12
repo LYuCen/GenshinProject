@@ -7,8 +7,6 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
     public class AttackHandler : KeyHandler, ICanSendEvent
     {
-
-
         public AttackHandler(InputContext context) : base(context)
         {
         }

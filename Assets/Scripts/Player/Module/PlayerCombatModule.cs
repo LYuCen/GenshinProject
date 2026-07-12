@@ -37,9 +37,7 @@ namespace Player.Module
             {
                 _bagModel = this.GetModel<BagModel>();
                 GetPrimaryWeapon();
-                BulletGameObjectPool.Instance.Init(20);
             }
-
             _enable = true;
         }
 
@@ -78,7 +76,7 @@ namespace Player.Module
 
         public void GetPrimaryWeapon()
         {
-            _bagModel.Weapon.Presenter?.OnExit();
+            _bagModel.Weapon?.Presenter?.OnExit();
             _bagModel.SetPrimaryWeapon();
             if (!_bagModel.Weapon.Presenter)
             {
@@ -91,7 +89,7 @@ namespace Player.Module
 
         public void GetSecondaryWeapon()
         {
-            _bagModel.Weapon.Presenter?.OnExit();
+            _bagModel.Weapon?.Presenter?.OnExit();
             _bagModel.SetSecondaryWeapon();
             if (!_bagModel.Weapon.Presenter)
             {

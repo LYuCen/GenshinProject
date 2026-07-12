@@ -196,5 +196,22 @@ namespace Connect
             _models.Clear();
             Debug.Log("PlayerPool 已清空，准备联机。");
         }
+        
+        /// <summary>
+        /// 复活逻辑
+        /// </summary>
+        public void ApplyRevive(int playerId, Vector3 pos, float curHp, float curShield, float maxHp, float maxShield)
+        {
+            if (!_models.TryGetValue(playerId, out var pm)) return;
+
+            pm.transform.position = pos;
+            pm.state.position = pos;
+            pm.state.curHp = curHp;
+            pm.state.maxHp = maxHp;
+            pm.state.curShield = curShield;
+            pm.state.maxShield = maxShield;
+            pm.entityStatusUI?.SyncValues(curHp, maxHp, curShield, maxShield);
+        }
+
     }
 }

@@ -32,7 +32,6 @@ namespace Server
         public EntityStatusUI EntityStatusUI => null;
         public int playerId;
         public Socket ClientSocket;
-        public Transform[] bones;
         public PlayerStateData State = new PlayerStateData();
         public HitColliderEntry[] hitColliders = new HitColliderEntry[11];
         private HitHistoryBuffer _hitHistory;
@@ -52,7 +51,6 @@ namespace Server
             playerId = id;
             ClientSocket = s;
             State.playerId = id;
-            State.bRots = bones; 
             
             State.maxHp = 200f;
             State.curHp = 200f;
@@ -178,20 +176,26 @@ namespace Server
                     
                     break;
                 
-                
-                case MessageType.C2S_Bones:
-                    PlayerDataConverter.UnpackBone(data, State);
-                    CacheSnapshotFromColliders();
-                    break;
-                
                 case MessageType.C2S_Revive:
-                    transform.position = Vector3.zero;
-                    State.position = Vector3.zero;
+                    Vector3 revivePos = GetSpawnPosition();
+                    transform.position = revivePos;
+                    State.position = revivePos;
                     State.curHp = State.maxHp;
                     State.curShield = State.maxShield;
+                    
+                    byte[] reviveData = new byte[32];
+                    int off = 0;
+                    Buffer.BlockCopy(BitConverter.GetBytes(playerId), 0, reviveData, off, 4); off += 4;       
+                    Buffer.BlockCopy(BitConverter.GetBytes(revivePos.x), 0, reviveData, off, 4); off += 4;    
+                    Buffer.BlockCopy(BitConverter.GetBytes(revivePos.y), 0, reviveData, off, 4); off += 4;    
+                    Buffer.BlockCopy(BitConverter.GetBytes(revivePos.z), 0, reviveData, off, 4); off += 4;    
+                    Buffer.BlockCopy(BitConverter.GetBytes(State.curHp), 0, reviveData, off, 4); off += 4;    
+                    Buffer.BlockCopy(BitConverter.GetBytes(State.curShield), 0, reviveData, off, 4); off += 4;
+                    Buffer.BlockCopy(BitConverter.GetBytes(State.maxHp), 0, reviveData, off, 4); off += 4;    
+                    Buffer.BlockCopy(BitConverter.GetBytes(State.maxShield), 0, reviveData, off, 4);
 
-                    var hpData = PlayerDataConverter.PackHp(playerId, State.curHp, State.curShield, State.maxHp, State.maxShield);     
-                    UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_Hp, hpData));
+                    var reviveMsg = new Message(MessageType.S2C_Revive, reviveData);   
+                    UnityServerManager.Instance.Broadcast(reviveMsg);
                     break;
                 
                 case MessageType.C2S_StateChange:
@@ -262,7 +266,9 @@ namespace Server
             State.isShoot   = (w & (int)WeaponFlags.Shoot)   != 0;
             State.isReload  = (w & (int)WeaponFlags.Reload)   != 0;
             State.isThrow   = (w & (int)WeaponFlags.Throw)    != 0;
-
+            
+            if (dto.AimPos != null) State.aimPosition = new Vector3(dto.AimPos.Value.X, dto.AimPos.Value.Y, dto.AimPos.Value.Z);
+            
             _combatProvider?.SetWeaponBoolState(dto.WeaponBoolState);
             State.clientTime = dto.ClientTime;
         }
@@ -360,6 +366,20 @@ namespace Server
                 byte[] deathData = BitConverter.GetBytes(bestVictimId);
                 UnityServerManager.Instance.Broadcast(new Message(MessageType.S2C_PlayerDeath, deathData));
             }
+        }
+        
+        private void Update()
+        {
+            _animController.Update();
+        }
+
+        /// <summary>
+        ///  复活点选择
+        /// </summary>
+        private Vector3 GetSpawnPosition()
+        {
+            // todo 后续做安全位置检查
+            return Vector3.zero;
         }
 
 #if UNITY_EDITOR

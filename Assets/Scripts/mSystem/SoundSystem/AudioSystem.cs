@@ -1,39 +1,19 @@
-﻿using System.Collections.Generic;
-using AssetBundleFramework.Core.Resource;
+﻿using AssetBundleFramework.Core.Resource;
 using BaseClass;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace mSystem.SoundSystem
 {
     public class AudioSystem : AbstractSingleton<AudioSystem>
     {
-        private Dictionary<string, AudioClip> _dic;
         public AudioSource audioSource;
         private IResource _ir;
 
-        private void Start()
+        protected override void Awake()
         {
-            _dic = new Dictionary<string, AudioClip>();
-            
-        }
-
-        public void PlaySound(string str, float volume = 1)
-        {
-            audioSource.volume = volume;
-            
-            if (!_dic.TryGetValue(str, out var clip))
-            {
-                _ir = ResourceManager.instance.Load(str, false);
-                clip = _ir.GetAsset<AudioClip>();
-                if (!clip)
-                {
-                    Debug.LogError("加载音效失败: " + str);
-                    return;
-                }
-                _dic.Add(str, clip);
-            }
-
-            audioSource.PlayOneShot(_dic[str]);
+            base.Awake();
+            audioSource = transform.AddComponent<AudioSource>();
         }
 
         public void PlaySound(AudioClip audioClip, float volume = 1)
@@ -42,6 +22,11 @@ namespace mSystem.SoundSystem
             {
                 audioSource.PlayOneShot(audioClip, volume);
             } 
+        }
+
+        public void SetVolumeValue(int val)
+        {
+            audioSource.volume = val / 100f;
         }
     }
 }

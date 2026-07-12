@@ -10,7 +10,7 @@ table AnimDataFlat {
     player_id:int;
     player_bool_state:int;
     weapon_bool_state:int;
-    stance:byte;    // 武器状态： 0 = Nomal, 1 = Shoulder, 2 = ADS
+    stance:ubyte;    // 武器状态： 0 = Nomal, 1 = Shoulder, 2 = ADS
     aim_pos:Vec3;
     anim_time:float;    // 动画时间
     client_time:float;

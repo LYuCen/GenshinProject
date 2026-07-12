@@ -1,0 +1,20 @@
+﻿using mModel.SettingModel;
+using mSystem.SoundSystem;
+using QFramework;
+
+namespace mSystem.mSettingSystem.Applier.Voice
+{
+    public class VolumeApplier : ISettingApplier, IController
+    {
+        public string Id => "base_volume";
+        public void Apply(int value, SettingSaveData data)
+        {
+            AudioSystem.Instance.SetVolumeValue(value);
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
+        }
+    }
+}

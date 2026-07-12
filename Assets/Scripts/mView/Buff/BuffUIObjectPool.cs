@@ -23,7 +23,7 @@ namespace mView.Buff
                 RectTransform rt = obj.GetComponent<RectTransform>();
                 rt.rotation = Quaternion.identity;
                 rt.localScale = Vector3.one;
-                obj.transform.SetParent(transform);
+                obj.transform.SetParent(transform, false);
             }
             else Destroy(obj);
         }

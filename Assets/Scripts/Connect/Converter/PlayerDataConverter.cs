@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Connect.BoneDTO;
 using Connect.Data;
 using Connect.FlatDTO;
 using Connect.MoveDTO;
 using Google.FlatBuffers;
-using IUtility;
-using mEnum.Query;
 using UnityEngine;
 using Quat = Connect.FlatDTO.Quat;
 using Vec3 = Connect.FlatDTO.Vec3;
@@ -82,84 +79,6 @@ namespace Connect.Converter
 
             data.inputMove = new Vector2(flat.InputX, flat.InputY);
             data.playerMove = new Vector2(flat.MoveX, flat.MoveY);
-        }
-
-        /// <summary>
-        /// 骨骼旋转 瞄准点 重心位置
-        /// </summary>
-        public static byte[] PackBones(PlayerStateData data)
-        {
-            var builder = new FlatBufferBuilder(512);
-
-            ushort[] compressedRots = null;
-            if (data.bRots != null && data.bRots.Length > 0)
-            {
-                compressedRots = new ushort[data.bRots.Length * 4];
-                for (int i = 0; i < data.bRots.Length; i++)
-                {
-                    Quaternion q = data.bRots[i].localRotation;
-                    compressedRots[i * 4 + 0] = CompressionUtility.Compress(q.x);
-                    compressedRots[i * 4 + 1] = CompressionUtility.Compress(q.y);
-                    compressedRots[i * 4 + 2] = CompressionUtility.Compress(q.z);
-                    compressedRots[i * 4 + 3] = CompressionUtility.Compress(q.w);
-                }
-            }
-
-            var boneVector = compressedRots != null
-                ? BoneDataFlat.CreateBoneRotsVector(builder, compressedRots)
-                : default;
-
-            Vector3 hips = (data.bRots != null && data.bRots.Length > 1)
-                ? data.bRots[1].localPosition : Vector3.zero;
-            
-            BoneDataFlat.StartBoneDataFlat(builder);
-            BoneDataFlat.AddPlayerId(builder, data.playerId);
-            BoneDataFlat.AddAimX(builder, data.aimPosition.x);
-            BoneDataFlat.AddAimY(builder, data.aimPosition.y);
-            BoneDataFlat.AddAimZ(builder, data.aimPosition.z);
-            
-            BoneDataFlat.AddHipsX(builder, hips.x);
-            BoneDataFlat.AddHipsY(builder, hips.y);
-            BoneDataFlat.AddHipsZ(builder, hips.z);
-
-            if (boneVector.Value != 0)
-            {
-                BoneDataFlat.AddBoneRots(builder, boneVector);
-            }
-
-            BoneDataFlat.AddClientTime(builder, data.clientTime);
-            var offset = BoneDataFlat.EndBoneDataFlat(builder);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static void UnpackBone(byte[] buf, PlayerStateData data)
-        {
-            var bb = new ByteBuffer(buf);
-            var flat = BoneDataFlat.GetRootAsBoneDataFlat(bb);
-
-            data.playerId = flat.PlayerId;
-            data.aimPosition = new Vector3(flat.AimX, flat.AimY, flat.AimZ);
-            data.clientTime = flat.ClientTime;
-            
-            //return;
-            int boneCount = flat.BoneRotsLength / 4;
-            if (data.bRots != null && boneCount > 0)
-            {
-                for (int i = 0; i < Mathf.Min(boneCount, data.bRots.Length); i++)
-                {
-                    data.bRots[i].localRotation = new
-                        Quaternion(
-                            CompressionUtility.Decompress(flat.BoneRots(i * 4)),
-                            CompressionUtility.Decompress(flat.BoneRots(i * 4 + 1)),
-                            CompressionUtility.Decompress(flat.BoneRots(i * 4 + 2)), 
-                            CompressionUtility.Decompress(flat.BoneRots(i * 4 + 3)));
-                }
-
-                // 重心骨骼
-                data.bRots[1].localPosition = new Vector3(flat.HipsX, flat.HipsY, flat.HipsZ);
-            }
-            
         }
         
         /// <summary>
@@ -256,7 +175,7 @@ namespace Connect.Converter
             return builder.SizedByteArray();
         }
 
-        public static byte[] PackAnimationState(int playerId, int playerFlags, int weaponFlags, sbyte stance,
+        public static byte[] PackAnimationState(int playerId, int playerFlags, int weaponFlags, byte stance,
             Vector3 aimPos, float animTime, float clientTime)
         {
             var builder = new FlatBufferBuilder(64);
@@ -276,7 +195,7 @@ namespace Connect.Converter
         }
 
         public static void UnpackAnimationState(byte[] data, out int playerId, out int playerFlags, out int weaponFlags,
-            out sbyte stance, out Vector3 aimPos, out float animTime, out float clientTime)
+            out byte stance, out Vector3 aimPos, out float animTime, out float clientTime)
         {
             var bb = new ByteBuffer(data);
             var flat = AnimDTO.AnimDataFlat.GetRootAsAnimDataFlat(bb);
