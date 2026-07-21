@@ -22,7 +22,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
             MyManager.MoveModule.Sprint();
             MyManager.IkModule.SetHandIk(MyManager.GetHandIkTarget());
             MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
-            
         }
     }
 }

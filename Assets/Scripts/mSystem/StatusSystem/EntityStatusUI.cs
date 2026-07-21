@@ -32,7 +32,7 @@ namespace mSystem.StatusSystem
             canvas.planeDistance = 1.0f; // 贴近相机
         }
 
-        public void InitStatus(ref PlayerStateData state)
+        public void InitStatus(PlayerStateData state)
         {
             maxHp = state.maxHp;
             maxShield = state.maxShield;

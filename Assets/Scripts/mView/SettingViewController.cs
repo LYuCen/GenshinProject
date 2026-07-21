@@ -7,7 +7,6 @@ using mSystem.mSettingSystem;
 using mSystem.mSettingSystem.EditData;
 using mView.Button;
 using mView.Setting;
-using mView.TipView;
 using QFramework;
 using UnityEngine;
 
@@ -30,7 +29,6 @@ namespace mView
         [SerializeField] private GameObject prevView;
 
         [SerializeField] private CanvasGroup group;
-        [SerializeField] private TextTipViewController textTipView;
         [SerializeField] private GameObject setting;
         [SerializeField] private PauseViewController pause;
         
@@ -87,10 +85,7 @@ namespace mView
                     this.GetSystem<IInputSystem>().GamePlayEnable = false;
                 }
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
-
-            textTipView.OnApplyClick += ApplySetting;
-            textTipView.OnAbandonClick += AbandonSetting;
-            textTipView.OnCloseTip += CloseSetting;
+            
         }
         
 
@@ -98,7 +93,7 @@ namespace mView
         {
             if (_settingEdit.CheckModify())
             {
-                if(!textTipView.gameObject.activeSelf) textTipView.gameObject.SetActive(true);
+                this.SendCommand(new TextTipCommand("数据被修改，是否应用修改", ApplySetting, AbandonSetting, CloseSetting));
             }
             else
             {
@@ -133,6 +128,7 @@ namespace mView
             _settingEdit.ApplyModify();
             this.GetModel<ISettingModel>().Save();
             this.GetSystem<ISettingSystem>().Apply();
+            this.GetSystem<IInputSystem>().ReloadKeyBindings();
         }
 
         private void AbandonSetting()

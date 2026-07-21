@@ -24,7 +24,7 @@ namespace mSystem.mSettingSystem.EditData
 
         public override void Cancel()
         {
-            
+            _editing = _model.CombatConfig.Clone();
         }
 
         public override void Close()

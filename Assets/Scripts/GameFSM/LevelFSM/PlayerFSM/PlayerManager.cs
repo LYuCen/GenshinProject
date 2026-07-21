@@ -109,7 +109,7 @@ namespace GameFSM.LevelFSM.PlayerFSM
             _logic.Init(this);
             
             // 初始化
-            entityStatusUI.InitStatus(ref state);
+            entityStatusUI.InitStatus(state);
         }
 
         private void FixedUpdate()

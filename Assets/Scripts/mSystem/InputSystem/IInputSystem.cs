@@ -14,6 +14,7 @@ namespace mSystem.InputSystem
         public bool GamePlayEnable { get; set; }
         void SetKeyCode();
         void InitHandler(InputContext context);
+        void ReloadKeyBindings();
     }
 
     public class InputSystem : AbstractSystem, IInputSystem
@@ -49,6 +50,11 @@ namespace mSystem.InputSystem
             _gameplayHandlers.Add(new RunHandler(context));
             _gameplayHandlers.Add(new ThrowGrenadeHandler(context));
             _gameplayHandlers.Add(new CrouchHandler(context));
+        }
+
+        public void ReloadKeyBindings()
+        {
+            _keyModel.LoadKeyState(this.GetModel<ISettingModel>());
         }
 
         public void SetKeyCode()

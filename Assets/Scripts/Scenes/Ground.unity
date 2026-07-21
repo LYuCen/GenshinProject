@@ -16250,10 +16250,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lumine TO DISTRIBUTE 2
       objectReference: {fileID: 0}
-    - target: {fileID: 5962155328936832477, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7578100045842230712, guid: 94f7213c71960af46aa8e1a8b5fc0dd4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.047

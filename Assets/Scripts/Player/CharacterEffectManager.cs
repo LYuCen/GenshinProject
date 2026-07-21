@@ -49,8 +49,7 @@ namespace Player
 
         private IEnumerator AuraAnimationRoutine()
         {
-            // --- 阶段一：从当前状态快速回弹到最高亮度 ---
-            float startI = currentIntensity; // 读取当前亮度（可能在 2.0，也可能在 0.5）
+            float startI = currentIntensity;
             float startA = currentAlpha;
         
             float elapsed = 0;
@@ -66,8 +65,7 @@ namespace Player
                 ApplyToMaterial(currentIntensity, currentAlpha);
                 yield return null;
             }
-
-            // --- 阶段二：从最高点慢慢衰减到 0 ---
+            
             elapsed = 0;
             while (elapsed < fadeOutTime)
             {
@@ -81,7 +79,6 @@ namespace Player
                 yield return null;
             }
 
-            // --- 阶段三：彻底消失，移除槽位 ---
             currentIntensity = 0;
             currentAlpha = 0;
             ApplyToMaterial(0, 0);
@@ -97,7 +94,7 @@ namespace Player
             instanceMaterial.SetFloat("_AuraIntensity", intensity);
         }
 
-        private void ResetMaterialAlpha(float val)
+        public void ResetMaterialAlpha(float val)
         {
             currentIntensity = val;
             currentAlpha = val;

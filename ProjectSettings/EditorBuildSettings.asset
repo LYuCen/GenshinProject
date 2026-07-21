@@ -6,15 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Lobby.unity
+    path: Assets/Scripts/Scenes/Lobby.unity
     guid: ebb6c53b150495c4c9d93878cd00b8cc
   - enabled: 1
-    path: Assets/Scenes/Ground.unity
+    path: Assets/Scripts/Scenes/Ground.unity
     guid: 1937a92eb1904b04abe1ea0033148b9b
   - enabled: 1
-    path: Assets/Scenes/Level.unity
+    path: Assets/Scripts/Scenes/Level.unity
     guid: de2ab3cc78d05894498975d589d6f9b8
   - enabled: 1
-    path: Assets/Scenes/New Scene.unity
+    path: Assets/Scripts/Scenes/FiringRange.unity
     guid: ff08008d0f1be3e49b6871b85e6a52e9
   m_configObjects: {}

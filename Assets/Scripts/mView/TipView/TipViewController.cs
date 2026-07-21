@@ -1,4 +1,5 @@
-﻿using mCommand;
+﻿using BaseClass;
+using mCommand;
 using mEvent;
 using mModel;
 using QFramework;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace mView.TipView
 {
-    public class TipViewController : MonoBehaviour, IController
+    public class TipViewController : AbstractSingleton<TipViewController>, IController
     {
         [SerializeField] private InputTipViewController inputTip;
         [SerializeField] private TextMeshProUGUI inputTipText;
@@ -53,6 +54,8 @@ namespace mView.TipView
             textTip.gameObject.SetActive(true);
             textTipText.text = e.TipText;
             textTip.OnApplyClick = e.ApplyAction;
+            textTip.OnAbandonClick = e.AbandonAction;
+            textTip.OnCloseTip = e.CloseTip;
         }
 
         public IArchitecture GetArchitecture()

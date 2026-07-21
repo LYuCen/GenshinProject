@@ -36,6 +36,9 @@ namespace mView
             {
                 userName.text = this.GetModel<IUserModel>().UserInfo.Name;
             }).UnRegisterWhenGameObjectDestroyed(gameObject);
+            
+            // 初始化设置信息
+            this.GetSystem<ISettingSystem>().Apply();
         }
 
         private void OpenSetting()
@@ -52,14 +55,13 @@ namespace mView
         
         private void StartGame()
         {
-            this.GetSystem<ISceneSystem>().LoadSceneAsync("Ground");
+            this.GetSystem<ISceneSystem>().LoadSceneAsync("FiringRange");
             GameEnter.Instance.isGame = true;
-            this.GetSystem<ISettingSystem>().Apply();
         }
 
         private void QuitGame()
         {
-            this.SendCommand(new TextTipCommand(Application.Quit, "是否退出游戏"));
+            this.SendCommand(new TextTipCommand("是否退出游戏",Application.Quit, null, null));
         }
 
         public IArchitecture GetArchitecture()

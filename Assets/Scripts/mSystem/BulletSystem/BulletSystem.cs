@@ -5,6 +5,7 @@ using Connect.DTO;
 using Connect.Protocol;
 using Firearms.Bullet;
 using mEnum;
+using mInterface;
 using Player;
 using UnityEngine;
 
@@ -26,7 +27,6 @@ namespace mSystem.BulletSystem
 
         protected override void UpdateComponent()
         {
-            // 合并 Mask：子弹既能打中人，也能打中墙
             int combinedMask = _hitboxMask | _wallMask | _planeMask;
 
             for(int i = Queue.Count; i > 0; i--)
@@ -42,42 +42,25 @@ namespace mSystem.BulletSystem
                 Vector3 lastPosition = bullet.Transform.position;
                 Vector3 newPosition = lastPosition + move;
                 float distance = move.magnitude;
-
-                // 核心修改：使用 combinedMask 进行射线检测
+                
+                // 子弹射线检测
                 if (Physics.Raycast(lastPosition, bullet.moveNormalize, out RaycastHit hit, distance, combinedMask))
                 {
                     bullet.Transform.position = hit.point;
-
-                    // 1. 尝试获取 HitBox 脚本
+                    
                     var hitBox = hit.collider.GetComponent<HitBox>();
+                    bool handled = false;
 
-                    // 2. 如果打中的是带 HitBox 的实体 (玩家或 AI)
+                    // 击中带有 hitbox 物体
                     if (hitBox && hitBox.Owner != null)
                     {
-                        // 只有自己发射的子弹才上报请求
-                        if (bullet.shooterId == NetworkService.Bridge.GetMyId())
-                        {
-                            // 检查是否打中自己（如果起点在体内可能发生）
-                            if (NetworkService.Instance.isSinglePlayer && hitBox.Owner.EntityId != bullet.shooterId)
-                            {
-                                HitDto hitDto = new HitDto
-                                {
-                                    attackerId = bullet.shooterId,
-                                    victimId = hitBox.Owner.EntityId, // 从接口或基类获取 ID
-                                    // 根据 HitBox 记录的部位计算伤害
-                                    damage = (hitBox.part == HitPart.Head) ? (int)bullet.headHit : (int)bullet.baseHit,
-                                    hitType = (int)hitBox.part, 
-                                    element = bullet.element,
-                                    elementMeasure = bullet.elementMeasure
-                                };
-                                
-                                Debug.Log($"玩家{hitDto.victimId} 被 玩家{hitDto.attackerId} 击中 {hitBox.part}");
-                                
-                                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerHit, HitDataConverter.ToBinary(hitDto)));
-                            }
-                        }
+                        handled = TryHandlePlayerHit(bullet, hitBox);
                     }
-                    else
+                    if (!handled)
+                    {
+                        handled = TryHandleTargetHit(bullet, hit, hitBox);
+                    }
+                    if(!handled)
                     {
                         // 3. 如果没打中 HitBox 但射线停了，说明打中了环境（墙壁、地面）
                         // 在这里可以生成弹孔特效或火花
@@ -94,6 +77,59 @@ namespace mSystem.BulletSystem
                 bullet.MoveTime -= Time.fixedDeltaTime;
                 Queue.Enqueue(bullet);
             }
+        }
+
+        // 命中标靶
+        private bool TryHandleTargetHit(Bullet bullet, RaycastHit hitInfo, HitBox hitBox)
+        {
+            // 不是自己发射的子弹
+            if (bullet.shooterId != NetworkService.Bridge.GetMyId()) return false;
+
+            // 获取靶子接口
+            var hittable = hitInfo.collider.GetComponentInParent<IHittable>();
+            if (hittable == null) return false;
+            
+            HitInfo info = new HitInfo
+            {
+                Point = hitInfo.point,
+                Normal = hitInfo.normal,
+                Part = hitBox != null ? hitBox.part : HitPart.Body,
+                Damage = (hitBox != null && hitBox.part == HitPart.Head) ? (int)bullet.headHit : (int)bullet.baseHit,
+                Element = bullet.element,
+                ElementMeasure = bullet.elementMeasure
+            };
+
+            hittable.OnHit(info);
+            return true;
+        }
+
+        // 命中玩家
+        private bool TryHandlePlayerHit(Bullet bullet, HitBox hitBox)
+        {
+            // 不是自己发射的子弹
+            if (bullet.shooterId != NetworkService.Bridge.GetMyId()) return false;
+            
+            // 单机模式
+            if (!NetworkService.Instance.isSinglePlayer) return false;
+
+            // 击中自己
+            if (hitBox.Owner.EntityId == bullet.shooterId) return false;
+            
+            HitDto hitDto = new HitDto
+            {
+                attackerId = bullet.shooterId,
+                victimId = hitBox.Owner.EntityId, // 从接口或基类获取 ID
+                // 根据 HitBox 记录的部位计算伤害
+                damage = (hitBox.part == HitPart.Head) ? (int)bullet.headHit : (int)bullet.baseHit,
+                hitType = (int)hitBox.part, 
+                element = bullet.element,
+                elementMeasure = bullet.elementMeasure
+            };
+                                
+            Debug.Log($"玩家{hitDto.victimId} 被 玩家{hitDto.attackerId} 击中 {hitBox.part}");
+                                
+            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerHit, HitDataConverter.ToBinary(hitDto)));
+            return true;
         }
     }
     

@@ -1,6 +1,7 @@
 ﻿using mEvent;
 using Player.Context;
 using QFramework;
+using UnityEngine;
 
 namespace Player.Module
 {
@@ -16,6 +17,7 @@ namespace Player.Module
         public void Init()
         {
             _weapon = 0;
+            Debug.Log("发送更新面板");
             this.SendEvent(new WeaponDataUpdateEvent());
         }
 

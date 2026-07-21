@@ -55,9 +55,8 @@ namespace mSystem.HurtSystem
                 Text = component.Harm.ToString(),
                 textType = component.HitType // 可以根据 result.IsReaction 修改为不同的飘字类型
             };
-            //HitTextSystem.HitTextSystem.Instance.EnQueue(textComponent);
 
-            // 兼容性逻辑：判断是否有 IManager 或 BodyController
+            // 判断是否有 IManager 或 BodyController
             IManager im = component.Transform.GetComponent<IManager>();
             if (im != null)
             {

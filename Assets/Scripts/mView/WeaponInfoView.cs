@@ -41,10 +41,14 @@ namespace mView
             this.RegisterEvent<FrontSightEvent>(_ =>
                 EnableFrontSight(_bagModel.Weapon.Runtime.Stance != WeaponStance.Ads))
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
+
+            UpdateUI();
         }
 
         private void UpdateUI()
         {
+            if (_bagModel?.Weapon == null) return;
+
             gunName.text = _bagModel.Weapon.WeaponName;
             bulletText.text =
                 $"{_bagModel.Weapon.Runtime.Component.BulletVal:D3}/" +
