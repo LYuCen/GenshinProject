@@ -1,4 +1,5 @@
 ﻿using mModel.SettingModel;
+using QFramework;
 using UnityEngine;
 
 namespace mSystem.mSettingSystem.Applier.Image.Base
@@ -6,7 +7,7 @@ namespace mSystem.mSettingSystem.Applier.Image.Base
     /// <summary>
     /// 显示控制
     /// </summary>
-    public class DisplayApplier : ISettingApplier
+    public class DisplayApplier : ISettingApplier, IController
     {
         public string Id => "base_display";
         public void Apply(int value, SettingSaveData data)
@@ -23,9 +24,15 @@ namespace mSystem.mSettingSystem.Applier.Image.Base
                     break;
 
                 case 2:
-                    
+                    var val = data.items.Find(c => c.id == "base_resolution").value;
+                    this.GetSystem<ISettingSystem>().ApplySingle("base_resolution", val);
                     break;
             }
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
         }
     }
 }

@@ -6,7 +6,6 @@ using mEvent;
 using mInterface;
 using mModel;
 using mModel.ScriptableConfig;
-using mSystem.BulletSystem;
 using mWeapon;
 using mWeapon.Component;
 using mWeapon.Presenter;
@@ -43,6 +42,11 @@ namespace Player.Module
 
         public void OnUpdate()
         {
+            
+        }
+
+        public void OnFixedUpdate()
+        {
             // 非主控玩家直接跳过
             if (!_context.IsLocal || !_enable) return;
             
@@ -56,11 +60,6 @@ namespace Player.Module
             _bagModel.Weapon?.Tick();
         }
 
-        public void OnFixedUpdate()
-        {
-            
-        }
-
         public void ResetGun()
         {
             if (!_context.IsLocal)
@@ -68,16 +67,17 @@ namespace Player.Module
                 if (RemoteWeapon) RemoteWeapon.transform.SetParent(_context.GunCube, true);
                 return;
             }
-            Transform weapon = _bagModel.Weapon?.Presenter?.transform;
-            if (!weapon) return;
-            weapon.SetParent(_context.GunCube, true);       
-            _bagModel.Weapon.Presenter.ResetTrans();  
+            var presenter = _bagModel.Weapon?.Presenter;
+            if (!presenter) return;
+            presenter.transform.SetParent(_context.GunCube, true);
+            presenter.ResetTrans();  
         }
 
         public void GetPrimaryWeapon()
         {
-            _bagModel.Weapon?.Presenter?.OnExit();
+            if (_bagModel.Weapon != null && _bagModel.Weapon.Presenter != null) _bagModel.Weapon.Presenter.OnExit();
             _bagModel.SetPrimaryWeapon();
+            _bagModel.Weapon.Runtime.Reset();
             if (!_bagModel.Weapon.Presenter)
             {
                 IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);
@@ -89,8 +89,9 @@ namespace Player.Module
 
         public void GetSecondaryWeapon()
         {
-            _bagModel.Weapon?.Presenter?.OnExit();
+            if (_bagModel.Weapon != null && _bagModel.Weapon.Presenter != null) _bagModel.Weapon.Presenter.OnExit();
             _bagModel.SetSecondaryWeapon();
+            _bagModel.Weapon.Runtime.Reset();
             if (!_bagModel.Weapon.Presenter)
             {
                 IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);

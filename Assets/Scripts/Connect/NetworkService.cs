@@ -1,4 +1,5 @@
 ﻿using System;
+using BaseClass;
 using Connect.Core;
 using Connect.Simulation;
 using GameFSM.LevelFSM.PlayerFSM;
@@ -7,10 +8,8 @@ using UnityEngine;
 
 namespace Connect
 {
-    public class NetworkService : MonoBehaviour
+    public class NetworkService : AbstractSingleton<NetworkService>
     {
-        public static NetworkService Instance;
-        
         public static INetworkBridge Bridge;
         public ConnectionStateMachine StateMachine { get; private set; }
         public HeartbeatService Heartbeat { get; private set; }
@@ -21,22 +20,21 @@ namespace Connect
         public string serverIp = "127.0.0.1";
         public int serverPort = 8888;
         public PlayerManager playerManager;
-        
+
         private float _reconnectTimer;
         private bool _reconnecting;
 
 
-        private void Awake()
+        protected override void Awake()
         {
-            Instance = this;
+            base.Awake();
             StateMachine = new ConnectionStateMachine();
             Heartbeat = new HeartbeatService();
 
             StateMachine.OnTryConnect = TryConnectToServer;
             StateMachine.OnDisconnect = DisconnectClient;
             StateMachine.OnStateChanged += OnConnectionStateChanged;
-            
-            // 初始化默认模式
+
             if (isSinglePlayer)
             {
                 StartSinglePlayer();
@@ -108,18 +106,16 @@ namespace Connect
         {
             try
             {
+                playerManager = PlayerPool.Instance.Models[1000];
+                
                 Client = new UserClient();
                 Client.Connect(serverIp, serverPort);
-
+                
                 // 绑定 Listener 到这个新的客户端
                 Listener.Instance.BindToClient(Client);
                 StateMachine.OnConnectSuccess();
-                PlayerPool.Instance.ClearPool();
+                PlayerPool.Instance.ClearBots();
                 isSinglePlayer = false;
-                if (playerManager.GetLogic() is LocalPlayerLogic logic)
-                {
-                    logic.InitState();
-                }
                 return true;
             }
             catch (Exception e)
@@ -144,9 +140,11 @@ namespace Connect
             {
                 case ConnectionState.Connected:
                     Bridge = new RealNetworkBridge(Client);
+                    Debug.Log($"[Bridge] 创建 RealNetworkBridge, Client={Client?.GetHashCode()}, Client.MyId={Client?.MyId}");
                     break;
                 case ConnectionState.Disconnected:
                 case ConnectionState.Reconnecting:
+                    Debug.Log($"[Bridge] Bridge = null, old={old}, new={@new}");
                     Bridge = null;
                     break;
             }

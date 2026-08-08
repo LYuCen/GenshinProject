@@ -34,6 +34,7 @@ namespace mWeapon
             BuildComponents();
             BuildFeatures();
             _runtime.Component = GetComponent<MagazineComponent>();
+            _runtime.OnReset += TaskRunner.CancelCurrent;
         }
 
         private void BuildFeatures()

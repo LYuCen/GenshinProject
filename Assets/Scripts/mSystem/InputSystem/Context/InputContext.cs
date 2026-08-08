@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using GameFSM.LevelFSM.LocomotionFSM;
+using UnityEngine;
 
 namespace mSystem.InputSystem.Context
 {
@@ -24,8 +25,15 @@ namespace mSystem.InputSystem.Context
         public ButtonState Crouch;
         /// <summary>道具</summary>
         public ButtonState Ability1;
+        /// <summary>跳跃</summary>
+        public ButtonState Jump;
 
         /// <summary>鼠标滚轮</summary>
         public float MouseScroll;
+    }
+
+    public class FsmContext
+    {
+        public Locomotion Locomotion;
     }
 }

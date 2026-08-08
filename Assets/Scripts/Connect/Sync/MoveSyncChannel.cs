@@ -26,8 +26,6 @@ namespace Connect.Sync
             _lastPos = s.position;
             _lastRot = s.rotation;
             _lastInput = s.inputMove;
-            NetworkService.Bridge.SendToServer(
-                new Message(MessageType.C2S_Move, PlayerDataConverter.PackMove(s)));
             return true;
 
         }

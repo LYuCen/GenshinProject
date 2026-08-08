@@ -19,6 +19,8 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 if (s.GetKeyName() == "Run")
                 {
                     Context.Sprint.Down = s.GetIsDown();
+                    Context.Sprint.Press = s.GetIsPress();
+                    Context.Sprint.Up = s.GetIsUp();
                 }
             }
         }

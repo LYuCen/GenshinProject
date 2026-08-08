@@ -1,5 +1,4 @@
 ﻿using AssetBundleFramework.Core.Resource;
-using Connect;
 using Connect.FlatDTO;
 using GameFSM.LevelFSM.PlayerFSM;
 using mModel.ScriptableConfig;
@@ -24,22 +23,20 @@ namespace Player.ManagerLogic
         private bool _isFirstPacket = true;  // 是否是第一个包
         
         private PlayerFsm _playerFsm;
-        private WeaponPresenter weapon;
+        private WeaponPresenter _weapon;
 
         public void Init(PlayerManager manager)
         {
             Debug.Log("创建其他玩家");
             _m = manager;
-
-            // 1. 上下文
+            
             manager.CombatContext.InputContext = null;
             manager.CombatContext.StateData = manager.state;
             manager.CombatContext.IsLocal = false;
             manager.IKContext.ListenEvents = false;
             manager.IKContext.IsLocal = false;
             manager.MoveContext.IsLocal = false;
-
-            // 2. 模块
+            
             manager.CombatModule = new PlayerCombatModule(manager.CombatContext);
             manager.MoveModule = new PlayerMoveModule(manager.MoveContext);
             manager.IkModule = new PlayerIkModule(manager.IKContext);
@@ -49,13 +46,11 @@ namespace Player.ManagerLogic
             manager.CombatModule.Init();
             manager.MoveModule.Init();
             manager.IkModule.Init();
-
-            // 3. 武器（动画树依赖 MoveModule，IK 依赖武器 Transform）
+            
             InitTransformPosition("FnIws");
-            manager.IkModule.SetMuzzle(weapon.muzzle);
-            manager.IkModule.SetHandIk(weapon.hand);
-
-            // 4. FSM（依赖 MoveModule）
+            manager.IkModule.SetMuzzle(_weapon.muzzle);
+            manager.IkModule.SetHandIk(_weapon.hand);
+            
             _playerFsm = new PlayerFsm(manager);
 
         }
@@ -67,13 +62,13 @@ namespace Player.ManagerLogic
             var data = ir2.GetAsset<WeaponData>();
             IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/Remote/{data.weaponName}.prefab", false);
             GameObject prefab = Object.Instantiate(ir.GetAsset<GameObject>(), _m.gunCube, false);
-            weapon = prefab.GetComponent<WeaponPresenter>();
+            _weapon = prefab.GetComponent<WeaponPresenter>();
             var ir3 = ResourceManager.instance.Load(
                 $"Assets/AssetBundle/ScriptableObject/Weapon/{data.name}/{name}_Trans.asset",false);
             var trans = ir3.GetAsset<TransformComponentData>();
             prefab.transform.localPosition = trans.pos;
             prefab.transform.localRotation = Quaternion.Euler(trans.rot.x, trans.rot.y, trans.rot.z);
-            _m.CombatModule.RemoteWeapon = weapon;
+            _m.CombatModule.RemoteWeapon = _weapon;
             var ir4 = ResourceManager.instance.Load(
                 $"Assets/AssetBundle/ScriptableObject/Weapon/{name}/{name}_Anim.asset", false);
             var anim = ir4.GetAsset<AnimComponentData>();
@@ -103,11 +98,8 @@ namespace Player.ManagerLogic
         // 修改参数为 PlayerDataFlat
         public void SyncFromServer(PlayerDataFlat dto)
         {
-            // 1. 手动还原数据到 _m.state (POCO对象)
-            // 你可以把这段逻辑写进 PlayerDataConverter 的重载里，这里为了直观直接写出
             UnpackFlatToState(dto);
-
-            // 2. 提取平滑同步所需的变量
+            
             if (dto.Position != null)
             {
                 var pos = dto.Position.Value;
@@ -124,8 +116,7 @@ namespace Player.ManagerLogic
                     _lastServerPos = newPos;
                     _isFirstPacket = false;
                 }
-
-                // 3. 计算预测速度
+                
                 float timeSinceLastPacket = Time.time - _lastPacketTime;
                 timeSinceLastPacket = Mathf.Max(timeSinceLastPacket, 0.01f);
 
@@ -135,8 +126,7 @@ namespace Player.ManagerLogic
                 _lastPacketTime = Time.time;
             }
         }
-
-        // 辅助方法：将二进制对象解包到本地 State 对象
+        
         private void UnpackFlatToState(PlayerDataFlat dto)
         {
             // 数值同步
@@ -161,7 +151,9 @@ namespace Player.ManagerLogic
             
         }
 
-        public void OnFixedUpdate() { }
+        public void OnClient50HzTick() { }
+        public void OnClient20HzTick() { }
+
         public void OnLateUpdate() { }
     }
 }

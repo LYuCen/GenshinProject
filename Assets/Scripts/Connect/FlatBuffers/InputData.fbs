@@ -1,0 +1,16 @@
+﻿namespace Connect.InputData;
+
+table InputDataFlat{
+    tick:uint;
+    input_x:ubyte;
+    input_y:ubyte;
+    yaw:short;
+    pitch:short;
+    hold_button:ushort;
+    press_button:ushort;
+}
+
+table InputPacket{
+    sequence:uint;
+    command:[InputDataFlat];
+}

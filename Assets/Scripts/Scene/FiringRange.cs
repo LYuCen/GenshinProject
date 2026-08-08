@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GameFSM.FSM.PlayerTargetFSM;
 using mEvent.FiringRange;
+using mSystem.InputSystem;
 using QFramework;
 using ShootingTarget;
 using UnityEngine;
@@ -28,8 +29,8 @@ namespace Scene
 
         private void Start()
         {
-            this.GetArchitecture();
             PlayerTargetObjPool.Instance.Init();
+            this.GetSystem<IInputSystem>().GamePlayEnable = true;
 
             for (int i = 0; i < targetCount; i++)
                 InitPlayerTarget();

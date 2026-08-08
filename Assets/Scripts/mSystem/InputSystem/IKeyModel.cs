@@ -35,6 +35,7 @@ namespace mSystem.InputSystem
             _keys.Add(new MoveKeyRight(   model.GetKey("MoveRight", model.BaseConfig)));
             _keys.Add(new RunKey(         model.GetKey("Sprint", model.BaseConfig)));
             _keys.Add(new CrouchKey(      model.GetKey("Crouch", model.BaseConfig)));
+            _keys.Add(new JumpKey(        model.GetKey("Jump", model.BaseConfig)));
 
             _keys.Add(new MouseKeyLeft(   model.GetKey("Shoot", model.CombatConfig)));
             _keys.Add(new InShootKey(     model.GetKey("OpenShot", model.CombatConfig)));

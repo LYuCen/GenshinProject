@@ -49,12 +49,13 @@ namespace mWeapon.Presenter
 
         public void OnExit()
         {
+            if (!this) return;
             gameObject.SetActive(false);
-            
+
             _audioPresenter?.OnExit();
 
             _firePresenter?.OnExit();
-            
+
             _muzzlePresenter?.OnExit();
         }
 

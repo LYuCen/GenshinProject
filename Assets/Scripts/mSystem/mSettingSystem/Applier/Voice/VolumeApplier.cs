@@ -9,7 +9,10 @@ namespace mSystem.mSettingSystem.Applier.Voice
         public string Id => "base_volume";
         public void Apply(int value, SettingSaveData data)
         {
-            AudioSystem.Instance.SetVolumeValue(value);
+            var volume = value / 100f;
+            AudioKit.Settings.MusicVolume.Value = volume;
+            AudioKit.Settings.SoundVolume.Value = volume;
+            AudioKit.Settings.VoiceVolume.Value = volume;
         }
 
         public IArchitecture GetArchitecture()

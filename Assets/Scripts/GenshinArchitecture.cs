@@ -10,7 +10,7 @@ public class GenshinArchitecture : Architecture<GenshinArchitecture>
 {
     protected override void Init()
     {
-        ResourceManager.EnsureInitialized();
+        
 
         // model
         this.RegisterModel<BagModel>(new BagModel());

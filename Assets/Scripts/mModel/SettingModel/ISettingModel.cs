@@ -42,9 +42,13 @@ namespace mModel.SettingModel
             _baseConfig = new UserInputSettings();
             _combatConfig = new UserInputSettings();
             _saveData = new SettingSaveData();
-            
+
+            bool needSave = false;
             if (!LoadBaseFromFile()) ResetBaseInput();
+            else needSave |= MergeNewKeyBindings(_baseConfig, "Assets/AssetBundle/ScriptableObject/Setting/BaseInputSetting.asset");
             if (!LoadCombatFromFile()) ResetCombatInput();
+            else needSave |= MergeNewKeyBindings(_combatConfig, "Assets/AssetBundle/ScriptableObject/Setting/CombatInputSetting.asset");
+            if (needSave) Save();
             var loaded = LoadSettingSaveFormFile();
             if (loaded != null) _saveData = loaded;
             else ResetSettingSave();
@@ -153,7 +157,38 @@ namespace mModel.SettingModel
                 SaveSettingSave();
             }
         }
-        
+
+        private bool MergeNewKeyBindings(UserInputSettings target, string assetPath)
+        {
+            var ir = ResourceManager.instance.Load(assetPath, false);
+            if (ir == null) return false;
+            var config = ir.GetAsset<InputSettingConfig>();
+            if (!config || config.defaultKeyBindings == null) return false;
+
+            var existingNames = new HashSet<string>();
+            foreach (var entry in target.keyBindings)
+                existingNames.Add(entry.actionName);
+
+            bool hasNewBinding = false;
+            foreach (var k in config.defaultKeyBindings)
+            {
+                if (!existingNames.Contains(k.actionName))
+                {
+                    target.keyBindings.Add(new KeyBindingEntry
+                    {
+                        actionName = k.actionName,
+                        key = k.defaultKey
+                    });
+                    hasNewBinding = true;
+                }
+            }
+
+            if (hasNewBinding)
+                Debug.Log($"检测到新增按键绑定，已使用默认值更新本地配置: {assetPath}");
+
+            return hasNewBinding;
+        }
+
         public KeyCode GetKey(string actionName, UserInputSettings config)
         {
             if (config == null) return KeyCode.None;

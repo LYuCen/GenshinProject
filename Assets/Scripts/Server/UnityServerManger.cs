@@ -4,11 +4,13 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Connect;
 using Connect.Converter;
 using Connect.Protocol;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BuffSystem.ElementBuff.StatusEffect;
+using Debug = UnityEngine.Debug;
 
 namespace Server
 {
@@ -16,6 +18,11 @@ namespace Server
     {
         public static UnityServerManager Instance; // 单例方便全局访问
         public GameObject serverPlayerPrefab;
+
+        [SerializeField] private float fps;
+        private float _fpsAccum;
+        private int _fpsFrames;
+        private float _fpsRefreshRate = 0.5f;
 
         private Socket _listener;
         private Dictionary<int, ServerPlayerObject> _players = new Dictionary<int, ServerPlayerObject>();
@@ -36,6 +43,14 @@ namespace Server
             public float AttachTime; // 攻击时刻
         }
         private Dictionary<int, ElementSyncState[]> _prevElementState = new();
+        
+        private Stopwatch _serverClock = new Stopwatch();
+        private long _lastTickTime;
+        private long _fixLastTickTime;
+        private const double TickRate = 0.05; //20Hz
+        private const double TickFix = 0.02f; // 50Hz
+        private const int MaxTaskPerFrame = 5; // 最多一次性处理的网络连接请求数
+        private float ServerTime => _serverClock.ElapsedMilliseconds / 1000f;
 
         void Awake() => Instance = this;
 
@@ -45,23 +60,85 @@ namespace Server
             _listener.Bind(new IPEndPoint(IPAddress.Any, 8888));
             _listener.Listen(10);
             Debug.Log("<color=green>Unity Dedicated Server Started on port 8888...</color>");
+            
+            _serverClock.Start();
+            _lastTickTime = _serverClock.ElapsedTicks;
+            _fixLastTickTime = _serverClock.ElapsedTicks;
 
             // 异步接收玩家连接
             _listener.BeginAccept(OnAccept, null);
 
-            // 服务器广播 20 tick服务器
-            InvokeRepeating(nameof(BroadcastWorldState), 0.05f, 0.05f);
-            InvokeRepeating(nameof(TickElementBuffs), 0.02f, 0.02f);
         }
 
         void Update()
         {
-            // 每帧在主线程处理来自 Socket 线程的任务
-            while (_mainThreadTasks.TryDequeue(out var task))
+            ProcessMainThreadTasks();
+            
+            long now = _serverClock.ElapsedTicks;
+            double elapsed = (double)(now - _lastTickTime) / Stopwatch.Frequency;
+            while(elapsed >= TickRate)
             {
-                task.Invoke();
+                _lastTickTime += (long)(TickRate * Stopwatch.Frequency);
+                ServerTick();
+                elapsed = (double)(_serverClock.ElapsedTicks - _lastTickTime) / Stopwatch.Frequency;
             }
+
+            double fixElapsed = (double)(now - _fixLastTickTime) / Stopwatch.Frequency;
+            while (fixElapsed >= TickFix)
+            {
+                _fixLastTickTime += (long)(TickFix * Stopwatch.Frequency);
+                ServerFixTick();
+                fixElapsed = (double)(_serverClock.ElapsedTicks - _fixLastTickTime) / Stopwatch.Frequency;
+            }
+
+            UpdateFps();
+        }
+
+        private void ServerTick()
+        {
             CheckHeartbeatTimeout();
+            BroadcastWorldState();
+            TickElementBuffs();
+        }
+
+        private void ServerFixTick()
+        {
+            foreach (var kv in _players)
+            {
+                kv.Value.ServerTick(0.02f);
+            }
+        }
+
+        private void ProcessMainThreadTasks()
+        {
+            int count = 0;
+
+            while(count < MaxTaskPerFrame && _mainThreadTasks.TryDequeue(out var task))
+            {
+                try
+                {
+                    task.Invoke();
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError(e);
+                }
+
+                count++;
+            }
+        }
+
+        private void UpdateFps()
+        {
+            _fpsAccum += Time.unscaledDeltaTime;
+            _fpsFrames++;
+
+            if (_fpsAccum >= _fpsRefreshRate)
+            {
+                fps = _fpsFrames / _fpsAccum;
+                _fpsAccum = 0f;
+                _fpsFrames = 0;
+            }
         }
 
         /// <summary>
@@ -80,7 +157,7 @@ namespace Server
                 _mainThreadTasks.Enqueue(() =>
                 {
                     int id = _nextId++;
-                    _lastHeartbeatTime[id] = Time.time;
+                    _lastHeartbeatTime[id] = ServerTime;
                     
                     GameObject go = Instantiate(serverPlayerPrefab);
                     ServerPlayerObject spo = go.GetComponent<ServerPlayerObject>();
@@ -156,11 +233,11 @@ namespace Server
 
                     if (!prevState[i].Enable && nowEnabled)
                     {
-                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(Time.time), e.Capacity));
+                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(ServerTime), e.Capacity));
                     }
                     else if (prevState[i].Enable && nowEnabled && !Mathf.Approximately(prevState[i].AttachTime, nowAttachTime))
                     {
-                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(Time.time), e.Capacity));
+                        Broadcast(ElementBuffConverter.PackAttach(kv.Key, i, e.Level, (int)e.GetVal(ServerTime), e.Capacity));
                     }
                     else if (prevState[i].Enable && !nowEnabled)
                     {
@@ -284,7 +361,7 @@ namespace Server
 
         private void CheckHeartbeatTimeout()
         {
-            float now = Time.time;
+            float now = ServerTime;
             List<int> timeoutPlayers = new List<int>();
 
             foreach (var kv in _lastHeartbeatTime)
@@ -327,7 +404,7 @@ namespace Server
 
         public void UpdateHeartbeat(int playerId)
         {
-            _lastHeartbeatTime[playerId] = Time.time;
+            _lastHeartbeatTime[playerId] = ServerTime;
         }
         
         private static int EffectTypeToInt(Type type)

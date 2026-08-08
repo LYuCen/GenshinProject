@@ -67,6 +67,8 @@ namespace mSystem.SceneSystem
                 while (!operation.isDone)
                 {
                     await Task.Yield();
+                    DynamicGI.UpdateEnvironment();
+                    LightProbes.Tetrahedralize();
                 }
                 this.SendEvent<LoadSceneEndEvent>();
             }

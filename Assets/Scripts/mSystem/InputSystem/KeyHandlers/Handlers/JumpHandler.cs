@@ -2,6 +2,7 @@
 using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
 using QFramework;
+using UnityEngine;
 
 namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
@@ -17,7 +18,13 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
 
             foreach (var key in states)
             {
-                
+                if (key.GetKeyName() == "Jump")
+                {
+                    
+                    Context.Jump.Down = key.GetIsDown();
+                    Context.Jump.Press = key.GetIsPress();
+                    Context.Jump.Up = key.GetIsUp();
+                }
             }
         }
 

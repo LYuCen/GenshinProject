@@ -9,7 +9,7 @@ namespace mSystem.mSettingSystem.Applier.Image.Base
         public string Id => "high_AA";
         public void Apply(int value, SettingSaveData data)
         {
-            if (Camera.main == null) return;
+            if (!Camera.main) return;
             var camData = Camera.main.GetComponent<UniversalAdditionalCameraData>();
 
             switch (value)

@@ -41,7 +41,6 @@ namespace Connect.Sync
             byte[] data = PlayerDataConverter.PackAnimationState(m.EntityId, m.MoveModule.GetQuery().State,
                 m.CombatModule.GetQuery().State, (byte)_bagModel.Weapon.InternalRuntime.Stance,
                 m.cameraController.rayEnd, Time.time, m.state.clientTime);
-            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_AnimationState, data));
             return true;
         }
     }

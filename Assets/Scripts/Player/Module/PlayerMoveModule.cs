@@ -4,6 +4,7 @@ using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
 using mInterface;
+using mSystem.InputSystem.Context;
 using Player.Context;
 using UnityEngine;
 
@@ -20,15 +21,18 @@ namespace Player.Module
         private float _moveSpeed;
         private Vector2 _move;
         private PlayerMoveQuery _query;
-        private bool _sprintRequested;
         
-        private float _gravity = -15.0f; // 重力加速度（通常比现实大一点，手感更好）
-        private float _terminalVelocity = -30f; // 终端速度（防止无限加速掉落导致穿模）
-        private float _verticalVelocity; // 当前垂直速度
-        private PointVisualRequest _request = new PointVisualRequest();
+        private float _gravity = -8f; // 重力加速度
+        private float _terminalVelocity = -10f; // 终端速度
         private Vector3 _bottom;
 
+        private PointVisualRequest _point = new ();
+
+        public Vector2 GetMoveInput => _move;
+
         private bool _enable;
+
+        private FsmContext _fsmContext;
         public PlayerMoveModule(MoveContext context)
         {
             _context = context;
@@ -36,52 +40,69 @@ namespace Player.Module
         
         public void Init()
         {
-            _request.Radius = 0.05f;
-            VisualizerManager.Instance.Register(_request);
+            VisualizerManager.Instance.Register(_point);
             _enable = true;
+        }
+
+        public void InitFsmContext(FsmContext context)
+        {
+            _fsmContext = context;
         }
 
         public void OnUpdate()
         {
-            if (!_enable) return;
             
+        }
+
+        public void OnFixedUpdate()
+        {
+            if (!_enable) return;
+            _moveSpeed = _fsmContext.Locomotion.LevelSpeed;
+            _isSprint = _fsmContext.Locomotion.IsSprint;
+            _isJump = _fsmContext.Locomotion.IsJump;
+            _isCrouch = _fsmContext.Locomotion.IsCrouch;
+            _move = _fsmContext.Locomotion.InputMoveVec;
             float targetYaw = _context.CameraController.Yaw;
+            _fsmContext.Locomotion.Yaw = targetYaw;
             
             // Quaternion.Euler 为旋转矩阵  Quaternion.Euler(0, targetYaw, 0) 是向量为 y轴旋转 targetYaw度
             Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;
             Vector3 right   = Quaternion.Euler(0, targetYaw, 0) * Vector3.right;
 
-            Vector3 move =
-                forward * _move.y +
-                right   * _move.x;
+            Vector3 move = forward * _move.y + right   * _move.x;
+
+            Vector3 horizontalMove;
+            if (_isGround)
+            {
+                horizontalMove = move.normalized * (_moveSpeed * 0.02f);
+            }
+            else
+            {
+                horizontalMove = _fsmContext.Locomotion.MoveVec.normalized * (_moveSpeed * 0.02f);
+            }
             
             Quaternion targetRot = Quaternion.LookRotation(forward);
             _context.PlayerTransform.rotation = Quaternion.Slerp(
                 _context.PlayerTransform.transform.rotation,
                 targetRot,
-                Time.deltaTime * 10f
+                0.02f * 10f
             );
-            
             _context.CharacterController.Move(
-                move.normalized * (_moveSpeed * Time.deltaTime)
+                horizontalMove +
+                Vector3.up * (_fsmContext.Locomotion.VerticalSpeed * 0.02f)
             );
-            CheckGrounded();
-            ApplyGravity();
-        }
-
-        public void OnFixedUpdate()
-        {
             
+            CheckGrounded();
+            OnDrawGizmos();
+            ApplyGravity();
         }
 
         public void Reset()
         {
             _move = Vector2.zero;
             _isSprint = false;
-            _sprintRequested = false;
             _isCrouch = false;
             _isJump = false;
-            _verticalVelocity = -2.0f;
             _isGround = false;
             _moveSpeed = 0f;
         }
@@ -89,11 +110,6 @@ namespace Player.Module
         public void InputMove(Vector2 vec)
         {
             _move = vec;
-        }
-
-        public void SetSpeed(float speed)
-        {
-            _moveSpeed = speed;
         }
 
         /// <summary>
@@ -121,62 +137,41 @@ namespace Player.Module
             state.isSliding = _isSliding;
             state.inputMove = _move;
         }
-
-        public void RequestSprint()
-        {
-            if(!_context.IsLocal) return;
-            _sprintRequested = true;
-            Sprint();
-        }
-
-        public void Sprint()
-        {
-            if(!_context.IsLocal) return;
-
-            PlayerMoveQuery query = GetQuery();
-            WeaponQuery weaponQuery = _context.CombatModule.GetQuery();
-
-            bool movingForward = query.HasState(PlayerMoveFlags.Forward) ||
-                                 query.HasState(PlayerMoveFlags.ForwardLeft) ||
-                                 query.HasState(PlayerMoveFlags.ForwardRight);
-            bool blocked = weaponQuery.HasState(WeaponFlags.Shoot) ||
-                           weaponQuery.HasState(WeaponFlags.Shoulder);
-
-            if (_sprintRequested && movingForward && !blocked)
-            {
-                _isSprint = true;
-            }
-            else if (!movingForward || blocked)
-            {
-                _isSprint = false;
-                _sprintRequested = false;
-            }
-        }
-
-        public void Crouch()
-        {
-            _isCrouch = !_isCrouch;
-        }
+        
+        private Vector3 _groundCheckOrigin;
+        private float _groundCheckRadius;
+        private bool _groundHit;
         
         private void CheckGrounded()
         {
-            _bottom = _context.PlayerTransform.position + Vector3.down * 0f;
-            _request.PointPos = _bottom;
+            _groundCheckOrigin = _context.PlayerTransform.position + Vector3.up * 0.2f;
             
-            Collider[] hits = Physics.OverlapSphere(_bottom, 0.05f);
-    
-            bool foundPlane = false;
-            foreach (var col in hits)
+            _groundCheckRadius = _context.CharacterController.radius * 0.9f;
+            
+            _groundHit = false;
+
+            if (Physics.SphereCast(_groundCheckOrigin, _groundCheckRadius, Vector3.down, out RaycastHit hit, 0.2f))
             {
-                if (col.gameObject == _context.PlayerTransform.gameObject) continue; 
-                if (col.CompareTag("Plane"))
+                float angle = Vector3.Angle(hit.normal, Vector3.up); // 计算夹角
+
+                if (angle <= 45f)
                 {
-                    foundPlane = true;
-                    break; // 找到了就跳出循环
+                    _groundHit = true;
+                    _isGround = true;
+                    _fsmContext.Locomotion.IsGround = true;
+                    return;
                 }
             }
-            
-            _isGround = foundPlane;
+            _isGround = false;
+            _fsmContext.Locomotion.IsGround = false;
+        }
+        
+        private void OnDrawGizmos()
+        {
+            if (_context.CharacterController == null) return;
+            _point.PointPos = _groundCheckOrigin;
+            _point.Radius = _groundCheckRadius;
+            _point.PointColor = Color.white;
         }
         
         /// <summary>
@@ -188,20 +183,20 @@ namespace Player.Module
             {
                 // 在地面时，不要让速度为 0
                 // 给一个微小的向下压力（如 -2.0），能让角色在走斜坡或下楼梯时紧贴地面
-                if (_verticalVelocity < 0) 
+                if (_fsmContext.Locomotion.VerticalSpeed < 0) 
                 {
-                    _verticalVelocity = -2.0f; 
+                    _fsmContext.Locomotion.VerticalSpeed = -2.0f; 
                 }
             }
             else
             {
                 // 不在地面时，累加重力加速
-                _verticalVelocity += _gravity * Time.deltaTime;
+                _fsmContext.Locomotion.VerticalSpeed += _gravity * 0.02f;
         
                 // 限制最大下落速度
-                if (_verticalVelocity < _terminalVelocity) 
+                if (_fsmContext.Locomotion.VerticalSpeed < _terminalVelocity) 
                 {
-                    _verticalVelocity = _terminalVelocity;
+                    _fsmContext.Locomotion.VerticalSpeed = _terminalVelocity;
                 }
             }
         }

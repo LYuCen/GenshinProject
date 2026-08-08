@@ -12,6 +12,7 @@ using Connect.FlatDTO;
 using Connect.HitRewind;
 using Connect.Protocol;
 using Connect.ShootDTO;
+using GameFSM.LevelFSM.LocomotionFSM;
 using Google.FlatBuffers;
 using mEnum;
 using mEnum.Flags;
@@ -46,6 +47,17 @@ namespace Server
         private ServerCombatProvider _combatProvider;
         private PlayerAnimController _animController;
 
+        private ServerMoveModule _moveModule;
+        [SerializeField] private CharacterController characterController;
+        private PlayerInputBuffer _inputBuffer = new();
+
+        private bool _prevJump;
+        private bool _prevCrouch;
+        private bool _prevSprint;
+
+        private Locomotion _locomotion;
+        private LocomotionFsm _locomotionFsm;
+
         public void Init(int id, Socket s)
         {
             playerId = id;
@@ -58,7 +70,10 @@ namespace Server
             State.curShield = 100f;
             _hitHistory = new HitHistoryBuffer(8);
             _currentShapes = new HitShape[11];
-            
+            _locomotion = new Locomotion();
+            _moveModule = new ServerMoveModule(_locomotion, characterController);
+            _locomotionFsm = new LocomotionFsm(_locomotion, new LocomotionFsmCondition(_locomotion, "Locomotion"));
+
             // 启动接收线程
             Thread t = new Thread(ReceiveLoop);
             t.IsBackground = true;
@@ -85,6 +100,45 @@ namespace Server
                 _animContext = new ServerAnimContext(moveProvider, _combatProvider, weaponPivot, animator);
                 _animController = new PlayerAnimController(_animContext, graphData);
             }
+        }
+
+        public void ServerTick(float deltaTime)
+        {
+            if (_inputBuffer.TryDequeue(out var sample))
+            {
+                float yaw = sample.Yaw / 10f;
+
+                Vector2 move = new Vector2(
+                    sample.InputX / 127f - 1f,
+                    sample.InputY / 127f - 1f
+                );
+
+                _locomotion.Yaw = yaw;
+                _locomotion.InputMoveVec = move;
+                _locomotion.IsInputMove = move.sqrMagnitude >= 0.05f;
+                _locomotion.IsMoveForward = move.y >= 0.05f;
+                
+                bool sprintHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;      
+                bool jumpHeld   = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP) != 0;        
+                bool crouchHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;      
+
+                _locomotion.SprintDown = sprintHeld && !_prevSprint;
+                _locomotion.JumpDown   = jumpHeld && !_prevJump;
+                _locomotion.CrouchDown = crouchHeld && !_prevCrouch;
+
+                _prevSprint = sprintHeld;
+                _prevJump   = jumpHeld;
+                _prevCrouch = crouchHeld;
+            }
+            _locomotionFsm.Update();
+            _moveModule.Update(deltaTime);
+            
+            State.isGround  = _locomotion.IsGround;       
+            State.isJump    = _locomotion.IsJump;
+            State.isSprint  = _locomotion.IsSprint;       
+            State.isCrouch  = _locomotion.IsCrouch;       
+            State.inputMove = _locomotion.InputMoveVec;  
+            _animController.Update();
         }
 
         private void ReceiveLoop()
@@ -169,13 +223,6 @@ namespace Server
                     UnityServerManager.Instance.SendToClient(ClientSocket, heartbeatAck);
                     break;
                 
-                case MessageType.C2S_Move:
-                    PlayerDataConverter.UnpackMove(data, State);
-                    transform.position = State.position;
-                    transform.rotation = State.rotation;
-                    
-                    break;
-                
                 case MessageType.C2S_Revive:
                     Vector3 revivePos = GetSpawnPosition();
                     transform.position = revivePos;
@@ -198,34 +245,9 @@ namespace Server
                     UnityServerManager.Instance.Broadcast(reviveMsg);
                     break;
                 
-                case MessageType.C2S_StateChange:
-                    int flags = BitConverter.ToInt32(data, 0);
-                    State.isGround  = (flags & PlayerStateBoolBit.BIT_GROUND)  != 0;
-                    State.isJump    = (flags & PlayerStateBoolBit.BIT_JUMP)    != 0;
-                    State.isShoot   = (flags & PlayerStateBoolBit.BIT_SHOOT)   != 0;
-                    State.isReload  = (flags & PlayerStateBoolBit.BIT_RELOAD)  != 0;
-                    State.isSprint  = (flags & PlayerStateBoolBit.BIT_SPRINT)  != 0;
-                    State.isThrow   = (flags & PlayerStateBoolBit.BIT_THROW)   != 0;
-                    State.isCrouch  = (flags & PlayerStateBoolBit.BIT_CROUCH)  != 0;
-                    State.isSliding = (flags & PlayerStateBoolBit.BIT_SLIDING) != 0;
-
-                    // 广播给其他玩家: [playerId(4) + flags(4)]
-                    byte[] flagBroadcast = new byte[8];
-                    Buffer.BlockCopy(BitConverter.GetBytes(playerId), 0, flagBroadcast, 0, 4);
-                    Buffer.BlockCopy(BitConverter.GetBytes(flags), 0, flagBroadcast, 4, 4);
-                    UnityServerManager.Instance.BroadcastExcept(new Message(MessageType.S2C_StateChange, flagBroadcast), playerId);
-                    break;
-
-                case MessageType.C2S_AnimationState:
-                    ByteBuffer animBb = new ByteBuffer(data);
-                    var animFlat = AnimDataFlat.GetRootAsAnimDataFlat(animBb);
-                    UnpackAnimState(animFlat);
-                    _animController?.Update();
-                    CacheSnapshotFromColliders();
-
-                    // 广播动画状态给其他玩家
-                    UnityServerManager.Instance.BroadcastExcept(
-                        new Message(MessageType.S2C_AnimationState, data), playerId);
+                case MessageType.C2S_PlayerInput:
+                    InputDataConverter.Unpack(data, out uint sequence, out var samples);
+                    _inputBuffer.Enqueue(sequence, samples);
                     break;
             }
         }
@@ -368,10 +390,7 @@ namespace Server
             }
         }
         
-        private void Update()
-        {
-            _animController.Update();
-        }
+        
 
         /// <summary>
         ///  复活点选择

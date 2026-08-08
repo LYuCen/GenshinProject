@@ -212,6 +212,20 @@ namespace Connect
             pm.state.maxShield = maxShield;
             pm.entityStatusUI?.SyncValues(curHp, maxHp, curShield, maxShield);
         }
+        
+        public void ClearBots()
+        {  
+            var toRemove = new List<int>();
+            foreach (var kv in _models)
+            {
+                if (kv.Key == 1000) continue; // 保留主控玩家
+                if (kv.Value && kv.Value.gameObject)
+                    Destroy(kv.Value.gameObject);
+                toRemove.Add(kv.Key);
+            }
+            foreach (var id in toRemove)
+                _models.Remove(id);
+        }
 
     }
 }

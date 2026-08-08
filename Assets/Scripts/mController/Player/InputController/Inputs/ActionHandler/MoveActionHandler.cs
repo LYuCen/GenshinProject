@@ -6,7 +6,9 @@ namespace mController.Player.InputController.Inputs.ActionHandler
     {
         public override void Handle(InputContext context)
         {
-            MyManager.MoveModule.InputMove(context.Move);
+            FsmContext.Locomotion.IsInputMove = context.Move.sqrMagnitude >= 0.05f;
+            FsmContext.Locomotion.IsMoveForward = context.Move.y >= 0.05f;
+            FsmContext.Locomotion.InputMoveVec = context.Move;
         }
     }
 }

@@ -15,19 +15,16 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.Combat
         public override void OnEnterState()
         {
             
-            MyManager.MoveModule.SetSpeed(4f);
             MyManager.gunCube.SetParent(MyManager.hand);
             MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
 
         public override void OnUpdateState()
         {
-            MyManager.MoveModule.Sprint();
         }
 
         public override void OnExitState()
         {
-            MyManager.MoveModule.Sprint();
             MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }
     }

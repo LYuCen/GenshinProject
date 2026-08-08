@@ -7,9 +7,7 @@
         C2S_PlayerShoot         = 2,    // 开火
         C2S_PlayerHit           = 3,    // 命中请求
         C2S_Revive              = 4,    // 复活
-        C2S_Move                = 5,    // 位置旋转同步
-        C2S_StateChange         = 7,    // 状态
-        C2S_AnimationState      = 8,    // 动画状态同步
+        C2S_PlayerInput         = 9,    // 玩家输入
         
         
         // S2C: 服务器通知客户端

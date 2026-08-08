@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Connect;
+using Connect.Converter;
 using Connect.Simulation;
-using Connect.Sync;
+using GameFSM.LevelFSM.LocomotionFSM;
 using GameFSM.LevelFSM.PlayerFSM;
 using mController.Player.InputController;
 using mEvent;
@@ -23,8 +24,8 @@ namespace Player.ManagerLogic
         private PlayerManager _m;
         private Vector3 _bottom;
         private float _stableTimer; // 输入状态切换当前时间
-        
-        
+
+        private FsmContext _fsmContext;
         private PlayerInputController _inputController;
         private IUnRegister _mSetHandEvent;
         private BagModel _bagModel;
@@ -34,12 +35,17 @@ namespace Player.ManagerLogic
 
         private float _moveTimer;
         private float _boneTimer;
-
-        private int _lastFlags = -1;
+        
         private AnnulusView _annulusView; // 轮盘选择
         private float _timer;
 
-        private PlayerSyncManager _syncManager;
+        private uint _tick;
+        private uint _sequence;
+        private List<InputDataConverter.InputSample> _pendingSamples = new();
+        public ushort buttons;
+        
+        // 运动状态机
+        private LocomotionFsm _locomotionFsm;
         
         public void Init(PlayerManager manager)
         {
@@ -58,7 +64,12 @@ namespace Player.ManagerLogic
             manager.BagModule = new PlayerBagModule(manager.PlayerContext);
             manager.IkModule = new PlayerIkModule(manager.IKContext);
             
-            _inputController = new PlayerInputController(_m);
+            _fsmContext = new FsmContext
+            {
+                Locomotion = new Locomotion()
+            };
+            _inputController = new PlayerInputController(_m, _fsmContext);
+            _locomotionFsm = new LocomotionFsm(_fsmContext.Locomotion, new LocomotionFsmCondition(_fsmContext.Locomotion, "Locomotion"));
             if (NetworkService.Bridge is LocalServerSimulator lss)
             {
                 lss.InitPlayerManager(manager);
@@ -70,6 +81,7 @@ namespace Player.ManagerLogic
             manager.MoveModule.Init();
             manager.IkModule.Init();
             manager.ViewModule.Init();
+            manager.MoveModule.InitFsmContext(_fsmContext);
             
             _annulusView = Object.FindObjectOfType<AnnulusView>(true); // 场景里找        
             if (_annulusView)
@@ -85,70 +97,103 @@ namespace Player.ManagerLogic
                 _annulusView.HideWheel();
             }
 
-            _syncManager = new PlayerSyncManager();
-            _syncManager.Register(new MoveSyncChannel(_m.EntityId));
-            _syncManager.Register(new AnimSyncChannel(_m.EntityId, _bagModel));
+            //_syncManager = new PlayerSyncManager();
+            //_syncManager.Register(new MoveSyncChannel(_m.EntityId));
+            //_syncManager.Register(new AnimSyncChannel(_m.EntityId, _bagModel));
         }
+
+        
 
         public void OnUpdate()
         {
-            if (_inputSystem.GamePlayEnable)
-                _inputController.Process(_context);
-            else
-                _m.MoveModule.InputMove(Vector2.zero);
-
+            if (_inputSystem.GamePlayEnable) _inputController.Process(_context);
+            else _m.MoveModule.InputMove(Vector2.zero);
+            
             _m.state.aimPosition = _m.cameraController.rayEnd;
 
             _m.AnimController.Update();
+            _m.IkModule?.OnUpdate();
+            _m.ViewModule?.OnUpdate();
+        }
+
+        private void SampleInput()
+        {
+            _tick++;
+            Vector2 move = _m.MoveModule.GetMoveInput;
+
+            InputDataConverter.InputSample sample = new InputDataConverter.InputSample
+            {
+                Tick = _tick,
+                InputX = (byte)Mathf.RoundToInt((move.x + 1f) * 127f),
+                InputY = (byte)Mathf.RoundToInt((move.y + 1f) * 127f),
+                Yaw = (short)(_m.cameraController.Yaw * 10),
+                Pitch = (short)(_m.cameraController.Pitch * 10),
+                HoldButton = buttons
+            };
+            
+            _pendingSamples.Add(sample);
+
+            buttons = 0;
+        }
+
+        private void SendInputPacket()
+        {
+            if (_pendingSamples.Count == 0) return;
+            _sequence++;
+
+            byte[] data = InputDataConverter.Pack(
+                _sequence,
+                _pendingSamples.ToArray()
+            );
+            
+            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerInput, data));
+            
+            _pendingSamples.Clear();
+        }
+        
+        private bool _prevSprint;
+        private bool _prevJump;
+        private bool _prevCrouch;
+
+        public void OnClient50HzTick()
+        {
+            bool sprintHeld = _context.Sprint.Press;      
+            bool jumpHeld   = _context.Jump.Press;        
+            bool crouchHeld = _context.Crouch.Press;      
+
+            _fsmContext.Locomotion.SprintDown = sprintHeld && !_prevSprint;
+            _fsmContext.Locomotion.JumpDown   = jumpHeld && !_prevJump;
+            _fsmContext.Locomotion.CrouchDown = crouchHeld && !_prevCrouch;
+
+            _prevSprint = sprintHeld;
+            _prevJump   = jumpHeld;
+            _prevCrouch = crouchHeld;
+            
+            _locomotionFsm.Update(); // 移动状态机更新
+            _m.MoveModule.OnFixedUpdate();
+            
+            _m.state.position = _m.transform.position;  
+            _m.state.rotation = _m.transform.rotation;  
+            _m.MoveModule.WriteToState(_m.state);       
+            _m.CombatModule.WriteToState(_m.state);
             
             int currentId = NetworkService.Bridge.GetMyId();
-            if (currentId != -1)
+            if (!NetworkService.Instance.isSinglePlayer)
             {
                 _m.state.playerId = currentId;
-                _m.state.position = _m.transform.position;  
-                _m.state.rotation = _m.transform.rotation;  
-                _m.MoveModule.WriteToState(_m.state);       
-                _m.CombatModule.WriteToState(_m.state);   
-                CheckState();
+                SampleInput(); // 50hz 采样
+                //CheckState();
             }
             
             Reload();
             
-            _m.ViewModule?.OnUpdate();
-            _m.CombatModule?.OnUpdate();
-            _m.MoveModule?.OnUpdate();
-            _m.IkModule?.OnUpdate();
+            _m.CombatModule.OnFixedUpdate();
             
-            _syncManager.OnFixedUpdate(_m);
         }
 
-        public void OnFixedUpdate()
+        public void OnClient20HzTick()
         {
-            int currentId = NetworkService.Bridge.GetMyId();
-            if (currentId == -1) return;
-
-            // 20 tick: 位置+旋转+输入
-            /*
-            _moveTimer += Time.fixedDeltaTime;
-            if (_moveTimer >= 0.05f)
-            {
-                _moveTimer -= 0.05f;
-                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_Move, PlayerDataConverter.PackMove(_m.state)));
-            }
-
-            // 20 tick: 骨骼
-            _boneTimer += Time.fixedDeltaTime;
-            if (_boneTimer >= 0.05f)
-            {
-                _boneTimer -= 0.05f;
-                _m.state.clientTime = Time.time;
-                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_AnimationState,
-                    PlayerDataConverter.PackAnimationState(_m.EntityId, _m.MoveModule.GetQuery().State,
-                        _m.CombatModule.GetQuery().State, (sbyte)_bagModel.Weapon.InternalRuntime.Stance,
-                        _m.cameraController.rayEnd, Time.time, _m.state.clientTime)));
-            }
-            */
-
+            SendInputPacket();
         }
 
         private void Reload()
@@ -191,44 +236,6 @@ namespace Player.ManagerLogic
         {
             _m.IkModule.SetHandIk(e.Trans);
             _m.IkModule.SetMuzzle(e.Muzzle);
-        }
-
-        private void CheckState()
-        {
-            int currentFlags = 0;
-            if (_m.state.isGround)  currentFlags |= PlayerStateBoolBit.BIT_GROUND;
-            if (_m.state.isJump)    currentFlags |= PlayerStateBoolBit.BIT_JUMP;
-            if (_m.state.isShoot)   currentFlags |= PlayerStateBoolBit.BIT_SHOOT;
-            if (_m.state.isReload)  currentFlags |= PlayerStateBoolBit.BIT_RELOAD;
-            if (_m.state.isSprint)  currentFlags |= PlayerStateBoolBit.BIT_SPRINT;
-            if (_m.state.isThrow)   currentFlags |= PlayerStateBoolBit.BIT_THROW;
-            if (_m.state.isCrouch)  currentFlags |= PlayerStateBoolBit.BIT_CROUCH;
-            if (_m.state.isSliding) currentFlags |= PlayerStateBoolBit.BIT_SLIDING;
-
-            // 状态变化时发送
-            if (currentFlags != _lastFlags)
-            {
-                _lastFlags = currentFlags;
-                byte[] flagData = BitConverter.GetBytes(currentFlags);
-                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));
-            }
-        }
-
-        public void InitState()
-        {
-            int currentFlags = 0;
-            if (_m.state.isGround)  currentFlags |= PlayerStateBoolBit.BIT_GROUND;
-            if (_m.state.isJump)    currentFlags |= PlayerStateBoolBit.BIT_JUMP;
-            if (_m.state.isShoot)   currentFlags |= PlayerStateBoolBit.BIT_SHOOT;
-            if (_m.state.isReload)  currentFlags |= PlayerStateBoolBit.BIT_RELOAD;
-            if (_m.state.isSprint)  currentFlags |= PlayerStateBoolBit.BIT_SPRINT;
-            if (_m.state.isThrow)   currentFlags |= PlayerStateBoolBit.BIT_THROW;
-            if (_m.state.isCrouch)  currentFlags |= PlayerStateBoolBit.BIT_CROUCH;
-            if (_m.state.isSliding) currentFlags |= PlayerStateBoolBit.BIT_SLIDING;
-            
-            _lastFlags = currentFlags;
-            byte[] flagData = BitConverter.GetBytes(currentFlags);
-            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_StateChange, flagData));
         }
 
         public void UnRegister()

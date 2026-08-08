@@ -20,6 +20,8 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 if (key.GetKeyName() == "Crouch")
                 {
                     Context.Crouch.Down = key.GetIsDown();
+                    Context.Crouch.Press = key.GetIsPress();
+                    Context.Crouch.Up = key.GetIsUp();
                 }
             }
         }

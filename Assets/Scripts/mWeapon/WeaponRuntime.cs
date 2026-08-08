@@ -16,6 +16,7 @@ namespace mWeapon
         public WeaponStance Stance { get; private set; }
         public event Action OnAmmoChanged;
         public event Action OnStateChanged;
+        public event Action OnReset;
 
         public bool HasState(WeaponStateTags tag)
         {
@@ -46,6 +47,7 @@ namespace mWeapon
         {
             _states.Clear(); // 清除字典状态
             Stance = WeaponStance.Normal; // 清除据枪状态
+            OnReset?.Invoke();
         }
 
         public IArchitecture GetArchitecture()

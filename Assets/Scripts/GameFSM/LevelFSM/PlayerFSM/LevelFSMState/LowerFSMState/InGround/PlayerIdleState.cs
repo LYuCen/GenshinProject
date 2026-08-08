@@ -1,7 +1,5 @@
 ﻿using GameFSM.FSM;
 using GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround.CombatLayer;
-using mEnum.Flags;
-using mEnum.Query;
 
 namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
 {
@@ -18,8 +16,6 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InGround
         public override void OnEnterState()
         {
             MyManager.gunCube.SetParent(MyManager.hand);
-            MyManager.MoveModule.SetSpeed(0f);
-            MyManager.MoveModule.Sprint();
             MyManager.IkModule.SetHandIk(MyManager.GetHandIkTarget());
             MyManager.IkModule.SetAimIk(MyManager.GetAimIkTarget());
         }

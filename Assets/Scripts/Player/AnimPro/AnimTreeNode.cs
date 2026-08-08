@@ -2,6 +2,7 @@
 using AssetBundleFramework.Core.Resource;
 using mModel.ScriptableConfig;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Playables;
 
 namespace Player.AnimPro
@@ -53,14 +54,19 @@ namespace Player.AnimPro
         /// <param name="parentActive">父节点是否激活</param>
         /// <returns>该节点条件是否满足</returns>
         public abstract bool CheckState(bool parentActive);
-        
+
         /// <summary>
         /// 创建节点
         /// </summary>
         /// <param name="graph">PlayableGraph</param>
         /// <param name="mixIndex">当前节点所处下标</param>
         /// <returns>Playable Api节点</returns>
-        public abstract Playable BuildNode(PlayableGraph graph, int mixIndex = -1);
+        public virtual Playable BuildNode(PlayableGraph graph, int mixIndex = -1)
+        {
+            var playable = AnimationClipPlayable.Create(graph, DefaultClip);
+            playable.SetSpeed(this.AnimSpeed);
+            return playable;
+        }
         
         /// <summary>
         /// 进入该节点时调用

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Connect;
 using Connect.Data;
 using Connect.Protocol;
@@ -17,6 +18,7 @@ using QFramework;
 using RootMotion.FinalIK;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace GameFSM.LevelFSM.PlayerFSM
 {
@@ -55,11 +57,20 @@ namespace GameFSM.LevelFSM.PlayerFSM
         public PlayerIkModule IkModule;
         private bool _isLocal;
         public bool IsLocal => _isLocal;
+
+        private Stopwatch _clientClock = new Stopwatch();
+        private long _lastTickTime;
+        private long _fixLastTickTime;
+        private const double TickRate = 0.05; //20Hz
+        private const double TickFix = 0.02; // 50Hz
         
         public void Init(bool isLocal)
         {
             _isLocal = isLocal;
             animator.applyRootMotion = false;
+            _clientClock.Start();
+            _lastTickTime = _clientClock.ElapsedTicks;
+            _fixLastTickTime = _clientClock.ElapsedTicks;
             AnimController = new PlayerAnimController(this, graphData);
             PlayerContext = new PlayerContext
             {
@@ -112,16 +123,39 @@ namespace GameFSM.LevelFSM.PlayerFSM
             entityStatusUI.InitStatus(state);
         }
 
-        private void FixedUpdate()
-        { 
-            _logic?.OnFixedUpdate();
-            HpModule?.OnFixedUpdate();
+        private void Start()
+        {
+            NetworkService.Instance.playerManager = this;
         }
 
         private void Update()
         { 
+            
             _logic?.OnUpdate();
-            HpModule?.OnUpdate();
+            
+            long now = _clientClock.ElapsedTicks;
+            
+            double fixElapsed = (double)(now - _fixLastTickTime) / Stopwatch.Frequency;
+            while (fixElapsed >= TickFix)
+            {
+                _fixLastTickTime += (long)(TickFix * Stopwatch.Frequency);
+                ClientTick();
+                fixElapsed = (double)(_clientClock.ElapsedTicks - _fixLastTickTime) / Stopwatch.Frequency;
+            }
+            
+            double elapsed = (double)(now - _lastTickTime) / Stopwatch.Frequency;
+            while(elapsed >= TickRate)
+            {
+                _lastTickTime += (long)(TickRate * Stopwatch.Frequency);
+                _logic?.OnClient20HzTick();
+                elapsed = (double)(_clientClock.ElapsedTicks - _lastTickTime) / Stopwatch.Frequency;
+            }
+            AnimController.Update();
+        }
+
+        private void ClientTick()
+        {
+            _logic?.OnClient50HzTick();
         }
 
         private void LateUpdate()

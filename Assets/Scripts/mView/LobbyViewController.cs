@@ -55,7 +55,7 @@ namespace mView
         
         private void StartGame()
         {
-            this.GetSystem<ISceneSystem>().LoadSceneAsync("FiringRange");
+            this.GetSystem<ISceneSystem>().LoadSceneAsync("Level");
             GameEnter.Instance.isGame = true;
         }
 

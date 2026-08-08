@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
 using mCommand;
 using mEvent;
+using mModel.SettingModel;
+using mSystem.mSettingSystem;
 using mSystem.mSettingSystem.EditData;
 using mSystem.mSettingSystem.ItemData;
 using mView.Setting.Pool;
@@ -27,8 +29,7 @@ namespace mView.Setting
         public void Init(GeneralSettingEditData editData)
         {
             _editData = editData;
-            if (gameObject.activeInHierarchy)
-                LoadItems();
+            if (gameObject.activeInHierarchy) LoadItems();
         }
 
         private void LoadItems()
@@ -96,7 +97,9 @@ namespace mView.Setting
         
         private void OnItemChanged(string itemId, int value)
         {
-            _editData.SetValue(itemId, value); 
+            _editData.SetValue(itemId, value);
+            
+            this.GetSystem<ISettingSystem>().ApplySingle(itemId, value, _editData.ToSaveData());
 
             this.SendCommand<SettingModifyCommand>();      
         }

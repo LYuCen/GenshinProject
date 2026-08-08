@@ -8,7 +8,8 @@ namespace Player.ManagerLogic
     {
         void Init(PlayerManager manager);
         void OnUpdate();
-        void OnFixedUpdate();
+        void OnClient50HzTick();
+        void OnClient20HzTick();
         void OnLateUpdate();
     }
 }

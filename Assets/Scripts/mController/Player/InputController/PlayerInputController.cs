@@ -10,23 +10,24 @@ namespace mController.Player.InputController
     {
         private List<InputActionHandler> _handlers = new();
 
-        public PlayerInputController(PlayerManager manager)
+        public PlayerInputController(PlayerManager manager, FsmContext fsmContext)
         {
-            Register(new Ability1ActionHandler(), manager);
-            Register(new CrouchActionHandler(), manager);
-            Register(new GetPrimaryWeaponActionHandler(), manager);
-            Register(new GetSecondaryWeaponActionHandler(), manager);
-            Register(new MouseScrollActionHandler(), manager);
-            Register(new MoveActionHandler(), manager);
-            Register(new PrimaryActionHandler(), manager);
-            Register(new ReloadActionHandler(), manager);
-            Register(new SecondaryActionHandler(), manager);
-            Register(new SprintActionHandler(), manager);
+            Register(new Ability1ActionHandler(), manager, fsmContext);
+            Register(new CrouchActionHandler(), manager, fsmContext);
+            Register(new GetPrimaryWeaponActionHandler(), manager, fsmContext);
+            Register(new GetSecondaryWeaponActionHandler(), manager, fsmContext);
+            Register(new MouseScrollActionHandler(), manager, fsmContext);
+            Register(new MoveActionHandler(), manager, fsmContext);
+            Register(new PrimaryActionHandler(), manager, fsmContext);
+            Register(new ReloadActionHandler(), manager, fsmContext);
+            Register(new SecondaryActionHandler(), manager, fsmContext);
+            Register(new SprintActionHandler(), manager, fsmContext);
+            Register(new JumpActionHandler(), manager, fsmContext);
         }
 
-        private void Register(InputActionHandler handler, PlayerManager manager)
+        private void Register(InputActionHandler handler, PlayerManager manager, FsmContext fsmContext)
         {
-            handler.Init(manager);
+            handler.Init(manager, fsmContext);
             _handlers.Add(handler);
         }
 

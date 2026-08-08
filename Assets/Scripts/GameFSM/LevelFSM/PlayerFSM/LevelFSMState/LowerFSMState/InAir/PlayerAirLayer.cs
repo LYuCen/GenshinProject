@@ -17,6 +17,8 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.InAir
 
         protected override void BuildState()
         {
+            States.Add("Jump", new PlayerJumpState(MyManager, new PlayerJumpStateCondition(MyManager, "Jump")));
+            States.Add("Fall", new PlayerFallState(MyManager, new PlayerFallStateCondition(MyManager, "Fall")));
             IsBuilt = true;
         }
     }

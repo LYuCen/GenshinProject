@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scripts/Scenes/FiringRange.unity
     guid: ff08008d0f1be3e49b6871b85e6a52e9
+  - enabled: 0
+    path: Assets/Scripts/Scenes/ServerScene.unity
+    guid: 3480d0fa5baf9d64f883f0ada6454a37
   m_configObjects: {}

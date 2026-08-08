@@ -36,6 +36,7 @@ namespace mView
         private GeneralSettingEditData _generalSettingEdit;
         
         public bool Enable => setting.activeSelf || pause.gameObject.activeSelf;
+        public GeneralSettingEditData SettingEditData => _generalSettingEdit;
         private void Start()
         {
             applyBtn.OnClick += ApplySetting;
@@ -134,6 +135,7 @@ namespace mView
         private void AbandonSetting()
         {
             _settingEdit.CancelModify();
+            this.GetSystem<ISettingSystem>().Apply();
             applyBtn.enabled = false;
             group.alpha = 0.5f;
         }

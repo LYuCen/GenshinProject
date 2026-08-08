@@ -9,6 +9,7 @@ namespace mSystem.mSettingSystem
     public interface ISettingSystem : ISystem
     {
         public void RegisterApplier(ISettingApplier applier);
+        public void ApplySingle(string id, int value, SettingSaveData data = null);
         public void Apply();
     }
 
@@ -29,6 +30,11 @@ namespace mSystem.mSettingSystem
         public void RegisterApplier(ISettingApplier applier)
         {
             _appliers[applier.Id] = applier;
+        }
+
+        public void ApplySingle(string id, int value, SettingSaveData data = null)
+        {
+            _appliers[id].Apply(value, data ?? this.GetModel<ISettingModel>().SettingSaveData);
         }
 
         public void Apply()

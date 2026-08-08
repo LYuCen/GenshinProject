@@ -50,12 +50,14 @@ namespace GameFSM.LevelFSM
         private AbstractLevelState<T> _mDefaultState;
         public bool IsBuilt { get; protected set; } // 是否创建完成
 
-        
-        
         /// <summary>
         /// 初始化
         /// </summary>
-        private void Init(){BuildState();}
+        private void Init()
+        {
+            BuildState();
+            Enter();
+        }
 
         /// <summary>
         /// 创建状态节点
@@ -65,24 +67,20 @@ namespace GameFSM.LevelFSM
         public override void Enter()
         {
             OnEnterState();
-            
-            if (_mCurrentState == null)
+            // 优先使用默认状态
+            if (_mDefaultState != null)
             {
-                // 优先使用默认状态
-                if (_mDefaultState != null)
+                _mCurrentState = _mDefaultState;
+            }
+            else
+            {
+                // 否则找第一个满足条件的状态
+                foreach (var state in States.Values)
                 {
-                    _mCurrentState = _mDefaultState;
-                }
-                else
-                {
-                    // 否则找第一个满足条件的状态
-                    foreach (var state in States.Values)
+                    if (state.CheckSelfConditions())
                     {
-                        if (state.CheckSelfConditions())
-                        {
-                            _mCurrentState = state;
-                            break;
-                        }
+                        _mCurrentState = state;
+                        break;
                     }
                 }
             }
@@ -93,8 +91,8 @@ namespace GameFSM.LevelFSM
 
         public override void Exit()
         {
+            _mCurrentState?.Exit();
             OnExitState();
-            _mCurrentState?.OnExitState();
         }
 
         public override void Update()

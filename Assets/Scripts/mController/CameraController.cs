@@ -32,6 +32,7 @@ namespace mController
 
         private float _yaw;
         public float Yaw => _yaw;   // XOZ平面与 z轴正方向偏转角
+        public float Pitch => _pitch;
         private float _pitch;       // YOZ平面与 z轴正方向偏转角
         private float _nowDistance; // 当前相机离角色距离
         

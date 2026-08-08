@@ -6,8 +6,13 @@ namespace mController.Player.InputController.Inputs
     public abstract class InputActionHandler
     {
         protected PlayerManager MyManager;
+        protected FsmContext FsmContext;
 
-        public void Init(PlayerManager manager) => MyManager = manager;
+        public void Init(PlayerManager manager, FsmContext fsmContext)
+        {
+            MyManager = manager;
+            FsmContext = fsmContext;
+        }
 
         /// <summary>
         /// 核心执行方案

@@ -15,5 +15,7 @@
         }
 
         public int GetMyId() => _client.MyId;
+
+        public void SetMyId(int id) => _client.MyId = id;
     }
 }

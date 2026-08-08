@@ -9,17 +9,15 @@ namespace mController.Player.InputController.Inputs.ActionHandler
 
         protected override void OnDown()
         {
-            MyManager.MoveModule.Sprint();
         }
 
         protected override void OnPress()
         {
-            MyManager.MoveModule.Sprint();
         }
 
         protected override void OnUp()
         {
-            MyManager.MoveModule.Sprint();
+
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using BaseClass;
 using Connect.Converter;
 using Connect.DTO;
 using Connect.FlatDTO;
@@ -23,16 +24,11 @@ using UnityEngine;
 
 namespace Connect
 {
-    public class Listener : MonoBehaviour
+    public class Listener : AbstractSingleton<Listener>
     {
-        // 单例化，方便模拟器访问
-        public static Listener Instance;
-
         // 统一的消息队列
         private static Queue<Message> toDolist = new Queue<Message>();
         private static readonly object lockObj = new object();
-
-        private void Awake() => Instance = this;
         
         /// <summary>
         /// 向请求队列中添加请求
@@ -86,12 +82,15 @@ namespace Connect
                 case MessageType.S2C_AllocId:
                     // 如果 AllocId 发的是 4 字节整数
                     int newId = BitConverter.ToInt32(msg.data, 0);
+                    Debug.Log($"[AllocId] 收到服务器分配 ID:{newId}, Client={NetworkService.Instance?.Client?.GetHashCode()}");
+                    if(NetworkService.Instance == null) Debug.Log("NetworkService为空");
+                    if(NetworkService.Instance.Client == null) Debug.Log("NetworkServiceClient为空");
                     if (NetworkService.Instance && NetworkService.Instance.Client != null)
                     {
                         NetworkService.Instance.Client.MyId = newId;
                         var pm = NetworkService.Instance.playerManager;
                         PlayerPool.Instance.RegisterLocalPlayer(newId, pm);
-                        
+                        Debug.Log($"[AllocId] Client.MyId 已设为 {newId}, Bridge type={NetworkService.Bridge?.GetType().Name}");
                     }
                     break;
                 case MessageType.S2C_PlayerShoot:
