@@ -73,7 +73,7 @@ namespace Server
             _locomotion = new Locomotion();
             _moveModule = new ServerMoveModule(_locomotion, characterController);
             _locomotionFsm = new LocomotionFsm(_locomotion, new LocomotionFsmCondition(_locomotion, "Locomotion"));
-
+            
             // 启动接收线程
             Thread t = new Thread(ReceiveLoop);
             t.IsBackground = true;
@@ -104,32 +104,30 @@ namespace Server
 
         public void ServerTick(float deltaTime)
         {
-            if (_inputBuffer.TryDequeue(out var sample))
-            {
-                float yaw = sample.Yaw / 10f;
+            if (!_inputBuffer.TryDequeue(out var sample)) return;
+            float yaw = sample.Yaw / 10f;
 
-                Vector2 move = new Vector2(
-                    sample.InputX / 127f - 1f,
-                    sample.InputY / 127f - 1f
-                );
+            Vector2 move = new Vector2(sample.InputX / 127f - 1f, sample.InputY / 127f - 1f);
 
-                _locomotion.Yaw = yaw;
-                _locomotion.InputMoveVec = move;
-                _locomotion.IsInputMove = move.sqrMagnitude >= 0.05f;
-                _locomotion.IsMoveForward = move.y >= 0.05f;
-                
-                bool sprintHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;      
-                bool jumpHeld   = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP) != 0;        
-                bool crouchHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;      
+            _locomotion.Yaw = yaw;
+            _locomotion.Pitch = sample.Pitch / 10f;
+            _locomotion.InputMoveVec = move;
+            _locomotion.IsInputMove = move.sqrMagnitude >= 0.05f;
+            _locomotion.IsMoveForward = move.y >= 0.05f;
+            
+            bool sprintHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;      
+            bool jumpHeld   = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP) != 0;        
+            bool crouchHeld = (sample.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;      
 
-                _locomotion.SprintDown = sprintHeld && !_prevSprint;
-                _locomotion.JumpDown   = jumpHeld && !_prevJump;
-                _locomotion.CrouchDown = crouchHeld && !_prevCrouch;
+            _locomotion.SprintDown = sprintHeld && !_prevSprint;
+            _locomotion.JumpDown   = jumpHeld && !_prevJump;
+            _locomotion.CrouchDown = crouchHeld && !_prevCrouch;
 
-                _prevSprint = sprintHeld;
-                _prevJump   = jumpHeld;
-                _prevCrouch = crouchHeld;
-            }
+            _prevSprint = sprintHeld;
+            _prevJump   = jumpHeld;
+            _prevCrouch = crouchHeld;
+            State.lastProcessedTick = sample.Tick;
+            
             _locomotionFsm.Update();
             _moveModule.Update(deltaTime);
             
@@ -137,7 +135,12 @@ namespace Server
             State.isJump    = _locomotion.IsJump;
             State.isSprint  = _locomotion.IsSprint;       
             State.isCrouch  = _locomotion.IsCrouch;       
-            State.inputMove = _locomotion.InputMoveVec;  
+            State.inputMove = _locomotion.InputMoveVec;
+            State.levelSpeed = _locomotion.LevelSpeed;
+            State.verticalSpeed = _locomotion.VerticalSpeed;
+            State.yaw = _locomotion.Yaw;
+            State.pitch = _locomotion.Pitch;
+            State.position = transform.position;
             _animController.Update();
         }
 
@@ -248,6 +251,7 @@ namespace Server
                 case MessageType.C2S_PlayerInput:
                     InputDataConverter.Unpack(data, out uint sequence, out var samples);
                     _inputBuffer.Enqueue(sequence, samples);
+
                     break;
             }
         }

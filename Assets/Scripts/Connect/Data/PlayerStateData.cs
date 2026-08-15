@@ -17,5 +17,11 @@ namespace Connect.Data
         public float curShield;
         public float maxShield;
         public float clientTime;
+
+        public uint lastProcessedTick;
+        public float levelSpeed;
+        public float verticalSpeed;
+        public float yaw;
+        public float pitch;
     }
 }

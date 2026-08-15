@@ -62,8 +62,7 @@ namespace Player.Module
             _isJump = _fsmContext.Locomotion.IsJump;
             _isCrouch = _fsmContext.Locomotion.IsCrouch;
             _move = _fsmContext.Locomotion.InputMoveVec;
-            float targetYaw = _context.CameraController.Yaw;
-            _fsmContext.Locomotion.Yaw = targetYaw;
+            float targetYaw = _fsmContext.Locomotion.Yaw;
             
             // Quaternion.Euler 为旋转矩阵  Quaternion.Euler(0, targetYaw, 0) 是向量为 y轴旋转 targetYaw度
             Vector3 forward = Quaternion.Euler(0, targetYaw, 0) * Vector3.forward;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AssetBundleFramework.Core.Resource;
 using Connect.ConnectPlayer;
+using Connect.Converter;
 using Connect.FlatDTO;
 using Connect.PositionDTO;
 using GameFSM.LevelFSM.PlayerFSM;
@@ -147,25 +148,24 @@ namespace Connect
             {
                 var dto = list.Players(i).Value;
                 int pid = dto.PlayerId;
-                
-                if(!_models.TryGetValue(pid, out var pm)) continue;
-                if(pid == NetworkService.Bridge.GetMyId()) continue;
 
-                if (pm.TryGetComponent<RemotePlayer>(out var rp))
+                if (!_models.TryGetValue(pid, out var pm)) continue;
+                if (pid == NetworkService.Bridge.GetMyId()) // 主控玩家
                 {
-                    var pos = dto.Position.HasValue
-                        ? new Vector3(dto.Position.Value.X, dto.Position.Value.Y, dto.Position.Value.Z)
-                        : pm.transform.position;
-                    var rot = dto.Rotation.HasValue 
-                        ? new Quaternion(dto.Rotation.Value.X, dto.Rotation.Value.Y, dto.Rotation.Value.Z, dto.Rotation.Value.W)
-                        : pm.transform.rotation;
-                    var inputMove = new Vector2(dto.InputX, dto.InputY);
-                    var aimPos = dto.Aim.HasValue
-                        ? new Vector3(dto.Aim.Value.X, dto.Aim.Value.Y, dto.Aim.Value.Z)
-                        : pm.aimIK.solver.target.position;
-                    
-                    rp.OnServerUpdate(pos, rot, inputMove, aimPos);
-
+                    var data = PlayerDataConverter.UnPackPosition(dto);
+                    if (pm.GetLogic() is LocalPlayerLogic local)
+                    {
+                        local.OnServerStateReceived(data);
+                    }
+                }
+                else
+                {
+                    if (pm.TryGetComponent<RemotePlayer>(out var rp))
+                    {
+                        Vector3 pos = new Vector3(dto.Position.Value.X / 1000f, dto.Position.Value.Y / 1000f,
+                            dto.Position.Value.Z / 1000f);
+                        
+                    }
                 }
             }
         }

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using Connect;
 using Connect.Converter;
+using Connect.Data;
+using Connect.Prediction;
 using Connect.Simulation;
 using GameFSM.LevelFSM.LocomotionFSM;
 using GameFSM.LevelFSM.PlayerFSM;
@@ -46,6 +48,8 @@ namespace Player.ManagerLogic
         
         // 运动状态机
         private LocomotionFsm _locomotionFsm;
+        // 客户端状态循环数组
+        private PredictionBuffer _predictionBuffer;
         
         public void Init(PlayerManager manager)
         {
@@ -70,6 +74,7 @@ namespace Player.ManagerLogic
             };
             _inputController = new PlayerInputController(_m, _fsmContext);
             _locomotionFsm = new LocomotionFsm(_fsmContext.Locomotion, new LocomotionFsmCondition(_fsmContext.Locomotion, "Locomotion"));
+            _predictionBuffer = new PredictionBuffer();
             if (NetworkService.Bridge is LocalServerSimulator lss)
             {
                 lss.InitPlayerManager(manager);
@@ -116,10 +121,10 @@ namespace Player.ManagerLogic
             _m.ViewModule?.OnUpdate();
         }
 
-        private void SampleInput()
+        private InputDataConverter.InputSample SampleInput()
         {
             _tick++;
-            Vector2 move = _m.MoveModule.GetMoveInput;
+            Vector2 move = _fsmContext.Locomotion.InputMoveVec;
 
             InputDataConverter.InputSample sample = new InputDataConverter.InputSample
             {
@@ -134,6 +139,8 @@ namespace Player.ManagerLogic
             _pendingSamples.Add(sample);
 
             buttons = 0;
+
+            return sample;
         }
 
         private void SendInputPacket()
@@ -164,31 +171,27 @@ namespace Player.ManagerLogic
             _fsmContext.Locomotion.SprintDown = sprintHeld && !_prevSprint;
             _fsmContext.Locomotion.JumpDown   = jumpHeld && !_prevJump;
             _fsmContext.Locomotion.CrouchDown = crouchHeld && !_prevCrouch;
+            _fsmContext.Locomotion.Yaw = _m.cameraController.Yaw;
 
             _prevSprint = sprintHeld;
             _prevJump   = jumpHeld;
             _prevCrouch = crouchHeld;
             
+            InputDataConverter.InputSample sample = SampleInput(); // 50hz 采样
+            
             _locomotionFsm.Update(); // 移动状态机更新
             _m.MoveModule.OnFixedUpdate();
+
+            _predictionBuffer.Save(_tick, _m.transform.position, _fsmContext.Locomotion, sample);
             
             _m.state.position = _m.transform.position;  
             _m.state.rotation = _m.transform.rotation;  
             _m.MoveModule.WriteToState(_m.state);       
             _m.CombatModule.WriteToState(_m.state);
             
-            int currentId = NetworkService.Bridge.GetMyId();
-            if (!NetworkService.Instance.isSinglePlayer)
-            {
-                _m.state.playerId = currentId;
-                SampleInput(); // 50hz 采样
-                //CheckState();
-            }
-            
             Reload();
             
             _m.CombatModule.OnFixedUpdate();
-            
         }
 
         public void OnClient20HzTick()
@@ -246,6 +249,63 @@ namespace Player.ManagerLogic
         public IArchitecture GetArchitecture()
         {
             return GenshinArchitecture.Interface;
+        }
+
+        public void OnServerStateReceived(PlayerStateData data)
+        {
+            uint serverTick = data.lastProcessedTick;
+
+            // 缓存已过期，丢弃
+            if (!_predictionBuffer.TryGet(serverTick, out TickRecord record)) return;
+
+            // 比对误差
+            Vector3 offset = data.position - record.Position;
+            if (offset.sqrMagnitude < 0.01f) return;
+            Debug.Log($"预测失败 tick{serverTick}, offset={offset.magnitude:F3}");
+            
+            RelayForm(data);
+        }
+
+        private void RelayForm(PlayerStateData data)
+        {
+            uint serverTick = data.lastProcessedTick;
+            if (!_predictionBuffer.TryGet(serverTick, out TickRecord baseRec) || !baseRec.HasData) return;
+            
+            // 先恢复到服务端 Tick N
+            var loco = _fsmContext.Locomotion;     
+            loco.IsGround      = data.isGround;    
+            loco.IsJump        = data.isJump;      
+            loco.IsSprint      = data.isSprint;    
+            loco.IsCrouch      = data.isCrouch;    
+            loco.LevelSpeed    = data.levelSpeed;  
+            loco.VerticalSpeed = data.verticalSpeed;
+            loco.Yaw           = data.yaw;
+            loco.Pitch         = data.pitch;       
+            loco.InputMoveVec  = data.inputMove;   
+            loco.IsInputMove   = data.inputMove.sqrMagnitude >= 0.05f;      
+            loco.IsMoveForward = data.inputMove.y >= 0.05f;
+
+            _m.characterController.enabled = false;
+            _m.transform.position = data.position;
+            _m.characterController.enabled = true;
+
+            for (uint t = serverTick + 1; t <= _tick; t++)
+            {
+                if (!_predictionBuffer.TryGet(t, out TickRecord rec) || !rec.HasData) continue;
+                var input = rec.Input;
+
+                loco.InputMoveVec = new Vector2(input.InputX / 127f - 1f, input.InputY / 127f - 1f);
+                loco.IsInputMove = loco.InputMoveVec.sqrMagnitude >= 0.05f;
+                loco.IsMoveForward = loco.InputMoveVec.y >= 0.05f;
+                loco.Yaw = input.Yaw / 10f;
+
+                loco.SprintDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;
+                loco.JumpDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP) != 0;
+                loco.CrouchDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;
+                
+                _locomotionFsm.Update();
+                _m.MoveModule.OnFixedUpdate();
+            }
         }
     }
 }

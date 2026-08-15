@@ -1,15 +1,18 @@
 ﻿namespace Connect.PositionDTO;
 
-struct Vec3 { x:float; y:float; z:float; }
-struct Quat { x:float; y:float; z:float; w:float; } 
+struct Vec3 { x:int; y:int; z:int; }
 
 table SinglePositionFlat {
     player_id:int;
+    last_processed_tick:uint;
     position:Vec3;
-    rotation:Quat;
-    input_x:int;
-    input_y:int;
-    aim:Vec3;
+    
+    yaw:ushort;
+    pitch:ushort;
+    
+    move_state:ushort;
+    level_speed:ushort;
+    vertical_speed:short;
 }
 
 table PositionListFlat {

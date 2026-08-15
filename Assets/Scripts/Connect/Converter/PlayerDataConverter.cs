@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Connect.Data;
 using Connect.FlatDTO;
 using Connect.MoveDTO;
+using Connect.PositionDTO;
 using Google.FlatBuffers;
 using UnityEngine;
 using Quat = Connect.FlatDTO.Quat;
@@ -148,21 +149,23 @@ namespace Connect.Converter
             {
                 var s = kv.Value.State;
                 PositionDTO.SinglePositionFlat.StartSinglePositionFlat(builder);
-
                 PositionDTO.SinglePositionFlat.AddPlayerId(builder, s.playerId);
+                PositionDTO.SinglePositionFlat.AddLastProcessedTick(builder, s.lastProcessedTick);
+                PositionDTO.SinglePositionFlat.AddPosition(builder, PositionDTO.Vec3.CreateVec3(
+                    builder, (int)(s.position.x * 1000), (int)(s.position.y * 1000), (int)(s.position.z * 1000)));
 
-                PositionDTO.SinglePositionFlat.AddPosition(builder, 
-                    PositionDTO.Vec3.CreateVec3(builder,    
-                        s.position.x, s.position.y, s.position.z));
+                PositionDTO.SinglePositionFlat.AddYaw(builder, (ushort)(s.yaw * 100));
+                PositionDTO.SinglePositionFlat.AddPitch(builder, (ushort)(s.pitch * 100));
 
-                PositionDTO.SinglePositionFlat.AddRotation(builder, 
-                    PositionDTO.Quat.CreateQuat(builder, 
-                        s.rotation.x, s.rotation.y, s.rotation.z, s.rotation.w));
+                ushort moveState = 0;
+                if (s.isGround) moveState |= 1;
+                if (s.isJump) moveState |= 2;
+                if (s.isSprint) moveState |= 4;
+                if (s.isCrouch) moveState |= 8;
                 
-                PositionDTO.SinglePositionFlat.AddInputX(builder, (int)s.inputMove.x);
-                PositionDTO.SinglePositionFlat.AddInputY(builder, (int)s.inputMove.y);
-                PositionDTO.SinglePositionFlat.AddAim(builder,
-                    PositionDTO.Vec3.CreateVec3(builder, s.aimPosition.x, s.aimPosition.y, s.aimPosition.z));
+                PositionDTO.SinglePositionFlat.AddMoveState(builder, moveState);
+                PositionDTO.SinglePositionFlat.AddLevelSpeed(builder, (ushort)(s.levelSpeed * 100));
+                PositionDTO.SinglePositionFlat.AddVerticalSpeed(builder, (short)(s.verticalSpeed * 100));
                 
                 offsets[idx++] = PositionDTO.SinglePositionFlat.EndSinglePositionFlat(builder);
             }
@@ -209,6 +212,41 @@ namespace Connect.Converter
             animTime = flat.AnimTime;
             clientTime = flat.ClientTime;
         }
-        
+
+        public static PlayerStateData UnPackPosition(SinglePositionFlat flat)
+        {
+            PlayerStateData res = new PlayerStateData
+            {
+                playerId = flat.PlayerId,
+                lastProcessedTick = flat.LastProcessedTick,
+                position = new Vector3(flat.Position.Value.X / 1000f, flat.Position.Value.Y / 1000f,
+                    flat.Position.Value.Z / 1000f),
+                yaw = flat.Yaw / 100f,
+                pitch = flat.Pitch / 100f,
+                isGround = (flat.MoveState & 1) != 0,
+                isJump = (flat.MoveState & 2) != 0,
+                isSprint = (flat.MoveState & 4) != 0,
+                isCrouch = (flat.MoveState & 8) != 0,
+
+                levelSpeed = flat.LevelSpeed / 100f,
+                verticalSpeed = flat.VerticalSpeed / 100f,
+            };
+
+            return res;
+        }
+
+        public static List<PlayerStateData> UnPackPositionList(byte[] data)
+        {
+            var bb = new ByteBuffer(data);
+            var list = PositionListFlat.GetRootAsPositionListFlat(bb);
+            var result = new List<PlayerStateData>(list.PlayersLength);
+            for (int i = 0; i < list.PlayersLength; i++)
+            {
+                var flat = list.Players(i).Value;
+                result.Add(UnPackPosition(flat));
+            }
+
+            return result;
+        }
     }
 }

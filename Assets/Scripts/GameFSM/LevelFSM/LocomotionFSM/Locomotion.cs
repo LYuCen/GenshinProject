@@ -23,5 +23,6 @@ namespace GameFSM.LevelFSM.LocomotionFSM
         // 物理模拟
         public bool IsGround;
         public float Yaw;
+        public float Pitch;
     }
 }

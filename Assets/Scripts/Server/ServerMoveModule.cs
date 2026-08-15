@@ -10,6 +10,8 @@ namespace Server
         private float _terminalVelocity = -10f;
         private CharacterController _player;
 
+        private bool _isGround;
+
         public ServerMoveModule(Locomotion locomotion, CharacterController player)
         {
             _locomotion = locomotion;
@@ -27,7 +29,7 @@ namespace Server
             Vector3 move = forward * _locomotion.InputMoveVec.y + right * _locomotion.InputMoveVec.x;
 
             Vector3 horizontalMove;
-            CheckGrounded();
+            
             // 刚离地时快照当前速度
             if (_locomotion.IsGround)
             {
@@ -48,6 +50,7 @@ namespace Server
                 horizontalMove +
                 Vector3.up * (_locomotion.VerticalSpeed * deltaTime)
             );
+            CheckGrounded();
             ApplyGravity(deltaTime);
         }
         

@@ -19,6 +19,10 @@ namespace Server
         // 收到网络包时调用，将网络包加入消费队列
         public void Enqueue(uint sequence, InputDataConverter.InputSample[] samples)
         {
+            if (_pending.Count == 0 && _ready.Count == 0)
+            {
+                _nextSequence = sequence;
+            }
             if (sequence < _nextSequence) return; // 过期包丢弃
 
             _pending[sequence] = samples;
@@ -35,7 +39,7 @@ namespace Server
             }
         }
 
-        private const int MinBuffer = 2;
+        private const int MinBuffer = 0;
 
         // 将数据进行消费，在 fixUpdate 里调用
         public bool TryDequeue(out InputDataConverter.InputSample sample)
@@ -47,7 +51,7 @@ namespace Server
                 return true;
             }
 
-            sample = _lastSample;
+            sample = default;
             return false;
         }
     }
