@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Connect;
+﻿using Connect;
 using Connect.Converter;
 using Connect.Data;
 using Connect.Prediction;
@@ -12,6 +11,7 @@ using mModel;
 using mSystem.InputSystem;
 using mSystem.InputSystem.Context;
 using mView.BulletChose;
+using mWeapon;
 using Player.Module;
 using QFramework;
 using UnityEngine;
@@ -42,14 +42,13 @@ namespace Player.ManagerLogic
         private float _timer;
 
         private uint _tick;
-        private uint _sequence;
-        private List<InputDataConverter.InputSample> _pendingSamples = new();
-        public ushort buttons;
         
         // 运动状态机
         private LocomotionFsm _locomotionFsm;
         // 客户端状态循环数组
         private PredictionBuffer _predictionBuffer;
+
+        private int _lastChosenIdx = -1; // 上一个选择的元素
         
         public void Init(PlayerManager manager)
         {
@@ -87,6 +86,7 @@ namespace Player.ManagerLogic
             manager.IkModule.Init();
             manager.ViewModule.Init();
             manager.MoveModule.InitFsmContext(_fsmContext);
+            NetworkService.Instance.Heartbeat.ClientTickProvider = () => _tick;
             
             _annulusView = Object.FindObjectOfType<AnnulusView>(true); // 场景里找        
             if (_annulusView)
@@ -126,6 +126,14 @@ namespace Player.ManagerLogic
             _tick++;
             Vector2 move = _fsmContext.Locomotion.InputMoveVec;
 
+            ushort held = 0;
+            if (_context.Sprint.Press)          held |= PlayerInputStateBoolBit.BUTTON_SPRINT;
+            if (_context.Jump.Press)            held |= PlayerInputStateBoolBit.BUTTON_JUMP;
+            if (_context.Crouch.Press)          held |= PlayerInputStateBoolBit.BUTTON_CROUCH;
+            if (_context.PrimaryAction.Press)   held |= PlayerInputStateBoolBit.BUTTON_SHOOT;
+            if (_context.SecondaryAction.Press) held |= PlayerInputStateBoolBit.BUTTON_ADS;
+            if (_context.Reload.Press)          held |= PlayerInputStateBoolBit.BUTTON_RELOAD;
+
             InputDataConverter.InputSample sample = new InputDataConverter.InputSample
             {
                 Tick = _tick,
@@ -133,29 +141,11 @@ namespace Player.ManagerLogic
                 InputY = (byte)Mathf.RoundToInt((move.y + 1f) * 127f),
                 Yaw = (short)(_m.cameraController.Yaw * 10),
                 Pitch = (short)(_m.cameraController.Pitch * 10),
-                HoldButton = buttons
+                HoldButton = held,
+                ServerTick = (uint)(_tick + NetworkService.Instance.Heartbeat.TickOffset)
             };
             
-            _pendingSamples.Add(sample);
-
-            buttons = 0;
-
             return sample;
-        }
-
-        private void SendInputPacket()
-        {
-            if (_pendingSamples.Count == 0) return;
-            _sequence++;
-
-            byte[] data = InputDataConverter.Pack(
-                _sequence,
-                _pendingSamples.ToArray()
-            );
-            
-            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerInput, data));
-            
-            _pendingSamples.Clear();
         }
         
         private bool _prevSprint;
@@ -172,12 +162,15 @@ namespace Player.ManagerLogic
             _fsmContext.Locomotion.JumpDown   = jumpHeld && !_prevJump;
             _fsmContext.Locomotion.CrouchDown = crouchHeld && !_prevCrouch;
             _fsmContext.Locomotion.Yaw = _m.cameraController.Yaw;
+            _fsmContext.Locomotion.IsAiming =
+                _bagModel.Weapon != null && _bagModel.Weapon.Runtime.Stance != WeaponStance.Normal;
 
             _prevSprint = sprintHeld;
             _prevJump   = jumpHeld;
             _prevCrouch = crouchHeld;
             
             InputDataConverter.InputSample sample = SampleInput(); // 50hz 采样
+            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerInput, InputDataConverter.Pack(sample)));
             
             _locomotionFsm.Update(); // 移动状态机更新
             _m.MoveModule.OnFixedUpdate();
@@ -196,7 +189,7 @@ namespace Player.ManagerLogic
 
         public void OnClient20HzTick()
         {
-            SendInputPacket();
+            
         }
 
         private void Reload()
@@ -221,6 +214,12 @@ namespace Player.ManagerLogic
                     if (idx >= 0)
                     {
                         _m.BagModule.SetChose(idx);
+                        if (idx != _lastChosenIdx)
+                        {
+                            _lastChosenIdx = idx;
+                            NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_ChooseElement,
+                                new[] { (byte)idx }));
+                        }
                     } 
                 }
             }
@@ -289,6 +288,10 @@ namespace Player.ManagerLogic
             _m.transform.position = data.position;
             _m.characterController.enabled = true;
 
+            bool pSprint = false;
+            bool pJump = false;
+            bool pCrouch = false;
+
             for (uint t = serverTick + 1; t <= _tick; t++)
             {
                 if (!_predictionBuffer.TryGet(t, out TickRecord rec) || !rec.HasData) continue;
@@ -299,10 +302,13 @@ namespace Player.ManagerLogic
                 loco.IsMoveForward = loco.InputMoveVec.y >= 0.05f;
                 loco.Yaw = input.Yaw / 10f;
 
-                loco.SprintDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;
-                loco.JumpDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP) != 0;
-                loco.CrouchDown = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;
-                
+                bool s = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_SPRINT) != 0;    
+                bool j = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_JUMP)   != 0;    
+                bool c = (input.HoldButton & PlayerInputStateBoolBit.BUTTON_CROUCH) != 0;    
+                loco.SprintDown = s && !pSprint; pSprint = s;
+                loco.JumpDown   = j && !pJump;   pJump = j;
+                loco.CrouchDown = c && !pCrouch; pCrouch = c;
+
                 _locomotionFsm.Update();
                 _m.MoveModule.OnFixedUpdate();
             }

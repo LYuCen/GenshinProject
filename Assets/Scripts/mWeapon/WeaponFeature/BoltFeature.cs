@@ -1,6 +1,5 @@
 ﻿using System;
 using mWeapon.FeatureData;
-using UnityEngine;
 
 namespace mWeapon.WeaponFeature
 {
@@ -31,16 +30,15 @@ namespace mWeapon.WeaponFeature
         {
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
             if(!_weapon.Runtime.HasState(WeaponStateTags.Bolting)) return;
 
-            _timer -= Time.deltaTime;
+            _timer -= dt;
 
             if(_timer <= 0)
             {
                 _weapon.InternalRuntime.RemoveState(WeaponStateTags.Bolting);
-                Debug.Log("拉栓结束");
             }
         }
 

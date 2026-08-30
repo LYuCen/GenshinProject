@@ -41,7 +41,7 @@ namespace mSystem.HurtSystem
         private void LoseHp(HurtComponent component)
         {
             // 优先处理模型层面的伤害逻辑
-            if (PlayerPool.Instance && PlayerPool.Instance.Models.TryGetValue(component.victimId, out var model))
+            if (!component.SkipHp && PlayerPool.Instance && PlayerPool.Instance.Models.TryGetValue(component.victimId, out var model))
             {
                 Debug.Log($"{component.victimId} 受到：{component.Harm} 伤害");
                 model.HpModule.HurtHp(component);

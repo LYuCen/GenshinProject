@@ -1,10 +1,9 @@
 ﻿using mCommand;
 using mEvent;
 using mModel;
-using mSystem.InputSystem;
 using mSystem.mSettingSystem;
-using mSystem.SceneSystem;
 using mView.Button;
+using mView.Room;
 using mView.UserView;
 using QFramework;
 using TMPro;
@@ -20,14 +19,17 @@ namespace mView
         [SerializeField] private BaseButton settingBtn; // 设置
         [SerializeField] private BaseButton quit;       // 退出
         [SerializeField] private BaseButton userBtn;    // 玩家信息
-        [SerializeField] private BaseButton startBtn;   // 开始游戏
+        [SerializeField] private BaseButton createGameBtn;   // 创建游戏
+        [SerializeField] private BaseButton joinGameBtn;    // 加入游戏
         [SerializeField] private TextMeshProUGUI userName;
         [SerializeField] private UserViewController viewController;
 
+        [SerializeField] private LobbyRoomView lobbyRoomView;
         private void Start()
         {
             settingBtn.OnClick += OpenSetting;
-            startBtn.OnClick += StartGame;
+            createGameBtn.OnClick = lobbyRoomView.ShowCreateRoomView;
+            joinGameBtn.OnClick = lobbyRoomView.ShowJoinRoomView;
             quit.OnClick += QuitGame;
             userBtn.OnClick += viewController.ButtonClick;
             userName.text = this.GetModel<IUserModel>().UserInfo.Name;
@@ -55,8 +57,7 @@ namespace mView
         
         private void StartGame()
         {
-            this.GetSystem<ISceneSystem>().LoadSceneAsync("Level");
-            GameEnter.Instance.isGame = true;
+            
         }
 
         private void QuitGame()

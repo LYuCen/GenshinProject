@@ -39,9 +39,6 @@ namespace Player.Module
         public void HurtHp(HurtComponent component)
         {
             float hurt = component.Harm;
-            if(_state.curShield > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.cyan);
-            else if(_state.curHp > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.red);
-            
             if (hurt <= _state.curShield)
             {
                 _state.curShield = Mathf.Clamp(_state.curShield - hurt, 0, _state.maxShield);
@@ -52,6 +49,16 @@ namespace Player.Module
                 _state.curShield = 0;
                 _state.curHp = Mathf.Clamp(_state.curHp - hurt, 0, _state.maxHp);
             }
+        }
+
+        /// <summary>
+        /// 玩家被击中
+        /// </summary>
+        public void TakeDamage()
+        {
+            if(_state.curShield > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.cyan);
+            else if(_state.curHp > 0) _context.CharacterEffectManager.PlayAuraAnimation(Color.red);
+
         }
         
         public void SyncStatus(PlayerDataFlat dto)

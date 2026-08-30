@@ -1,8 +1,4 @@
-﻿using System;
-using Connect;
-using Connect.Converter;
-using Connect.Data;
-using Connect.Protocol;
+﻿using Connect;
 using Firearms.Bullet;
 using mController;
 using mModel;
@@ -56,26 +52,6 @@ namespace mWeapon.Presenter
             
             // 加入子弹系统
             BulletSystem.Instance.EnQueue(bullet);
-            
-            // 网络
-            if (NetworkService.Bridge != null && NetworkService.Bridge.GetMyId() != -1)
-            {
-                ShootData data = new ShootData
-                {
-                    shooterId = NetworkService.Bridge.GetMyId(),
-                    position = _muzzle.position,
-                    forward = (_cameraController.hitEnd - _muzzle.position).normalized,
-                    speed = fireFeature.Data.muzzleVelocity,    
-                    baseHit = fireFeature.Data.damage * damageProfile.BodyMultiplier,
-                    headHit = fireFeature.Data.damage * damageProfile.HeadMultiplier,
-                    element = (int)mag.ElementEnum,
-                    elementMeasure = fireFeature.Data.measure,
-                    moveTime = 3f,
-                    clientTime = Time.time,
-                };
-                
-                NetworkService.Bridge.SendToServer(new Message(MessageType.C2S_PlayerShoot, ShootDataConverter.ToDto(data)));
-            }
         }
         
         public void OnEnter()

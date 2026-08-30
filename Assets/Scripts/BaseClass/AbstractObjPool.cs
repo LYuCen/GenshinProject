@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BaseClass
@@ -9,7 +10,7 @@ namespace BaseClass
         protected Queue<GameObject> Pool;
         protected GameObject Prefab;
         protected bool IsOnDestroy;
-        private bool _isBuild;
+        protected bool IsBuild;
         
         /// <summary>
         /// 初始化
@@ -18,13 +19,13 @@ namespace BaseClass
         /// <param name="maxSize">对象池大小</param>
         public virtual void Init(int value = 0,int maxSize = 100)
         {
-            if (_isBuild) return;
+            if (IsBuild) return;
             IsOnDestroy = false;
             Pool = new Queue<GameObject>();
             MaxSize = maxSize;
             Prefab = InitPrefab();
             InitObject(value);
-            _isBuild = true;
+            IsBuild = true;
         }
 
         protected void InitObject(int val)
@@ -45,7 +46,12 @@ namespace BaseClass
 
         public virtual GameObject GetObj()
         {
-            if (!_isBuild) Init();
+            if (!IsBuild || Prefab == null)
+            {
+                IsBuild = false;
+                Init();
+            }
+
             if (!Prefab) return null;
             GameObject res;
             if (Pool.Count > 0)
@@ -69,14 +75,20 @@ namespace BaseClass
             else Destroy(obj);
         }
 
-        private void OnDestroy()
+        public virtual void Clear()
+        {
+            if (Pool == null) return; 
+            while (Pool.Count > 0)
+            {
+                var obj = Pool.Dequeue();
+                if (obj != null) Destroy(obj);
+            }
+        }
+
+        protected override void OnDestroy()
         {
             IsOnDestroy = true;
-            while (Pool != null && Pool.Count > 0)
-            {
-                var item = Pool.Dequeue();
-                Destroy(item);
-            }
+            Clear();
         }
     }
 }

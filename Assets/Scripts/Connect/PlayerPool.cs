@@ -86,6 +86,8 @@ namespace Connect
 
             GameObject prefab = ir.GetAsset<GameObject>();
             GameObject instance = Instantiate(prefab);
+            
+            Debug.Log($"实例化远程玩家 {dto.PlayerId},pos={instance.transform.position}");
 
             // 访问坐标方式：dto.Position.Value.X
             if (dto.Position != null)
@@ -122,11 +124,23 @@ namespace Connect
         /// </summary>
         public void RegisterLocalPlayer(int id, PlayerManager pm)
         {
-            if (!_models.ContainsKey(id))
+            int staleKey = -1;
+            foreach (var kv in _models)
             {
-                _models.Add(id, pm);
-                Debug.Log($"本地玩家已注册到 Pool, ID: {id}");
+                if (ReferenceEquals(kv.Value, pm) && kv.Key != id)
+                {
+                    staleKey = kv.Key;
+                    break;
+                }
             }
+            if (staleKey != -1)
+            {
+                _models.Remove(staleKey);
+                Debug.Log($"本地玩家重新注册：移除残留 key {staleKey} → {id}");
+            }
+
+            _models[id] = pm;
+            Debug.Log($"本地玩家已注册到 Pool, ID:{id}");
         }
 
         public void DeletePlayer(int id)
@@ -162,9 +176,23 @@ namespace Connect
                 {
                     if (pm.TryGetComponent<RemotePlayer>(out var rp))
                     {
-                        Vector3 pos = new Vector3(dto.Position.Value.X / 1000f, dto.Position.Value.Y / 1000f,
-                            dto.Position.Value.Z / 1000f);
-                        
+                        var data = PlayerDataConverter.UnPackPosition(dto);
+
+                        pm.state.isGround = data.isGround;
+                        pm.state.isJump = data.isJump;
+                        pm.state.isSprint = data.isSprint;
+                        pm.state.isCrouch = data.isCrouch;
+                        pm.state.isShoot = data.isShoot;
+                        pm.state.isReload = data.isReload;
+                        pm.state.isThrow = data.isThrow;
+                        pm.state.inputMove = data.inputMove;
+                        pm.state.levelSpeed = data.levelSpeed;
+                        pm.state.verticalSpeed = data.verticalSpeed;
+                        pm.state.yaw = data.yaw;
+                        pm.state.pitch = data.pitch;
+
+                        Quaternion rot = Quaternion.Euler(0f, data.yaw, 0f);
+                        rp.OnServerUpdate(data.position, rot, data.inputMove, data.aimPosition);
                     }
                 }
             }
@@ -174,6 +202,7 @@ namespace Connect
         {
             if (_models.TryGetValue(playerId, out var pm))
             {
+                Debug.Log("获取到玩家信息");
                 pm.state.curHp = curHp;
                 pm.state.maxHp = maxHp;
                 pm.state.curShield = curShield;

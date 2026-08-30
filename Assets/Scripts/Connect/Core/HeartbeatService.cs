@@ -19,8 +19,10 @@ namespace Connect.Core
         public float RTT { get; private set; }
 
         public Action OnTimeOut; // 心跳超时回调
-        private float _currentSendTimestamp; // 本次心跳发出的客户端时间
         private bool _waitingForAck;
+        
+        public int TickOffset { get; private set; }
+        public Func<uint> ClientTickProvider;
 
         public HeartbeatService()
         {
@@ -54,7 +56,6 @@ namespace Connect.Core
             NetworkService.Bridge.SendToServer(new Message(MessageType.Both_Heartbeat, timestampBytes));
 
             LastSendTime = sendTime;
-            _currentSendTimestamp = sendTime;
             _waitingForAck = true;
         }
 
@@ -69,11 +70,18 @@ namespace Connect.Core
 
             // 客户端发送时间
             float clientSendTime = BitConverter.ToSingle(data, 0);
-            // 服务端收到心跳时间
-            float serverTime = BitConverter.ToSingle(data, 4);
+            uint serverTick = BitConverter.ToUInt32(data, 4);
+            float clientRecvTime = Time.time;
 
             RTT = Time.time - clientSendTime;
-            LastReceiveTime = Time.time;
+            LastReceiveTime = clientRecvTime;
+            
+            Debug.Log($"TickOffset={TickOffset},RTT={RTT*1000:F0}ms");
+            
+            if (ClientTickProvider != null)
+            {
+                TickOffset = (int)(serverTick - ClientTickProvider());
+            }
         }
 
         public void OnAnyMessageReceived()

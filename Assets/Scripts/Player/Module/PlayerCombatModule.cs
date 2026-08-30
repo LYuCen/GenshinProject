@@ -1,4 +1,5 @@
-﻿using AssetBundleFramework.Core.Resource;
+﻿using System;
+using AssetBundleFramework.Core.Resource;
 using Connect.Data;
 using mEnum.Flags;
 using mEnum.Query;
@@ -6,6 +7,7 @@ using mEvent;
 using mInterface;
 using mModel;
 using mModel.ScriptableConfig;
+using mSystem.InputSystem;
 using mWeapon;
 using mWeapon.Component;
 using mWeapon.Presenter;
@@ -13,6 +15,7 @@ using Player.AnimTree.UpperBodyNodes;
 using Player.Context;
 using QFramework;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Player.Module
 {
@@ -23,6 +26,13 @@ namespace Player.Module
         private BagModel _bagModel;
         public WeaponPresenter RemoteWeapon;
         private bool _enable;
+
+        private Action _onAmmoChanged;
+        private Action _onStateChanged;
+
+        private bool _prevPrimaryHeld;
+        private bool _prevSecondaryHeld;
+        private bool _prevReloadHeld;
         
         public PlayerCombatModule(CombatContext context)
         {
@@ -35,7 +45,10 @@ namespace Player.Module
             if (_context.IsLocal)
             {
                 _bagModel = this.GetModel<BagModel>();
+                _onAmmoChanged = () => this.SendEvent<WeaponDataUpdateEvent>();
+                _onStateChanged = () => this.SendEvent<FrontSightEvent>();
                 GetPrimaryWeapon();
+                
             }
             _enable = true;
         }
@@ -52,12 +65,24 @@ namespace Player.Module
             
             WeaponAction action = new WeaponAction
             {
-                Primary = _context.InputContext.PrimaryAction,
-                Secondary = _context.InputContext.SecondaryAction,
-                Reload = _context.InputContext.Reload
+                Primary = BuildButton(_context.InputContext.PrimaryAction.Press, ref _prevPrimaryHeld),
+                Secondary = BuildButton(_context.InputContext.SecondaryAction.Press, ref _prevSecondaryHeld),
+                Reload = BuildButton(_context.InputContext.Reload.Press, ref _prevReloadHeld)
             };
             _bagModel.Weapon?.HandleAction(action);
-            _bagModel.Weapon?.Tick();
+            _bagModel.Weapon?.Tick(0.02f);
+        }
+
+        private ButtonState BuildButton(bool held, ref bool prevHeld)
+        {
+            var s = new ButtonState
+            {
+                Down = held && !prevHeld,
+                Press = held,
+                Up = !held && prevHeld
+            };
+            prevHeld = held;
+            return s;
         }
 
         public void ResetGun()
@@ -72,12 +97,27 @@ namespace Player.Module
             presenter.transform.SetParent(_context.GunCube, true);
             presenter.ResetTrans();  
         }
+        
+        private void UnbindWeaponEvents()
+        {
+            if (_bagModel.Weapon == null) return;       
+            var rt = _bagModel.Weapon.Runtime;
+            rt.OnAmmoChanged -= _onAmmoChanged;
+            rt.OnStateChanged -= _onStateChanged;       
+            if (_bagModel.Weapon.Presenter != null) _bagModel.Weapon.Presenter.OnExit();
+        }
+
 
         public void GetPrimaryWeapon()
         {
-            if (_bagModel.Weapon != null && _bagModel.Weapon.Presenter != null) _bagModel.Weapon.Presenter.OnExit();
+            UnbindWeaponEvents();
             _bagModel.SetPrimaryWeapon();
-            _bagModel.Weapon.Runtime.Reset();
+            
+            var rt = _bagModel.Weapon.Runtime;
+            rt.OnAmmoChanged += _onAmmoChanged;
+            rt.OnStateChanged += _onStateChanged;
+            rt.Reset();
+            
             if (!_bagModel.Weapon.Presenter)
             {
                 IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);
@@ -89,9 +129,14 @@ namespace Player.Module
 
         public void GetSecondaryWeapon()
         {
-            if (_bagModel.Weapon != null && _bagModel.Weapon.Presenter != null) _bagModel.Weapon.Presenter.OnExit();
+            UnbindWeaponEvents();
             _bagModel.SetSecondaryWeapon();
-            _bagModel.Weapon.Runtime.Reset();
+            
+            var rt = _bagModel.Weapon.Runtime;
+            rt.OnAmmoChanged += _onAmmoChanged;
+            rt.OnStateChanged += _onStateChanged;
+            rt.Reset();
+            
             if (!_bagModel.Weapon.Presenter)
             {
                 IResource ir = ResourceManager.instance.Load($"Assets/AssetBundle/Model/Weapon/{_bagModel.Weapon.WeaponName}.prefab", false);

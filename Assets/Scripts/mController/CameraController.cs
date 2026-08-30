@@ -1,4 +1,5 @@
-﻿using AI;
+﻿using System;
+using AI;
 using AI.VisualRequest.VisualRequest;
 using GameFSM.LevelFSM.PlayerFSM;
 using mEnum.Flags;
@@ -195,6 +196,12 @@ namespace mController
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(_ray.origin, rayEnd);
             }
+        }
+
+        private void OnDisable()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         public IArchitecture GetArchitecture()

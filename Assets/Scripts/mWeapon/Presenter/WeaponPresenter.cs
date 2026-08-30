@@ -67,6 +67,14 @@ namespace mWeapon.Presenter
             Vector3 rot = _weapon.RequireComponent<TransformComponent>().Rot;
             transform.localRotation = Quaternion.Euler(rot.x, rot.y, rot.z);
         }
+        
+        private void OnDestroy()
+        {
+            _firePresenter?.OnExit();
+            _muzzlePresenter?.OnExit();
+            _audioPresenter?.OnExit();
+        }
+
 
         public IArchitecture GetArchitecture()
         {

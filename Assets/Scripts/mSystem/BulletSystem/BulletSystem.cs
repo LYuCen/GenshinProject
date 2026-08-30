@@ -4,6 +4,7 @@ using Connect.Converter;
 using Connect.DTO;
 using Connect.Protocol;
 using Firearms.Bullet;
+using GameFSM.LevelFSM.PlayerFSM;
 using mEnum;
 using mInterface;
 using Player;
@@ -106,14 +107,21 @@ namespace mSystem.BulletSystem
         // 命中玩家
         private bool TryHandlePlayerHit(Bullet bullet, HitBox hitBox)
         {
+            // 击中自己
+            if (hitBox.Owner.EntityId == bullet.shooterId) return false;
+            
+            if (hitBox.Owner is PlayerManager pm)
+            {
+                pm.HpModule.TakeDamage();
+            }
+            
             // 不是自己发射的子弹
             if (bullet.shooterId != NetworkService.Bridge.GetMyId()) return false;
             
             // 单机模式
             if (!NetworkService.Instance.isSinglePlayer) return false;
 
-            // 击中自己
-            if (hitBox.Owner.EntityId == bullet.shooterId) return false;
+            
             
             HitDto hitDto = new HitDto
             {

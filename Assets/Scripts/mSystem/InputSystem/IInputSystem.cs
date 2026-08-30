@@ -50,6 +50,7 @@ namespace mSystem.InputSystem
             _gameplayHandlers.Add(new RunHandler(context));
             _gameplayHandlers.Add(new ThrowGrenadeHandler(context));
             _gameplayHandlers.Add(new CrouchHandler(context));
+            _gameplayHandlers.Add(new ShowScoreboardHandler());
         }
 
         public void ReloadKeyBindings()

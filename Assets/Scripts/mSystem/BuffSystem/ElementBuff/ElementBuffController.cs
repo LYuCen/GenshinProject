@@ -12,6 +12,7 @@ namespace mSystem.BuffSystem.ElementBuff
         public ElementData[] Elements = new ElementData[8];
         public Dictionary<Type, IStatusEffect> _statusEffects = new();
         public int id;
+        public bool isVisualOnly;
 
         public Action<Type> RemoveBuff;
         public Action<Type> OnEffectAdded;

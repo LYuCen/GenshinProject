@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BaseClass;
 using Connect.Converter;
@@ -19,8 +18,11 @@ using mSystem.BuffSystem.ElementBuff;
 using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.BulletSystem;
 using mSystem.HurtSystem;
+using mSystem.InputSystem;
 using mSystem.ServerTimeSystem;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Task = System.Threading.Tasks.Task;
 
 namespace Connect
 {
@@ -29,6 +31,9 @@ namespace Connect
         // 统一的消息队列
         private static Queue<Message> toDolist = new Queue<Message>();
         private static readonly object lockObj = new object();
+        public static event Action<RoomInfoDto> OnRoomInfoReceived;
+        public static event Action<List<LobbyPlayerDto>> OnLobbyPlayerReceived;
+        public static event Action<ScoreboardDto> OnScoreboardReceived;
         
         /// <summary>
         /// 向请求队列中添加请求
@@ -83,14 +88,11 @@ namespace Connect
                     // 如果 AllocId 发的是 4 字节整数
                     int newId = BitConverter.ToInt32(msg.data, 0);
                     Debug.Log($"[AllocId] 收到服务器分配 ID:{newId}, Client={NetworkService.Instance?.Client?.GetHashCode()}");
-                    if(NetworkService.Instance == null) Debug.Log("NetworkService为空");
-                    if(NetworkService.Instance.Client == null) Debug.Log("NetworkServiceClient为空");
                     if (NetworkService.Instance && NetworkService.Instance.Client != null)
                     {
                         NetworkService.Instance.Client.MyId = newId;
                         var pm = NetworkService.Instance.playerManager;
-                        PlayerPool.Instance.RegisterLocalPlayer(newId, pm);
-                        Debug.Log($"[AllocId] Client.MyId 已设为 {newId}, Bridge type={NetworkService.Bridge?.GetType().Name}");
+                        if (pm != null) pm.state.playerId = newId;
                     }
                     break;
                 case MessageType.S2C_PlayerShoot:
@@ -101,34 +103,36 @@ namespace Connect
     
                     if (tempFlat.ShooterId != NetworkService.Bridge.GetMyId()) 
                     {
-                        if(tempFlat.Position == null || tempFlat.Forward == null) break;
-                        GameObject obj = BulletGameObjectPool.Instance.GetObj();
-                        Vector3 pos = new Vector3(tempFlat.Position.Value.X, tempFlat.Position.Value.Y, tempFlat.Position.Value.Z);
-                        Vector3 fwd = new Vector3(tempFlat.Forward.Value.X, tempFlat.Forward.Value.Y, tempFlat.Forward.Value.Z);
+                        Vector3 pos = new Vector3(tempFlat.PosX / 100f, tempFlat.PosY / 100f, tempFlat.PosZ / 100f);
+                        Vector3 fwd = new Vector3(tempFlat.DirX / 127f, tempFlat.DirY / 127f, tempFlat.DirZ / 127f);
 
-                        obj.transform.position = pos - fwd * 0.7f;
-                        obj.transform.forward = fwd;
-                        
-                        Bullet bullet = new Bullet()
+                        if (BulletGameObjectPool.Instance)
                         {
-                            Transform = obj.transform,
-                            shooterId = tempFlat.ShooterId,
-                            baseHit = tempFlat.BaseHit,
-                            headHit = tempFlat.HeadHit,
-                            element = tempFlat.Element,
-                            elementMeasure = tempFlat.ElementMeasure,
-                            moveNormalize = new Vector3(tempFlat.Forward.Value.X, tempFlat.Forward.Value.Y, tempFlat.Forward.Value.Z),
-                            speed = tempFlat.Speed,
-                            MoveTime = 3f
-                        };
+                            GameObject obj = BulletGameObjectPool.Instance.GetObj();
+                            obj.transform.position = pos - fwd * 0.7f;
+                            obj.transform.forward = fwd;
+                        
+                            Bullet bullet = new Bullet()
+                            {
+                                Transform = obj.transform,
+                                shooterId = tempFlat.ShooterId,
+                                baseHit = 0,
+                                headHit = 0,
+                                element = tempFlat.Element,
+                                elementMeasure = 0,
+                                moveNormalize = fwd,
+                                speed = tempFlat.Speed / 10f,
+                                MoveTime = 3f
+                            };
     
-                        // 设置粒子和枪焰
-                        var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
-                        var main = ps.main;
-                        main.startColor = ElementModel.Instance.colors[bullet.element];
+                            // 设置粒子和枪焰
+                            var ps = bullet.Transform.GetChild(0).GetComponent<ParticleSystem>();
+                            var main = ps.main;
+                            main.startColor = ElementModel.Instance.colors[bullet.element];
     
-                        // 加入子弹系统
-                        BulletSystem.Instance.EnQueue(bullet);
+                            // 加入子弹系统
+                            BulletSystem.Instance.EnQueue(bullet);
+                        }
 
                         // 枪口
                         PlayerManager manager = PlayerPool.Instance.Models[tempFlat.ShooterId];
@@ -148,6 +152,12 @@ namespace Connect
                 case MessageType.S2C_AllPlayerInfo:
                     // 解析全量玩家列表
                     var playerListFlat = PlayerList.GetRootAsPlayerList(bb);
+
+                    if (NetworkService.Instance != null && NetworkService.Instance.playerManager != null && NetworkService.Bridge.GetMyId() != -1)
+                    {
+                        PlayerPool.Instance.RegisterLocalPlayer(NetworkService.Bridge.GetMyId(),
+                            NetworkService.Instance.playerManager);
+                    }
                     PlayerPool.Instance.UpdatePlayer(playerListFlat); 
                     break;
 
@@ -201,6 +211,7 @@ namespace Connect
                     break;
                 
                 case MessageType.S2C_Hp:
+                    Debug.Log("血条更新");
                     PlayerDataConverter.UnPackHp(msg.data, out int id, out float hp, 
                         out float shield, out float maxHp, out float maxShield);
                     PlayerPool.Instance.ApplyHp(id, hp, shield, maxHp, maxShield);
@@ -232,6 +243,59 @@ namespace Connect
 
                     PlayerPool.Instance.ApplyRevive(pid, posRev, curHpRev, curShieldRev, maxHpRev, maxShieldRev);
                     break;
+                
+                case MessageType.S2C_StartGame:
+                    StartLoadGameScene();
+                    break;
+                
+                case MessageType.S2C_RoomInfo:
+                    var roomInfo = RoomInfoConverter.UnpackInfo(msg.data);
+                    if (roomInfo != null)
+                    {
+                        OnRoomInfoReceived?.Invoke(roomInfo);
+                        if(OnRoomInfoReceived == null) Debug.Log("OnRoomInfoReceived为空");
+                    }
+                    else Debug.Log("房间信息获取失败");
+                    break;
+                
+                case MessageType.S2C_LobbyPlayers:
+                    OnLobbyPlayerReceived?.Invoke(LobbyPlayerListConverter.UnpackList(msg.data));
+                    break;
+                
+                case MessageType.S2C_Scoreboard:
+                    OnScoreboardReceived?.Invoke(ScoreboardConverter.UnPackInfo(msg.data));
+                    break;
+                
+                case MessageType.S2C_GameOver:
+                    int endHostId = BitConverter.ToInt32(msg.data, 0);
+                    GameEnter.Instance.isGame = false;
+                    GameEnter.Instance.returnFromGame = true;
+                    GameEnter.Instance.returnIsHost = (NetworkService.Bridge?.GetMyId() == endHostId);
+                    
+                    BulletGameObjectPool.Instance.Clear();
+                    FireMuzzleObjectPool.Instance.Clear();
+                    NetworkService.Instance.playerManager = null; 
+                    
+                    SceneManager.LoadScene("Lobby");
+                    break;
+            }
+        }
+
+        private async void StartLoadGameScene()
+        {
+            if (SceneManager.GetActiveScene().name == "Level") return;
+            try
+            {
+                var op = SceneManager.LoadSceneAsync("Level");
+                if (op == null) return;
+                while (!op.isDone) await Task.Yield();
+
+                GameEnter.Instance.isGame = true;
+                NetworkService.Bridge?.SendToServer(new Message(MessageType.C2S_SceneLoaded, Array.Empty<byte>()));
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"开始游戏加载异常： {e.Message}");
             }
         }
         
@@ -251,7 +315,8 @@ namespace Connect
                     Element = dto.element,
                     ElementMeasure = dto.elementMeasure,
                     Transform = model.transform,
-                    SkipReaction = true
+                    SkipReaction = true,
+                    SkipHp = true
                 });
             }
         }
@@ -296,6 +361,8 @@ namespace Connect
                 controller = pm.gameObject.AddComponent<ElementBuffController>();
                 controller.id = flat.TargetId;
             }
+
+            controller.isVisualOnly = true;
 
             int idx = flat.Element;
             float now = Time.time;

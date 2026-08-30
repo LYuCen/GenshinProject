@@ -7,10 +7,5 @@ table InputDataFlat{
     yaw:short;
     pitch:short;
     hold_button:ushort;
-    press_button:ushort;
-}
-
-table InputPacket{
-    sequence:uint;
-    command:[InputDataFlat];
+    server_tick:uint;
 }

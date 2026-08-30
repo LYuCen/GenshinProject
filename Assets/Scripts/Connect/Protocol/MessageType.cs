@@ -7,7 +7,13 @@
         C2S_PlayerShoot         = 2,    // 开火
         C2S_PlayerHit           = 3,    // 命中请求
         C2S_Revive              = 4,    // 复活
+        C2S_ChooseElement       = 5,    // 元素选择
         C2S_PlayerInput         = 9,    // 玩家输入
+        C2S_StartGame           = 10,   // 房主通知服务器开始游戏
+        C2S_SceneLoaded         = 11,   // 通知服务器场景加载完成
+        C2S_CreateRoom          = 12,   // 客户端请求创建房间
+        C2S_GetLobbyPlayers     = 13,   // 请求大厅玩家列表
+        C2S_GetRoomInfo         = 14,   // 获取房间信息
         
         
         // S2C: 服务器通知客户端
@@ -26,6 +32,12 @@
         S2C_StatusEffect        = 113,  // 状态效果变化
         S2C_AnimationState      = 114,  // 动画信息广播
         S2C_Revive              = 115,  // 服务器指定复活
+        S2C_StartGame           = 116,  // 通知客户端加载场景
+        S2C_JoinLobby           = 117,  // 加入大厅房间
+        S2C_RoomInfo            = 118,  // 房间信息
+        S2C_LobbyPlayers        = 119,  // 大厅玩家列表
+        S2C_Scoreboard          = 120,  // 面板数据
+        S2C_GameOver            = 121,  // 对局结束
 
 
 

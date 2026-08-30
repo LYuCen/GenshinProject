@@ -41,16 +41,19 @@ namespace mSystem.BuffSystem.ElementBuff.StatusEffect
         public void Execute()
         {
             if (_cancelled) return;
-
-            HurtSystem.HurtSystem.Instance.EnQueue(new HurtComponent()
+            if (!_controller.isVisualOnly)
             {
-                victimId = _controller.id,
-                Element = 1,
-                ElementMeasure = 0,
-                Harm = 5,
-                HitType = 0,
-                Transform = _controller.transform
-            });
+                HurtSystem.HurtSystem.Instance.EnQueue(new HurtComponent()
+                {
+                    victimId = _controller.id,
+                    Element = 1,
+                    ElementMeasure = 0,
+                    Harm = 5,
+                    HitType = 0,
+                    Transform = _controller.transform
+                });
+            }
+            
             double next = TriggerTime + _interval;
             if (next < _endTime)
             {

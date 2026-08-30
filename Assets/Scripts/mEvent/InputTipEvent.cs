@@ -1,14 +1,13 @@
-﻿using mView.TipView;
+﻿using System;
+using mView.TipView;
 
 namespace mEvent
 {
     public class InputTipEvent
     {
-        public InputTipType Type;
-
-        public InputTipEvent(InputTipType type)
-        {
-            Type = type;
-        }
+        public string TitleStr;
+        public string PlaceholderStr;
+        public Action<string> Apply;
+        public Action Abandon;
     }
 }

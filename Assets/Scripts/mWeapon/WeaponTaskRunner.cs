@@ -13,9 +13,9 @@
             _currentTask.Start();
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
-            _currentTask?.Tick();
+            _currentTask?.Tick(dt);
 
             if (_currentTask != null && _currentTask.Finished)
             {

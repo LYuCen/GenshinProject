@@ -15,50 +15,35 @@ namespace Connect.Converter
             public short Yaw;
             public short Pitch;
             public ushort HoldButton;
+            public uint ServerTick;
         }
 
-        public static byte[] Pack(uint sequence, InputSample[] samples)
+        public static byte[] Pack(InputSample sample)
         {
             _builder.Clear();
 
-            var offsets = new Offset<InputDataFlat>[samples.Length];
-            for (int i = 0; i < samples.Length; i++)
-            {
-                var s = samples[i];
-                offsets[i] =
-                    InputDataFlat.CreateInputDataFlat(_builder, s.Tick, s.InputX, s.InputY, s.Yaw, s.Pitch, s.HoldButton);
-            }
-
-            var cmdVector = InputPacket.CreateCommandVector(_builder, offsets);
-            InputPacket.StartInputPacket(_builder);
-            InputPacket.AddSequence(_builder, sequence);
-            InputPacket.AddCommand(_builder, cmdVector);
-            var root = InputPacket.EndInputPacket(_builder);
+            var root = InputDataFlat.CreateInputDataFlat(_builder,
+                sample.Tick, sample.InputX, sample.InputY, sample.Yaw, sample.Pitch,
+                sample.HoldButton, sample.ServerTick);
             _builder.Finish(root.Value);
             return _builder.SizedByteArray();
         }
 
-        public static void Unpack(byte[] data, out uint sequence, out InputSample[] samples)
+        public static InputSample Unpack(byte[] data)
         {
             var bb = new ByteBuffer(data);
-            var packet = InputPacket.GetRootAsInputPacket(bb);
-            sequence = packet.Sequence;
+            var flat = InputDataFlat.GetRootAsInputDataFlat(bb);
 
-            int count = packet.CommandLength;
-            samples = new InputSample[count];
-            for (int i = 0; i < count; i++)
+            return new InputSample
             {
-                var cmd = packet.Command(i).Value;
-                samples[i] = new InputSample
-                {
-                    Tick = cmd.Tick,
-                    InputX = cmd.InputX,
-                    InputY = cmd.InputY,
-                    Yaw = cmd.Yaw,
-                    Pitch = cmd.Pitch,
-                    HoldButton = cmd.HoldButton
-                };
-            }
+                Tick = flat.Tick,
+                InputX = flat.InputX,
+                InputY = flat.InputY,
+                Yaw = flat.Yaw,
+                Pitch = flat.Pitch,
+                HoldButton = flat.HoldButton,
+                ServerTick = flat.ServerTick
+            };
         }
     }
 }

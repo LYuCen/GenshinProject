@@ -13,6 +13,10 @@ table SinglePositionFlat {
     move_state:ushort;
     level_speed:ushort;
     vertical_speed:short;
+    
+    input_x:short;
+    input_y:short;
+    aim_position:Vec3;
 }
 
 table PositionListFlat {

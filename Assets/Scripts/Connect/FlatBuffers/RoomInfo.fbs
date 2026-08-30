@@ -1,0 +1,23 @@
+﻿namespace Connect.RoomDTO;
+
+enum DiscoveryKind : ubyte { Request = 0, Info = 1 }
+
+table RoomInfoFlat{
+    room_name:string;
+    scene_name:string;
+    room_introduction:string;
+    has_password:bool;
+    max_players:ushort;
+    game_time:ushort;
+    kill_value:ushort;
+    current_players:ushort;
+    host_ip:string;
+    host_port:ushort;
+}
+
+table DiscoveryPacket{
+    kind:DiscoveryKind;
+    info:RoomInfoFlat;
+}
+
+root_type DiscoveryPacket;

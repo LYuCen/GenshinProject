@@ -19,7 +19,7 @@ namespace mModel
         }
     }
     
-    public class BagModel : AbstractModel
+    public class BagModel : AbstractModel, IInventory
     {
         private List<BulletInfo> _bullets;
         private AbstractGun _primaryWeapon;
@@ -40,7 +40,7 @@ namespace mModel
             {
                 var ir = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/FnIws/FnIws.asset",
                     false);
-                _fnIws = new WeaponPro(ir.GetAsset<WeaponData>());
+                _fnIws = new WeaponPro(ir.GetAsset<WeaponData>(), this);
             }
             Weapon = _fnIws;
         }
@@ -51,7 +51,7 @@ namespace mModel
             {
                 var ir2 = ResourceManager.instance.Load("Assets/AssetBundle/ScriptableObject/Weapon/Spr2/Spr2.asset",
                     false);
-                _spr2 = new WeaponPro(ir2.GetAsset<WeaponData>());
+                _spr2 = new WeaponPro(ir2.GetAsset<WeaponData>(), this);
             }
             Weapon = _spr2;
         }
@@ -59,6 +59,8 @@ namespace mModel
         public AbstractGun GetPrimaryWeapon() => _primaryWeapon;
         public AbstractGun GetSecondaryWeapon() => _secondaryWeapon;
         public BulletInfo GetBullet(int i) => _bullets[i];
+
+        public ElementEnum ChosenElement => _bullets[_index].Data;
 
         public BulletInfo GetBullet(ElementEnum e)
         {

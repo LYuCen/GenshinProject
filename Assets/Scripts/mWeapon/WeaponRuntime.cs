@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using mEvent;
 using mWeapon.Component;
-using QFramework;
 
 namespace mWeapon
 {
     /// <summary>
     /// 供外界读取的武器状态数据
     /// </summary>
-    public class WeaponRuntime : IReadOnlyWeaponRuntime, ICanSendEvent
+    public class WeaponRuntime : IReadOnlyWeaponRuntime
     {
         private readonly HashSet<WeaponStateTags> _states = new();
         public MagazineComponent Component { get; set; }
@@ -25,13 +23,11 @@ namespace mWeapon
 
         public void AddState(WeaponStateTags tag)
         {
-            this.SendEvent<WeaponStateUpdateEvent>();
             _states.Add(tag);
         }
 
         public void RemoveState(WeaponStateTags tag)
         {
-            this.SendEvent<WeaponStateUpdateEvent>();
             _states.Remove(tag);
         }
         
@@ -43,16 +39,13 @@ namespace mWeapon
             OnStateChanged?.Invoke();
         }
 
+        public void NotifyAmmoChanged() => OnAmmoChanged?.Invoke();
+
         public void Reset()
         {
             _states.Clear(); // 清除字典状态
             Stance = WeaponStance.Normal; // 清除据枪状态
             OnReset?.Invoke();
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

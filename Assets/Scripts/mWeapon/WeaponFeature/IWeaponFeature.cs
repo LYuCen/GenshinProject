@@ -6,7 +6,7 @@
 
         void HandleAction(WeaponAction action);
 
-        void Tick();
+        void Tick(float dt);
         
         void OnEnter();
 

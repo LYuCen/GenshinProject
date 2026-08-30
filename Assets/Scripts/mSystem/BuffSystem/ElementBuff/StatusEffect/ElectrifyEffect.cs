@@ -33,6 +33,7 @@ namespace mSystem.BuffSystem.ElementBuff.StatusEffect
         public void Execute()
         {
             if (_cancelled) return;
+            
 
             if (!_controller.Elements[(int)ElementEnum.Water].Enable ||
                 !_controller.Elements[(int)ElementEnum.Elect].Enable)
@@ -41,9 +42,14 @@ namespace mSystem.BuffSystem.ElementBuff.StatusEffect
                 return;
             }
             
-            // 消耗 0.4 单位水和雷
-            _controller.ConsumeElement((int)ElementEnum.Water, 0.4f);
-            _controller.ConsumeElement((int)ElementEnum.Elect, 0.4f);
+            if (_controller.isVisualOnly)
+            {
+                // 消耗 0.4 单位水和雷
+                _controller.ConsumeElement((int)ElementEnum.Water, 0.4f);
+                _controller.ConsumeElement((int)ElementEnum.Elect, 0.4f);
+            }
+            
+            
             TriggerTime += _interval;
             TimeSystem.Instance.Add(this);
         }

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using mSystem.InputSystem.Context;
 using mSystem.InputSystem.mKey;
-using QFramework;
 
 namespace mSystem.InputSystem.KeyHandlers.Handlers
 {
-    public class ShootHandler : KeyHandler, ICanSendEvent
+    public class ShootHandler : KeyHandler
     {
         public ShootHandler(InputContext context) : base(context)
         {
@@ -20,15 +19,10 @@ namespace mSystem.InputSystem.KeyHandlers.Handlers
                 if (key.GetKeyName() == "InShoot")
                 {
                     Context.SecondaryAction.Down = key.GetIsDown();
-                    Context.SecondaryAction.Press = key.GetIsLongPress();
+                    Context.SecondaryAction.Press = key.GetIsPress();
                     Context.SecondaryAction.Up = key.GetIsUp();
                 }
             }
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

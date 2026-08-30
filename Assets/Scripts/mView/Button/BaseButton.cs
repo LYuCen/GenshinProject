@@ -14,6 +14,7 @@ namespace mView.Button
 
         private void Start()
         {
+            if(button == null) return;
             button.onClick.AddListener(() =>
             {
                 OnClick?.Invoke();
@@ -32,12 +33,12 @@ namespace mView.Button
 
         public void OnEnable()
         {
-            button.enabled = true;
+            if(button) button.enabled = true;
         }
 
         public void OnDisable()
         {
-            button.enabled = false;
+            if(button) button.enabled = false;
             enterImg.SetActive(false);
         }
     }

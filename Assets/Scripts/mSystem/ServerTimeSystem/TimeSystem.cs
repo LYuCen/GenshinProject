@@ -11,6 +11,8 @@ namespace mSystem.ServerTimeSystem
     {
         private readonly List<ITimeEvent> _events = new();
 
+        public bool autoTick = true; // 服务端修改为 false，手动控制时间
+
         public void Add(ITimeEvent e)
         {
             _events.Add(e);
@@ -30,7 +32,7 @@ namespace mSystem.ServerTimeSystem
 
         private void FixedUpdate()
         {
-            Tick(Time.fixedTime);
+            if(autoTick) Tick(Time.fixedTime);
         }
     }
 }

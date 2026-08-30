@@ -32,7 +32,7 @@ namespace mWeapon.WeaponFeature
             if(action.Reload.Up) TryReload();
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
         }
 
@@ -53,7 +53,7 @@ namespace mWeapon.WeaponFeature
             if(runtime.HasState(WeaponStateTags.Reloading)) return;
 
             MagazineComponent mag = _weapon.GetComponent<MagazineComponent>();
-            ElementEnum chosen = _weapon.BagModel.GetBullet();
+            ElementEnum chosen = _weapon.Inventory.ChosenElement;
 
             // 满弹且同元素
             if (mag.IsFull && mag.ElementEnum == chosen) return;

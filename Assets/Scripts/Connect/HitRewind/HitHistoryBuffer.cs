@@ -21,7 +21,7 @@ namespace Connect.HitRewind
         {
             var copy = new HitSnapshot
             {
-                ServerTime = add.ServerTime,
+                ServerTick = add.ServerTick,
                 Shapes = new HitShape[add.Shapes.Length]     
             };
             System.Array.Copy(add.Shapes, copy.Shapes, add.Shapes.Length);
@@ -31,7 +31,7 @@ namespace Connect.HitRewind
 
         }
 
-        public bool FindClosest(float targetTime, out HitSnapshot result)
+        public bool FindClosest(uint targetTick, out HitSnapshot result)
         {
             result = default;
             if (_count == 0) return false;
@@ -41,14 +41,17 @@ namespace Connect.HitRewind
             for (int i = 0; i < _count; i++)
             {
                 int idx = (l + i) % _size;
-                if (Mathf.Abs(result.ServerTime - targetTime) >
-                    Mathf.Abs(_queue[idx].ServerTime - targetTime))
+                if (TickDisk(result.ServerTick, targetTick) > TickDisk(_queue[idx].ServerTick, targetTick))
                 {
                     result = _queue[idx];
                 }
             }
             return true;
+        }
 
+        private long TickDisk(uint a, uint b)
+        {
+            return a >= b ? (long)(a - b) : (long)(b - a);
         }
     }
 }

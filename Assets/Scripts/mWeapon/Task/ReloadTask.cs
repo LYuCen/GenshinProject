@@ -1,13 +1,11 @@
-﻿using mEvent;
-using mModel;
+﻿using mModel;
 using mSystem.BuffSystem.ElementBuff;
 using mWeapon.Component;
-using QFramework;
 using UnityEngine;
 
 namespace mWeapon.Task
 {
-    public class ReloadTask : IWeaponTask, ICanSendEvent
+    public class ReloadTask : IWeaponTask
     {
         private readonly WeaponRuntime _runtime;
         private float _timer;
@@ -25,9 +23,9 @@ namespace mWeapon.Task
             _runtime.AddState(WeaponStateTags.Reloading);
             _timer = _reloadTime;
         }
-        public void Tick()
+        public void Tick(float dt)
         {
-            _timer -= Time.deltaTime;
+            _timer -= dt;
             if (_timer <= 0)
             {
                 Finish();
@@ -40,28 +38,22 @@ namespace mWeapon.Task
 
             // 归还子弹
             var old = new BulletInfo(mag.ElementEnum, mag.BulletVal);
-            _weapon.BagModel.ReturnBullet(old);
+            _weapon.Inventory.ReturnBullet(old);
 
-            ElementEnum chosen = _weapon.BagModel.GetBullet();
+            ElementEnum chosen = _weapon.Inventory.ChosenElement;
             mag.ElementEnum = chosen;
-            mag.BulletVal = Mathf.Min(_weapon.BagModel.GetBullet(chosen).Val, mag.MagSize);
+            mag.BulletVal = Mathf.Min(_weapon.Inventory.GetBullet(chosen).Val, mag.MagSize);
             
             var info = new BulletInfo(chosen, mag.BulletVal);
-            _weapon.BagModel.DeductBullet(info); 
-            this.SendEvent<WeaponDataUpdateEvent>(); 
+            _weapon.Inventory.DeductBullet(info); 
+            _runtime.NotifyAmmoChanged();
             Finished = true;
-
         }
         
         public void Cancel()
         {
             _runtime.RemoveState(WeaponStateTags.Reloading);
             Finished = true;
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

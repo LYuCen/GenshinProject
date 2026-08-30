@@ -13,7 +13,7 @@ namespace mController.Player.InputController.Inputs.ActionHandler
         {
             if (MyManager.GetLogic() is LocalPlayerLogic logic)
             {
-                logic.buttons |= PlayerInputStateBoolBit.BUTTON_SPRINT;
+                
             }
         }
     }

@@ -1,0 +1,12 @@
+﻿namespace Connect.LobbyDTO;
+
+table LobbyPlayerFlat{
+    player_id:int;
+    name:string;
+}
+
+table LobbyPlayerList{
+    players:[LobbyPlayerFlat];
+}
+
+root_type LobbyPlayerList;

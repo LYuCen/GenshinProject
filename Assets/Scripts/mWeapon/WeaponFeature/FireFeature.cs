@@ -1,13 +1,10 @@
 ﻿using System;
-using mEvent;
 using mWeapon.Component;
 using mWeapon.FeatureData;
-using QFramework;
-using UnityEngine;
 
 namespace mWeapon.WeaponFeature
 {
-    public class FireFeature : IWeaponFeature, ICanSendEvent
+    public class FireFeature : IWeaponFeature
     {
         public Action OnFire;
         public Action OnEmptyMag;
@@ -36,9 +33,9 @@ namespace mWeapon.WeaponFeature
             else if(action.Primary.Press && _data.automatic) TryFire();
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
-            _timer -= Time.deltaTime;
+            _timer -= dt;
         }
 
         public void OnEnter()
@@ -67,19 +64,8 @@ namespace mWeapon.WeaponFeature
             }
             _timer = 60f / _data.fireRate;
             mag.BulletVal--;
-
-            Fire();
-            this.SendEvent<WeaponDataUpdateEvent>();
+            _weapon.InternalRuntime.NotifyAmmoChanged();
             OnFire?.Invoke();
-        }
-
-        private void Fire()
-        {
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

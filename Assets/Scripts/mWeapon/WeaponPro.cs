@@ -9,7 +9,7 @@ using QFramework;
 
 namespace mWeapon
 {
-    public class WeaponPro : IController
+    public class WeaponPro
     {
         public IReadOnlyWeaponRuntime Runtime => _runtime;
         internal WeaponRuntime InternalRuntime => _runtime;
@@ -23,14 +23,15 @@ namespace mWeapon
         private readonly List<IWeaponFeature> _features = new();
         private readonly Dictionary<Type, object> _components = new();
         private readonly WeaponData _data;
-        public readonly BagModel BagModel;
+        private readonly IInventory _inventory;
+        public IInventory Inventory => _inventory;
 
-        public WeaponPro(WeaponData data)
+        public WeaponPro(WeaponData data, IInventory inventory)
         {
             _data = data;
+            _inventory = inventory;
             _runtime = new WeaponRuntime();
             TaskRunner = new WeaponTaskRunner();
-            BagModel = this.GetModel<BagModel>();
             BuildComponents();
             BuildFeatures();
             _runtime.Component = GetComponent<MagazineComponent>();
@@ -125,13 +126,13 @@ namespace mWeapon
             }
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
-            TaskRunner.Tick();
+            TaskRunner.Tick(dt);
 
             foreach (var feature in _features)
             {
-                feature.Tick();
+                feature.Tick(dt);
             }
         }
         
@@ -149,11 +150,6 @@ namespace mWeapon
             {
                 feature.OnExit();
             }
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

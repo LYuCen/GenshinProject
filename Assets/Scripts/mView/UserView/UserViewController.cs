@@ -1,9 +1,7 @@
-﻿using System;
-using mCommand;
+﻿using mCommand;
 using mEvent;
 using mModel;
 using mView.Button;
-using mView.TipView;
 using QFramework;
 using TMPro;
 using UnityEngine;
@@ -22,11 +20,11 @@ namespace mView.UserView
         {
             setName.OnClick += () =>
             {
-                this.SendCommand(new InputTipCommand(InputTipType.Name));
+                this.SendCommand(new InputTipCommand("提示", "请输入新昵称", UpdateName, null));
             };
             setSignature.OnClick += () =>
             {
-                this.SendCommand(new InputTipCommand(InputTipType.Signature));
+                this.SendCommand(new InputTipCommand("提示", "请输入新签名", UpdateSignature, null));
             };
 
             this.RegisterEvent<UpdateUserInfoEvent>(_ =>
@@ -50,6 +48,18 @@ namespace mView.UserView
             var model = this.GetModel<IUserModel>();
             userName.text = model.UserInfo.Name;
             userSignature.text = model.UserInfo.Signature;
+        }
+
+        private void UpdateName(string str)
+        {
+            this.GetModel<IUserModel>().UpdateName(str);
+            this.SendCommand(new UpdateUserInfoCommand());
+        }
+
+        private void UpdateSignature(string str)
+        {
+            this.GetModel<IUserModel>().UpdateSignature(str);
+            this.SendCommand(new UpdateUserInfoCommand());
         }
 
         public IArchitecture GetArchitecture()

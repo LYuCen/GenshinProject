@@ -1,0 +1,19 @@
+﻿namespace Connect.ScoreboardDTO;
+
+table ScoreboardEntry{
+    player_id:int;
+    name:string;
+    kill:ubyte;
+    death:ubyte;
+    team:ubyte;
+}
+
+table Scoreboard{
+    blue_score:ubyte;
+    red_score:ubyte;
+    entries:[ScoreboardEntry];
+    remain_time:ushort;
+    kill_value:ushort;
+}
+
+root_type Scoreboard;

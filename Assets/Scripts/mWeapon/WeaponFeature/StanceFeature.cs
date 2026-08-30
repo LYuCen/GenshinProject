@@ -1,12 +1,9 @@
-﻿using mEvent;
-using mSystem.InputSystem;
+﻿using mSystem.InputSystem;
 using mWeapon.FeatureData;
-using QFramework;
-using UnityEngine;
 
 namespace mWeapon.WeaponFeature
 {
-    public class StanceFeature : IWeaponFeature, ICanSendEvent
+    public class StanceFeature : IWeaponFeature
     {
         private WeaponPro _weapon;
         private readonly StanceFeatureData _data;
@@ -14,6 +11,7 @@ namespace mWeapon.WeaponFeature
         private WeaponStance CurrentStance => _weapon.Runtime.Stance;
         private float _holdTimer;
         private bool _enteredShoulder;
+        private bool _holdAccumulate; // 本 tick 是否累加按住时间
 
         public StanceFeature(StanceFeatureData data)
         {
@@ -31,15 +29,16 @@ namespace mWeapon.WeaponFeature
 
         public void HandleAction(WeaponAction action)
         {
+            _holdAccumulate = false;
             if (!action.Secondary.IsActive()) return;
             if (_weapon.Runtime.HasState(WeaponStateTags.Reloading)) return;
             if (_weapon.Runtime.HasState(WeaponStateTags.Bolting)) return;
             HandleSecondary(action.Secondary);
         }
 
-        public void Tick()
+        public void Tick(float dt)
         {
-            
+            if (_holdAccumulate) _holdTimer += dt;
         }
 
         public void OnEnter()
@@ -69,10 +68,7 @@ namespace mWeapon.WeaponFeature
             }
 
             // 按住
-            if (secondary.Press)
-            {
-                _holdTimer += Time.deltaTime;
-            }
+            _holdAccumulate = secondary.Press;
 
             // 松开
             if (secondary.Up)
@@ -130,12 +126,6 @@ namespace mWeapon.WeaponFeature
         private void SetStance(WeaponStance stance)
         {
             _weapon.InternalRuntime.SetStance(stance);
-            this.SendEvent<FrontSightEvent>();
-        }
-
-        public IArchitecture GetArchitecture()
-        {
-            return GenshinArchitecture.Interface;
         }
     }
 }

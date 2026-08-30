@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Connect.DTO;
 using mModel.SettingModel;
 using mSystem.InputSystem.mKey;
 using mSystem.InputSystem.mKey.Keys;
@@ -43,6 +44,7 @@ namespace mSystem.InputSystem
             _keys.Add(new MainGunKey(     model.GetKey("Weapon1", model.CombatConfig)));
             _keys.Add(new MainGun2Key(    model.GetKey("Weapon2", model.CombatConfig)));
             _keys.Add(new ThrowGrenadeKey(model.GetKey("Grenade", model.CombatConfig)));
+            _keys.Add(new ScoreboardKey(  model.GetKey("Scoreboard", model.CombatConfig)));
             
             _keys.Add(new SettingKey(KeyCode.Escape));
         }

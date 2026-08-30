@@ -1,22 +1,15 @@
 ﻿namespace Connect.ShootDTO;
 
-struct Vec3 {
-  x:float;
-  y:float;
-  z:float;
-}
-
 table ShootDataFlat{
     shooter_id: int;
-    position: Vec3;
-    forward: Vec3;
-    speed: float;
-    element: int;
-    base_hit: float;
-    head_hit: float;
-    element_measure: float;
-    move_time: float;
-    client_time: float;
+    pos_x:short;
+    pos_y:short;
+    pos_z:short;
+    dir_x:byte;
+    dir_y:byte;
+    dir_z:byte;
+    speed:ushort;
+    element:ubyte;
 }
 
 root_type ShootDataFlat;

@@ -5,12 +5,17 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterrupt
 {
     public class PlayerDeadState : AbstractLeafLevelState<PlayerManager>
     {
+        private float _timer;
+        private bool _reviveSent;
+        
         public PlayerDeadState(PlayerManager manager, AbstractCondition<PlayerManager> selfCondition) : base(manager, selfCondition)
         {
         }
 
         public override void Enter()
         {
+            _timer = 0f;
+            _reviveSent = false;
             MyManager.DisableModule();
             MyManager.CreateDeathSnapshot();
 
@@ -29,9 +34,12 @@ namespace GameFSM.LevelFSM.PlayerFSM.LevelFSMState.LowerFSMState.GlobalInterrupt
         public override void Update()
         {
             if (!MyManager.IsLocal) return;
+            if (_reviveSent) return;
 
-            if (Input.GetKeyDown(KeyCode.O))
+            _timer += Time.deltaTime;
+            if (_timer >= 3f)
             {
+                _reviveSent = true;
                 MyManager.SendReviveRequest();
             }
         }

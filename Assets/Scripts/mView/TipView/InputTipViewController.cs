@@ -8,34 +8,31 @@ namespace mView.TipView
 {
     public class InputTipViewController : MonoBehaviour
     {
+        [SerializeField] private TextMeshProUGUI title;
+        [SerializeField] private TextMeshProUGUI placeholder;
         [SerializeField] private RectTransform tip;
         [SerializeField] private BaseButton apply;
         [SerializeField] private BaseButton abandon;
         [SerializeField] private TMP_InputField inputField;
         
-        public Action<string> OnApplyClick;
-        public Action OnAbandonClick;
-        public Action OnCloseTip;
-
-        public void Start()
-        {
-            apply.OnClick += () =>
-            {
-                OnApplyClick?.Invoke(inputField.text);
-                OnClose();
-            };
-
-            abandon.OnClick += () =>
-            {
-                OnAbandonClick?.Invoke();
-                OnClose();
-            };
-        }
-
-        public void OnEnable()
+        private Action<string> _onApplyClick;
+        private Action _onAbandonClick;
+        
+        private void OnEnable()
         {
             tip.localScale = new Vector3(1, 0, 1);
-            tip.DOScale(Vector3.one, 0.2f); 
+            tip.DOScale(Vector3.one, 0.2f);
+
+            apply.OnClick += HandleApply;
+            abandon.OnClick += HandleAbandon;
+        }
+
+        public void Init(string titleStr, string placeholderStr, Action<string> onApplyClick, Action onAbandonClick)
+        {
+            title.text = titleStr;
+            placeholder.text = placeholderStr;
+            _onApplyClick = onApplyClick;
+            _onAbandonClick = onAbandonClick;
         }
 
         private void OnClose()
@@ -44,15 +41,28 @@ namespace mView.TipView
             {
                 gameObject.SetActive(false);
                 inputField.text = "";
-                ClearListener();
-                OnCloseTip?.Invoke();
             });
         }
 
-        private void ClearListener()
+        private void HandleApply()
         {
-            OnApplyClick = null;
-            OnAbandonClick = null;
+            _onApplyClick?.Invoke(inputField.text);
+            OnClose();
+        }
+
+        private void HandleAbandon()
+        {
+            _onAbandonClick?.Invoke();
+            OnClose();
+        }
+
+        private void OnDisable()
+        {
+            apply.OnClick -= HandleApply;
+            abandon.OnClick -= HandleAbandon;
+
+            _onApplyClick = null;
+            _onAbandonClick = null;
         }
     }
 }

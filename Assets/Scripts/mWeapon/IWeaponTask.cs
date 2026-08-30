@@ -13,7 +13,7 @@
         /// <summary>
         /// 状态运行
         /// </summary>
-        void Tick();
+        void Tick(float dt);
 
         /// <summary>
         /// 状态打断

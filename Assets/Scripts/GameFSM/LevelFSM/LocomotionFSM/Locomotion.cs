@@ -18,6 +18,7 @@ namespace GameFSM.LevelFSM.LocomotionFSM
         public bool IsSprint;
         public bool IsCrouch;
         public bool IsJump;
+        public bool IsAiming; // 是否在瞄准状态
         public Vector3 MoveVec; // 移动正方向
         
         // 物理模拟

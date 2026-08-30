@@ -2,7 +2,7 @@
 {
     public struct HitSnapshot
     {
-        public float ServerTime;
+        public uint ServerTick;
         public HitShape[] Shapes;
     }
 }

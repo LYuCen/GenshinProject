@@ -3,7 +3,6 @@ using BaseClass;
 using Connect.Core;
 using Connect.Simulation;
 using GameFSM.LevelFSM.PlayerFSM;
-using Player.ManagerLogic;
 using UnityEngine;
 
 namespace Connect
@@ -11,6 +10,7 @@ namespace Connect
     public class NetworkService : AbstractSingleton<NetworkService>
     {
         public static INetworkBridge Bridge;
+        public static event Action OnServerLost; // 服务器连接断开
         public ConnectionStateMachine StateMachine { get; private set; }
         public HeartbeatService Heartbeat { get; private set; }
         public UserClient Client { get; private set; }
@@ -20,6 +20,7 @@ namespace Connect
         public string serverIp = "127.0.0.1";
         public int serverPort = 8888;
         public PlayerManager playerManager;
+        
 
         private float _reconnectTimer;
         private bool _reconnecting;
@@ -28,6 +29,7 @@ namespace Connect
         protected override void Awake()
         {
             base.Awake();
+            if (Instance != this) return;
             StateMachine = new ConnectionStateMachine();
             Heartbeat = new HeartbeatService();
 
@@ -106,7 +108,6 @@ namespace Connect
         {
             try
             {
-                playerManager = PlayerPool.Instance.Models[1000];
                 
                 Client = new UserClient();
                 Client.Connect(serverIp, serverPort);
@@ -114,7 +115,6 @@ namespace Connect
                 // 绑定 Listener 到这个新的客户端
                 Listener.Instance.BindToClient(Client);
                 StateMachine.OnConnectSuccess();
-                PlayerPool.Instance.ClearBots();
                 isSinglePlayer = false;
                 return true;
             }
@@ -143,6 +143,14 @@ namespace Connect
                     Debug.Log($"[Bridge] 创建 RealNetworkBridge, Client={Client?.GetHashCode()}, Client.MyId={Client?.MyId}");
                     break;
                 case ConnectionState.Disconnected:
+                    if (old == ConnectionState.Reconnecting)
+                    {
+                        // 连接超时，断开服务器连接
+                        OnServerLost?.Invoke();
+                    }
+
+                    Bridge = null;
+                    break;
                 case ConnectionState.Reconnecting:
                     Debug.Log($"[Bridge] Bridge = null, old={old}, new={@new}");
                     Bridge = null;
