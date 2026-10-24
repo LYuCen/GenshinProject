@@ -14,6 +14,7 @@
         C2S_CreateRoom          = 12,   // 客户端请求创建房间
         C2S_GetLobbyPlayers     = 13,   // 请求大厅玩家列表
         C2S_GetRoomInfo         = 14,   // 获取房间信息
+        C2S_Ping                = 15,   // 测量网络延迟
         
         
         // S2C: 服务器通知客户端
@@ -38,6 +39,7 @@
         S2C_LobbyPlayers        = 119,  // 大厅玩家列表
         S2C_Scoreboard          = 120,  // 面板数据
         S2C_GameOver            = 121,  // 对局结束
+        S2C_Pong                = 122,  // 返回网络延迟
 
 
 

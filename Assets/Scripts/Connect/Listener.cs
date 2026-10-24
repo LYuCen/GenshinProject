@@ -9,6 +9,7 @@ using Connect.ShootDTO;
 using Firearms;
 using Firearms.Bullet;
 using Connect.ElementBuffDTO;
+using Cysharp.Threading.Tasks;
 using Firearms.Muzzle;
 using GameFSM.LevelFSM.PlayerFSM;
 using Google.FlatBuffers;
@@ -22,7 +23,6 @@ using mSystem.InputSystem;
 using mSystem.ServerTimeSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Task = System.Threading.Tasks.Task;
 
 namespace Connect
 {
@@ -281,14 +281,12 @@ namespace Connect
             }
         }
 
-        private async void StartLoadGameScene()
+        private async UniTaskVoid StartLoadGameScene()
         {
             if (SceneManager.GetActiveScene().name == "Level") return;
             try
             {
-                var op = SceneManager.LoadSceneAsync("Level");
-                if (op == null) return;
-                while (!op.isDone) await Task.Yield();
+                await SceneManager.LoadSceneAsync("Level");
 
                 GameEnter.Instance.isGame = true;
                 NetworkService.Bridge?.SendToServer(new Message(MessageType.C2S_SceneLoaded, Array.Empty<byte>()));

@@ -1,5 +1,6 @@
 ﻿using System;
 using DG.Tweening;
+using mSystem.SoundSystem;
 using mView.Button;
 using TMPro;
 using UnityEngine;
@@ -14,9 +15,11 @@ namespace mView.TipView
         [SerializeField] private BaseButton apply;
         [SerializeField] private BaseButton abandon;
         [SerializeField] private TMP_InputField inputField;
+        public AudioClip clip;
         
         private Action<string> _onApplyClick;
         private Action _onAbandonClick;
+        private IAudioSystem _audioSystem;
         
         private void OnEnable()
         {
@@ -27,7 +30,12 @@ namespace mView.TipView
             abandon.OnClick += HandleAbandon;
         }
 
-        public void Init(string titleStr, string placeholderStr, Action<string> onApplyClick, Action onAbandonClick)
+        public void Init(IAudioSystem audioSystem)
+        {
+            _audioSystem = audioSystem;
+        }
+
+        public void ShowTip(string titleStr, string placeholderStr, Action<string> onApplyClick, Action onAbandonClick)
         {
             title.text = titleStr;
             placeholder.text = placeholderStr;
@@ -58,6 +66,7 @@ namespace mView.TipView
 
         private void OnDisable()
         {
+            _audioSystem.PlaySound(clip);
             apply.OnClick -= HandleApply;
             abandon.OnClick -= HandleAbandon;
 

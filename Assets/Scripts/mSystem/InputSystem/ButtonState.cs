@@ -13,14 +13,5 @@
         {
             return Down || Press || Up;
         }
-
-        /// <summary>
-        /// 每帧重置瞬态状态
-        /// </summary>
-        public void ResetFrameState()
-        {
-            Down = false;
-            Up = false;
-        }
     }
 }

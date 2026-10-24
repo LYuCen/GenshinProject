@@ -1,5 +1,6 @@
 ﻿using BaseClass;
 using mEvent;
+using mSystem.SoundSystem;
 using QFramework;
 using TMPro;
 using UnityEngine;
@@ -15,6 +16,9 @@ namespace mView.TipView
 
         private void Start()
         {
+            textTip.Init(this.GetSystem<IAudioSystem>());
+            inputTip.Init(this.GetSystem<IAudioSystem>());
+            
             this.RegisterEvent<InputTipEvent>(ShowTip)
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
             this.RegisterEvent<TextTipEvent>(ShowTextTip)
@@ -23,7 +27,7 @@ namespace mView.TipView
 
         private void ShowTip(InputTipEvent e)
         {
-            inputTip.Init(e.TitleStr, e.PlaceholderStr, e.Apply, e.Abandon);
+            inputTip.ShowTip(e.TitleStr, e.PlaceholderStr, e.Apply, e.Abandon);
             inputTip.gameObject.SetActive(true);
         }
 

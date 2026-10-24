@@ -151,8 +151,7 @@ namespace Server
         
         public static class ButtonInput
         {
-            public static ButtonState Build(bool held,  
-                ref bool prevHeld)
+            public static ButtonState Build(bool held, ref bool prevHeld)
             {
                 var s = new ButtonState
                 {

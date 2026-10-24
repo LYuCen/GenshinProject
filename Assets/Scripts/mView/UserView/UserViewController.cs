@@ -1,6 +1,7 @@
 ﻿using mCommand;
 using mEvent;
 using mModel;
+using mSystem.SoundSystem;
 using mView.Button;
 using QFramework;
 using TMPro;
@@ -36,6 +37,9 @@ namespace mView.UserView
         public void ButtonClick()
         {
             gameObject.SetActive(!gameObject.activeSelf);
+            this.GetSystem<IAudioSystem>().PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
+
         }
 
         private void OnEnable()

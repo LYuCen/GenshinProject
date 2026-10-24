@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 
 namespace Connect.Core
 {
@@ -16,7 +17,7 @@ namespace Connect.Core
         public float ReconnectInterval = 2f;
         public int CurrentReconnectCount { get; private set; }
 
-        public Func<bool> OnTryConnect; // 尝试连接返回 true 表示成功
+        public Func<UniTask<bool>> OnTryConnect; // 尝试连接返回 true 表示成功
         public Action OnDisconnect;     // 执行断开逻辑
         public Action<ConnectionState> OnStateEnter; // 进入某状态
 

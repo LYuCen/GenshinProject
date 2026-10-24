@@ -1,5 +1,4 @@
 ﻿using mModel.SettingModel;
-using mSystem.SoundSystem;
 using QFramework;
 
 namespace mSystem.mSettingSystem.Applier.Voice
@@ -11,7 +10,6 @@ namespace mSystem.mSettingSystem.Applier.Voice
         {
             var volume = value / 100f;
             AudioKit.Settings.MusicVolume.Value = volume;
-            AudioKit.Settings.SoundVolume.Value = volume;
             AudioKit.Settings.VoiceVolume.Value = volume;
         }
 

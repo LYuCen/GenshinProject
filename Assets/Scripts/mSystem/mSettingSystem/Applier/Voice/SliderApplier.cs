@@ -9,7 +9,7 @@ namespace mSystem.mSettingSystem.Applier.Voice
         public string Id => "base_slider";
         public void Apply(int value, SettingSaveData data)
         {
-            AudioSystem.Instance.SetVolumeValue(value);
+            AudioKit.Settings.SoundVolume.Value = value / 100f;
         }
 
         public IArchitecture GetArchitecture()

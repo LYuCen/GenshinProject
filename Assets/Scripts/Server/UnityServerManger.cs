@@ -13,6 +13,7 @@ using Connect;
 using Connect.Converter;
 using Connect.DTO;
 using Connect.Protocol;
+using Cysharp.Threading.Tasks;
 using mSystem.BuffSystem.ElementBuff;
 using mSystem.BuffSystem.ElementBuff.StatusEffect;
 using mSystem.ServerTimeSystem;
@@ -31,10 +32,7 @@ namespace Server
         private Dictionary<int, ServerPlayerObject> _players = new Dictionary<int, ServerPlayerObject>();
         private Dictionary<Socket, int> _socketToId = new Dictionary<Socket, int>();
         private int _nextId = 1000;
-
-        // 主线程任务队列 
-        private ConcurrentQueue<Action> _mainThreadTasks = new ConcurrentQueue<Action>();
-
+        
         private Dictionary<int, float> _lastHeartbeatTime = new Dictionary<int, float>();
         private const float HeartbeatTimeout = 10f;
         
@@ -50,7 +48,6 @@ namespace Server
         private long _fixLastTickTime;
         private const double TickRate = 0.05; //20Hz
         private const double TickFix = 0.02f; // 50Hz
-        private const int MaxTaskPerFrame = 5; // 最多一次性处理的网络连接请求数
         private float ServerTime => _serverClock.ElapsedMilliseconds / 1000f;
 
         private ServerState _state = ServerState.Lobby;
@@ -109,7 +106,7 @@ namespace Server
             _fixLastTickTime = _serverClock.ElapsedTicks;
 
             // 异步接收玩家连接
-            _listener.BeginAccept(OnAccept, null);
+            AcceptLoopAsync().Forget();
             StartUdpDiscovery();
 
             for (int i = 0; i < blueRebirthPoint.childCount; i++)
@@ -163,7 +160,6 @@ namespace Server
 
         void Update()
         {
-            ProcessMainThreadTasks();
             
             long now = _serverClock.ElapsedTicks;
             double elapsed = (double)(now - _lastTickTime) / Stopwatch.Frequency;
@@ -212,39 +208,26 @@ namespace Server
             }
         }
 
-        private void ProcessMainThreadTasks()
+        private async UniTaskVoid AcceptLoopAsync()
         {
-            int count = 0;
-
-            while(count < MaxTaskPerFrame && _mainThreadTasks.TryDequeue(out var task))
+            while (true)
             {
+                Socket client;
                 try
                 {
-                    task.Invoke();
+                    client = await _listener.AcceptAsync().AsUniTask(); // 在后台线程拿到连接
                 }
-                catch(Exception e)
+                catch (Exception ex)
                 {
-                    Debug.LogError(e);
+                    Debug.LogError("Accept Error: " + ex.Message);
+                    break;
                 }
 
-                count++;
-            }
-        }
-
-        /// <summary>
-        /// 玩家连接
-        /// </summary>
-        /// <param name="ar"></param>
-        private void OnAccept(IAsyncResult ar)
-        {
-            try
-            {
-                Socket client = _listener.EndAccept(ar);
                 client.NoDelay = true; // 禁用 Nagle 算法，解决 TCP 延迟合并包的问题
                 client.SendBufferSize = 65536;
                 client.ReceiveBufferSize = 65536;
                 
-                _mainThreadTasks.Enqueue(() =>
+                UniTask.Post(() =>
                 {
                     int id = _nextId++;
                     _lastHeartbeatTime[id] = ServerTime;
@@ -287,12 +270,6 @@ namespace Server
                         HandleStartGame(id);
                     }
                 });
-
-                _listener.BeginAccept(OnAccept, null);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("Accept Error: " + ex.Message);
             }
         }
 
@@ -349,7 +326,7 @@ namespace Server
         /// </summary>
         /// <param name="s">套接字</param>
         /// <param name="m">通知</param>
-        public void SendToClient(Socket s, Message m)
+        public async UniTaskVoid SendToClient(Socket s, Message m)
         {
             try
             {
@@ -370,17 +347,7 @@ namespace Server
                 // 写入 FlatBuffers 字符串内容
                 Buffer.BlockCopy(dataBytes, 0, fullPacket, 6, dataBytes.Length);
 
-                s.BeginSend(fullPacket, 0, fullPacket.Length, SocketFlags.None, (ar) =>
-                {
-                    try
-                    {
-                        s.EndSend(ar);
-                    }
-                    catch
-                    {
-                        /* 处理掉线 */
-                    }
-                }, null);
+                await s.SendAsync(fullPacket, SocketFlags.None).AsUniTask();
             }
             catch
             {
@@ -395,7 +362,7 @@ namespace Server
         public void CloseClient(Socket sclient)
         {
             // 同样需要确保在主线程销毁物体
-            _mainThreadTasks.Enqueue(() =>
+            UniTask.Post(() =>
             {
                 if (_socketToId.TryGetValue(sclient, out int playerId))
                 {
@@ -576,7 +543,7 @@ namespace Server
         {
             if (task != null)
             {
-                _mainThreadTasks.Enqueue(task);
+                UniTask.Post(task);
             }
         }
 
@@ -651,6 +618,12 @@ namespace Server
                     MessageType type = (MessageType)BitConverter.ToUInt16(body, 0);
                     byte[] data = new byte[size - 2];
                     Buffer.BlockCopy(body, 2, data, 0, data.Length);
+
+                    if (type == MessageType.C2S_Ping)
+                    {
+                        SendToClient(client, new Message(MessageType.S2C_Pong, data));
+                        continue;
+                    }
                     EnqueueTask(() => HandleMessage(id, client, type, data));
                 }
                 catch(Exception ex)

@@ -7,30 +7,32 @@ namespace mWeapon.Presenter
     public class WeaponAudioPresenter
     {
         private WeaponPro _weapon;
+        private IAudioSystem _audioSystem;
         
-        public WeaponAudioPresenter(WeaponPro weapon)
+        public WeaponAudioPresenter(WeaponPro weapon, IAudioSystem audioSystem)
         {
             _weapon = weapon;
+            _audioSystem = audioSystem;
         }
 
         private void OnFire()
         {
-            AudioSystem.Instance.PlaySound(_weapon.RequireComponent<AudioComponent>().FireAudioClip);
+            _audioSystem.PlaySound(_weapon.RequireComponent<AudioComponent>().FireAudioClip);
         }
         
         public void OnGet()
         {
-            AudioSystem.Instance.PlaySound(_weapon.RequireComponent<AudioComponent>().GetAudioClip);
+            _audioSystem.PlaySound(_weapon.RequireComponent<AudioComponent>().GetAudioClip);
         }
 
         private void OnReload()
         {
-            AudioSystem.Instance.PlaySound(_weapon.RequireComponent<AudioComponent>().ReloadAudioClip);
+            _audioSystem.PlaySound(_weapon.RequireComponent<AudioComponent>().ReloadAudioClip);
         }
 
         private void OnBolt()
         {
-            AudioSystem.Instance.PlaySound(_weapon.RequireComponent<AudioComponent>().BoltAudioClip);
+            _audioSystem.PlaySound(_weapon.RequireComponent<AudioComponent>().BoltAudioClip);
         }
         
         public void OnEnter()

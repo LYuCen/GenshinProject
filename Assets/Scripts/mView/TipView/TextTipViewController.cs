@@ -1,5 +1,6 @@
 ﻿using System;
 using DG.Tweening;
+using mSystem.SoundSystem;
 using mView.Button;
 using UnityEngine;
 
@@ -14,18 +15,28 @@ namespace mView.TipView
         public Action OnApplyClick;
         public Action OnAbandonClick;
         public Action OnCloseTip;
+        public AudioClip clip;
+
+        private IAudioSystem _audioSystem;
+
+        public void Init(IAudioSystem audioSystem)
+        {
+            _audioSystem = audioSystem;
+        }
 
         public void Start()
         {
             apply.OnClick += () =>
             {
                 OnApplyClick?.Invoke();
+                _audioSystem.PlaySound(clip);
                 OnClose();
             };
 
             abandon.OnClick += () =>
             {
                 OnAbandonClick?.Invoke();
+                _audioSystem.PlaySound(clip);
                 OnClose();
             };
         }

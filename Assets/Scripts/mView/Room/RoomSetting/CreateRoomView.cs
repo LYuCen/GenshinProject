@@ -6,13 +6,14 @@ using Connect.Converter;
 using Connect.Core;
 using Connect.DTO;
 using Connect.Protocol;
+using mSystem.SoundSystem;
 using mView.Button;
+using QFramework;
 using UnityEngine;
-using Application = UnityEngine.Device.Application;
 
 namespace mView.Room.RoomSetting
 {
-    public class CreateRoomView : MonoBehaviour
+    public class CreateRoomView : MonoBehaviour, IController
     {
         [SerializeField] private CreateRoomSetting roomSetting;
         [SerializeField] private BaseButton closeBtn;
@@ -30,7 +31,13 @@ namespace mView.Room.RoomSetting
         public void Start()
         {
             roomSetting.CreateBtnClick = CreateRoom;
-            closeBtn.OnClick = () => gameObject.SetActive(false);
+            closeBtn.OnClick = () =>
+            {
+                gameObject.SetActive(false);
+                this.GetSystem<IAudioSystem>().PlaySound(
+                    "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
+
+            };
         }
 
         private void CreateRoom(CreateRoomSettingData data, int playValue, int time, int kill)
@@ -95,6 +102,11 @@ namespace mView.Room.RoomSetting
                 new Message(MessageType.C2S_CreateRoom, RoomInfoConverter.PackInfo(dto)));
             
             OnCreateRoom?.Invoke(data, playValue, time, kill);
+        }
+
+        public IArchitecture GetArchitecture()
+        {
+            return GenshinArchitecture.Interface;
         }
     }
 }

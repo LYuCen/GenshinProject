@@ -12,9 +12,9 @@ namespace mSystem.InputSystem
     {
         public bool Enable { get; set; }
         public bool GamePlayEnable { get; set; }
-        void SetKeyCode();
-        void InitHandler(InputContext context);
-        void ReloadKeyBindings();
+        void SetKeyCode(); // 按键更新
+        void InitHandler(InputContext context); // 初始化按键处理器
+        void ReloadKeyBindings(); // 重置按键信息
     }
 
     public class InputSystem : AbstractSystem, IInputSystem

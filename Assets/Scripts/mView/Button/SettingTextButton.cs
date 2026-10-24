@@ -1,4 +1,6 @@
 ﻿using System;
+using AssetBundleFramework.Core.Resource;
+using QFramework;
 using TMPro;
 using UnityEngine;
 
@@ -11,16 +13,19 @@ namespace mView.Button
         [SerializeField] private TextMeshProUGUI text;
 
         public Action<int> OnClick;
+        public AudioClip clip;
         private void Start()
         {
             left.OnClick += () =>
             {
                 OnClick?.Invoke(-1);
+                AudioKit.PlayVoice(clip);
             };
             
             right.OnClick += () =>
             {
                 OnClick?.Invoke(1);
+                AudioKit.PlayVoice(clip);
             };
         }
 

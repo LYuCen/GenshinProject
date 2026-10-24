@@ -1,5 +1,6 @@
 ﻿using mController;
 using mEvent;
+using mSystem.SoundSystem;
 using mWeapon.Component;
 using mWeapon.WeaponFeature;
 using QFramework;
@@ -10,7 +11,7 @@ namespace mWeapon.Presenter
     /// <summary>
     /// 武器实例
     /// </summary>
-    public class WeaponPresenter : MonoBehaviour, ICanSendEvent
+    public class WeaponPresenter : MonoBehaviour, ICanSendEvent, IController
     {
         public Transform magazine;
         public Transform hand;
@@ -28,7 +29,7 @@ namespace mWeapon.Presenter
             if (_isInit) return;
             _isInit = true;
             _weapon = weapon;
-            _audioPresenter = new WeaponAudioPresenter(weapon);
+            _audioPresenter = new WeaponAudioPresenter(weapon, this.GetSystem<IAudioSystem>());
             _firePresenter = new WeaponFirePresenter(weapon, muzzle, cameraController);
             _muzzlePresenter = new WeaponMuzzlePresenter(weapon, muzzle);
 

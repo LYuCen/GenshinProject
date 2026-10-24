@@ -266,7 +266,7 @@ namespace Firearms.ThrowWeapon
         
         public void OnWeaponSwitchEnter()
         {
-            AudioSystem.Instance.PlaySound(_config.getWeaponAudioClip);
+            
         }
 
         public void OnWeaponSwitchExit()

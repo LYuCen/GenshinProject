@@ -1,7 +1,9 @@
-﻿using mCommand;
+﻿using AssetBundleFramework.Core.Resource;
+using mCommand;
 using mEvent;
 using mModel;
 using mSystem.mSettingSystem;
+using mSystem.SoundSystem;
 using mView.Button;
 using mView.Room;
 using mView.UserView;
@@ -25,8 +27,11 @@ namespace mView
         [SerializeField] private UserViewController viewController;
 
         [SerializeField] private LobbyRoomView lobbyRoomView;
+
+        private IAudioSystem _audioSystem;
         private void Start()
         {
+            _audioSystem = this.GetSystem<IAudioSystem>();
             settingBtn.OnClick += OpenSetting;
             createGameBtn.OnClick = lobbyRoomView.ShowCreateRoomView;
             joinGameBtn.OnClick = lobbyRoomView.ShowJoinRoomView;
@@ -46,6 +51,8 @@ namespace mView
         private void OpenSetting()
         {
             this.SendCommand(new OpenSettingCommand());
+            _audioSystem.PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
         }
 
         private void OnDestroy()
@@ -63,6 +70,9 @@ namespace mView
         private void QuitGame()
         {
             this.SendCommand(new TextTipCommand("是否退出游戏",Application.Quit, null, null));
+            _audioSystem.PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
+
         }
 
         public IArchitecture GetArchitecture()

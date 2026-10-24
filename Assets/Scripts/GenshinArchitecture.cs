@@ -4,6 +4,7 @@ using mModel.SettingModel;
 using mSystem.InputSystem;
 using mSystem.mSettingSystem;
 using mSystem.SceneSystem;
+using mSystem.SoundSystem;
 using QFramework;
 
 public class GenshinArchitecture : Architecture<GenshinArchitecture>
@@ -22,5 +23,6 @@ public class GenshinArchitecture : Architecture<GenshinArchitecture>
         this.RegisterSystem<IInputSystem>(new InputSystem());
         this.RegisterSystem<ISettingSystem>(new SettingSystem());
         this.RegisterSystem<ISceneSystem>(new SceneSystem());
+        this.RegisterSystem<IAudioSystem>(new AudioSystem());
     }
 }

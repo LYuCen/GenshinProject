@@ -2,6 +2,7 @@
 using BaseClass;
 using Connect.Core;
 using Connect.Simulation;
+using Cysharp.Threading.Tasks;
 using GameFSM.LevelFSM.PlayerFSM;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace Connect
         public ConnectionStateMachine StateMachine { get; private set; }
         public HeartbeatService Heartbeat { get; private set; }
         public UserClient Client { get; private set; }
+        public PingService Ping { get; private set; }
 
         // 配置服务器信息
         public bool isSinglePlayer = true;
@@ -24,6 +26,7 @@ namespace Connect
 
         private float _reconnectTimer;
         private bool _reconnecting;
+        private bool _connecting;
 
 
         protected override void Awake()
@@ -32,6 +35,7 @@ namespace Connect
             if (Instance != this) return;
             StateMachine = new ConnectionStateMachine();
             Heartbeat = new HeartbeatService();
+            Ping = new PingService();
 
             StateMachine.OnTryConnect = TryConnectToServer;
             StateMachine.OnDisconnect = DisconnectClient;
@@ -53,6 +57,7 @@ namespace Connect
             if (StateMachine.CurrentState == ConnectionState.Connected)
             {
                 Heartbeat.Tick(Time.deltaTime);
+                Ping.Tick();
             }
             else if (StateMachine.CurrentState == ConnectionState.Reconnecting)
             {
@@ -104,14 +109,16 @@ namespace Connect
             StateMachine.Connect();
         }
 
-        private bool TryConnectToServer()
+        private async UniTask<bool> TryConnectToServer()
         {
             try
             {
-                
+                if (_connecting) return false;
+                _connecting = true;
                 Client = new UserClient();
-                Client.Connect(serverIp, serverPort);
-                
+                await Client.ConnectAsync(serverIp, serverPort);
+                await UniTask.SwitchToMainThread();
+
                 // 绑定 Listener 到这个新的客户端
                 Listener.Instance.BindToClient(Client);
                 StateMachine.OnConnectSuccess();
@@ -120,9 +127,14 @@ namespace Connect
             }
             catch (Exception e)
             {
+                await UniTask.SwitchToMainThread();
                 Debug.LogError($"连接失败：{e.Message}");
                 StateMachine.OnConnectFailed();
                 return false;
+            }
+            finally
+            {
+                _connecting = false;
             }
         }
 

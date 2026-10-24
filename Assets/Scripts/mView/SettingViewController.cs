@@ -5,6 +5,7 @@ using mModel.SettingModel;
 using mSystem.InputSystem;
 using mSystem.mSettingSystem;
 using mSystem.mSettingSystem.EditData;
+using mSystem.SoundSystem;
 using mView.Button;
 using mView.Setting;
 using QFramework;
@@ -21,7 +22,7 @@ namespace mView
         [SerializeField] private SettingMainButton imageSettingBtn;
         [SerializeField] private SettingMainButton voiceSettingBtn;
         [SerializeField] private SettingMainButton inputSettingBtn;
-        [SerializeField] private SettingMainButton prevSettingMainBtn;
+        private SettingMainButton _prevSettingMainBtn;
 
         [SerializeField] private SettingImageViewController imageViewController;
         [SerializeField] private SettingVoiceViewController voiceViewController;
@@ -37,8 +38,11 @@ namespace mView
         
         public bool Enable => setting.activeSelf || pause.gameObject.activeSelf;
         public GeneralSettingEditData SettingEditData => _generalSettingEdit;
+        private IAudioSystem _audioSystem;
         private void Start()
         {
+            _audioSystem = this.GetSystem<IAudioSystem>();
+            
             applyBtn.OnClick += ApplySetting;
             backBtn.OnClick += CloseSetting;
             defaultBtn.OnClick += ResetDefault;
@@ -48,13 +52,15 @@ namespace mView
             inputSettingBtn.OnClick += OpenInputSettingMainViewInternal;
 
             pause.InSettingClick += OpenSetting;
+
+            _prevSettingMainBtn = imageSettingBtn;
             
             _settingEdit = new SettingEditSession();
             _generalSettingEdit = new GeneralSettingEditData(this.GetModel<ISettingModel>());
             _settingEdit.AddData(_generalSettingEdit);
             
-            inputViewController.Init(_settingEdit);
-            imageViewController.Init(_generalSettingEdit);
+            inputViewController.Init(_settingEdit, _audioSystem);
+            imageViewController.Init(_generalSettingEdit, _audioSystem);
             voiceViewController.Init(_generalSettingEdit);
 
             this.RegisterEvent<SettingModifyEvent>(_ =>
@@ -153,29 +159,37 @@ namespace mView
 
         private void OpenImageSettingMainViewInternal()
         {
-            prevSettingMainBtn?.ExitChose();
+            _prevSettingMainBtn?.ExitChose();
             prevView?.SetActive(false);
-            prevSettingMainBtn = imageSettingBtn;
+            _prevSettingMainBtn = imageSettingBtn;
             prevView = imageViewController.gameObject;
             imageViewController.gameObject.SetActive(true);
+            _audioSystem.PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
         }
 
         private void OpenVoiceSettingMainViewInternal()
         {
-            prevSettingMainBtn?.ExitChose();
+            _prevSettingMainBtn?.ExitChose();
             prevView?.SetActive(false);
-            prevSettingMainBtn = voiceSettingBtn;
+            _prevSettingMainBtn = voiceSettingBtn;
             prevView = voiceViewController.gameObject;
             voiceViewController.gameObject.SetActive(true);
+            _audioSystem.PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
+
         }
 
         private void OpenInputSettingMainViewInternal()
         {
-            prevSettingMainBtn?.ExitChose();
+            _prevSettingMainBtn?.ExitChose();
             prevView?.SetActive(false);
-            prevSettingMainBtn = inputSettingBtn;
+            _prevSettingMainBtn = inputSettingBtn;
             prevView = inputViewController.gameObject;
             inputViewController.gameObject.SetActive(true);
+            _audioSystem.PlaySound(
+                "Assets/AssetBundle/Sounds/UI/ESM_Battle_Game_UI_Interface_Menu_Clip_Button_Smooth_Warm_Soft_1_Hybrid_One_Shot 1.wav");
+
         }
 
         public IArchitecture GetArchitecture()

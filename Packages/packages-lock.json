@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.cysharp.unitask": {
+      "version": "https://gitee.com/wgslucky/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "e5acc106ee196bc5a32fb14cdf2987b0f96d11e0"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
@@ -14,6 +21,20 @@
         "com.unity.modules.tilemap": "1.0.0",
         "com.unity.modules.uielements": "1.0.0"
       }
+    },
+    "com.unity.addressables": {
+      "version": "1.22.3",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.scriptablebuildpipeline": "1.21.25",
+        "com.unity.modules.assetbundle": "1.0.0",
+        "com.unity.modules.imageconversion": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
+      },
+      "url": "https://packages.unity.cn"
     },
     "com.unity.ads": {
       "version": "4.4.2",
@@ -198,6 +219,13 @@
       "dependencies": {
         "com.unity.render-pipelines.core": "14.0.10"
       }
+    },
+    "com.unity.scriptablebuildpipeline": {
+      "version": "1.21.25",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.cn"
     },
     "com.unity.searcher": {
       "version": "4.9.2",
