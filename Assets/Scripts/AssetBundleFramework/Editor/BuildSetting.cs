@@ -1,0 +1,224 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Xml.Serialization;
+using UnityEditor;
+
+namespace AssetBundleFramework.Editor
+{
+    public class BuildSetting : ISupportInitialize
+    {
+        [DisplayName("项目名称")]
+        [XmlAttribute("ProjectName")]
+        public string projectName { get; set; }
+
+        [DisplayName("后缀列表")]
+        [XmlAttribute("SuffixList")]
+        public List<string> suffixList { get; set; } = new List<string>();
+        
+        [DisplayName("打包文件的目录文件夹")]
+        [XmlAttribute("BuildRoot")]
+        public string buildRoot { get; set; }
+
+        [DisplayName("打包选项")]
+        [XmlElement("BuildItem")]
+        public List<BuildItem> items { get; set; } = new List<BuildItem>();
+
+        [XmlIgnore]
+        public Dictionary<string, BuildItem> itemDic = new Dictionary<string, BuildItem>();
+        
+        
+        public void BeginInit()
+        {
+            
+        }
+
+        public void EndInit()
+        {
+            buildRoot = Path.GetFullPath(buildRoot).Replace("\\", "/"); // 格式转换
+            
+            itemDic.Clear();
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                BuildItem buildItem = items[i];
+
+                if (buildItem.BundleType == EBundleType.All || buildItem.BundleType == EBundleType.Directory)
+                {
+                    if (!Directory.Exists(buildItem.AssetPath))
+                    {
+                        throw new Exception($"不存在资源路径：{buildItem.AssetPath}");
+                    }
+                }
+                
+                // 处理后缀
+                string[] prefixes = buildItem.Suffix.Split('|');
+                for (int ii = 0; ii < prefixes.Length; ii++)
+                {
+                    string prefix = prefixes[ii].Trim();
+                    if(!string.IsNullOrEmpty(prefix)) buildItem.Suffixes.Add(prefix);
+                }
+
+                if (itemDic.ContainsKey(buildItem.AssetPath))
+                {
+                    throw new Exception($"重复的资源路径：{buildItem.AssetPath}");
+                }
+
+                itemDic.Add(buildItem.AssetPath, buildItem);
+            }
+        }
+
+        /// <summary>
+        /// 获取所有在打包设置中的文件列表
+        /// </summary>
+        /// <returns></returns>
+        public HashSet<string> Collect()
+        {
+            float min = Builder.collectRuleFileProgress.x;
+            float max = Builder.collectRuleFileProgress.y;
+            
+            EditorUtility.DisplayProgressBar($"{nameof(Collect)}", "收集打包规则资源", min);
+            
+            //处理每个规则忽略的目录，如路径A/B/C,需要忽略A/B
+            for (int i = 0; i < items.Count; i++)
+            {
+                BuildItem buildItem_i = items[i];
+
+                if (buildItem_i.ResourceType != EResourceType.Direct) continue;
+                
+                buildItem_i.IgnorePaths.Clear();
+                for (int j = 0; j < items.Count; j++)
+                {
+                    BuildItem buildItem_j = items[j];
+                    if (i != j && buildItem_j.ResourceType == EResourceType.Direct)
+                    {
+                        if (buildItem_j.AssetPath.StartsWith(buildItem_i.AssetPath,
+                                StringComparison.InvariantCulture))
+                        {
+                            buildItem_i.IgnorePaths.Add(buildItem_j.AssetPath);
+                        }
+                    }
+                }
+            }
+            
+            // 存储被规则分析到的索引文件
+            HashSet<string> files = new HashSet<string>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                BuildItem buildItem = items[i];
+
+                EditorUtility.DisplayProgressBar($"{nameof(Collect)}", "收集打包规则资源",
+                    min + (max - min) * ((float)i / items.Count - 1));
+
+                if (buildItem.ResourceType != EResourceType.Direct) continue;
+
+                List<string> tempFiles = Builder.GetFiles(buildItem.AssetPath, null, buildItem.Suffixes.ToArray());
+                for (int j = 0; j < tempFiles.Count; j++)
+                {
+                    string file = tempFiles[j];
+                    
+                    // 过滤被忽略的
+                    if (IsIgnore(buildItem.IgnorePaths, file)) continue;
+                    files.Add(file);
+                }
+
+                EditorUtility.DisplayProgressBar($"{nameof(Collect)}", "收集打包设置资源", (float)(i + 1) / items.Count);
+            }
+
+            return files;
+        }
+
+        /// <summary>
+        /// 文件是否在忽略列表里
+        /// </summary>
+        /// <param name="ignoreList"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public bool IsIgnore(List<string> ignoreList, string file)
+        {
+            for (int i = 0; i < ignoreList.Count; i++)
+            {
+                string ignorePath = ignoreList[i];
+                if (string.IsNullOrEmpty(ignorePath)) continue;
+                if (file.StartsWith(ignorePath, StringComparison.InvariantCulture)) return true;
+            }
+
+            return false;
+        }
+
+        public BuildItem GetBuildItem(string assetUrl)
+        {
+            BuildItem item = null;
+            for (int i = 0; i < items.Count; i++)
+            {
+                BuildItem tempItem = items[i];
+                // 前面是否匹配
+                if (assetUrl.StartsWith(tempItem.AssetPath, StringComparison.InvariantCulture))
+                {
+                    if (item == null || item.AssetPath.Length < tempItem.AssetPath.Length)
+                    {
+                        item = tempItem;
+                    }
+                }
+            }
+
+            return item;
+        }
+        
+        /// <summary>
+        /// 获取 bundleName
+        /// </summary>
+        /// <param name="assetUrl"></param>
+        /// <param name="resourceType"></param>
+        /// <returns></returns>
+        public string GetBundleName(string assetUrl, EResourceType resourceType)
+        {
+            BuildItem buildItem = GetBuildItem(assetUrl);
+            if (buildItem == null) return null;
+            
+            string name = "";
+            if (buildItem.ResourceType == EResourceType.Dependency)
+            {
+                string extension = Path.GetExtension(assetUrl).ToLower();
+                bool exist = false;
+                for (int i = 0; i < buildItem.Suffixes.Count; i++)
+                {
+                    if (buildItem.Suffixes[i] == extension)
+                    {
+                        exist = true;
+                        break;
+                    }
+                }
+
+                if (!exist) return null;
+            }
+
+            switch (buildItem.BundleType)
+            {
+                case EBundleType.All:
+                    name = buildItem.AssetPath;
+                    if (buildItem.AssetPath[buildItem.AssetPath.Length - 1] == '/')
+                    {
+                        name = buildItem.AssetPath.Substring(0, buildItem.AssetPath.Length - 1);
+                    }
+
+                    name = $"{name}{Builder.BUNDLE_SUFFIX}".ToLowerInvariant();
+                    break;
+                case EBundleType.Directory:
+                    name = $"{assetUrl.Substring(0, assetUrl.LastIndexOf('/'))}{Builder.BUNDLE_SUFFIX}"
+                        .ToLowerInvariant();
+                    break;
+                case EBundleType.File:
+                    name = $"{assetUrl}{Builder.BUNDLE_SUFFIX}".ToLowerInvariant();
+                    break;
+                default:
+                    throw new Exception($"无法获取{assetUrl}的 bundleName");
+            }
+
+            buildItem.Count += 1;
+            return name;
+        }
+        
+    }
+}

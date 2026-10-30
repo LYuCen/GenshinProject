@@ -1,0 +1,482 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d9ad0eae2aa4d9291412e5a82ac9dcd, type: 3}
+  m_Name: RifleAnimGraph
+  m_EditorClassIdentifier: 
+  Nodes:
+  - GUID: 7e309e3d-625c-43a3-980f-e7366d204082
+    NodeType: Player.AnimTree.UpperBodyNodes.UpperBodySubTree, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    Position: {x: -120, y: 495.33334}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 31900000, guid: 70ed7049a7a851b4ebfbbf866c6f04ca, type: 2}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: 0a73fd90-b469-4950-b7d9-1735f1b6b1bf
+    NodeType: Player.AnimTree.UpperBodyNodes.UpperSlotTreeNode, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 207.33333, y: 496.66666}
+    useTagOnly: 0
+    Tag: UpperSlot
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: e9b3a9ef-bbee-45e5-9ae6-068eb24f0280
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.MoveSubTree, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 240.66667, y: -31.333334}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: d652374f-91ea-4f9b-b0ae-55eb02142c40
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1006.6667, y: -78.666664}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: f9286fba0d7419840a4b4dd596f6b823, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 7
+  - GUID: d1995f1c-744f-4d3a-8592-716ca473a6c3
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardLeftTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1006.6667, y: 172.66667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 4490e8d2e99df2e449c6e01a419f6209, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 7
+  - GUID: 84ad3203-6623-457c-898e-bf003f9a39d5
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardRightTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1006.6667, y: 434}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 25e6d6bcd90fdec4f80b99835d3f833e, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 7
+  - GUID: 59d489ed-231f-4a15-ba84-f3d8c82d2ead
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintSubTree,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 628, y: 32.666664}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: a404b667-feb6-4c11-a216-845adf127366
+    NodeType: Player.AnimTree.LowerBodyNodes.IdleTreeLeafNode, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    Position: {x: 243.33333, y: -387.33334}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 6fd514732ffa3864a884859ab3a8a698, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: a577b6b3-8003-4d6f-8f11-80699bb77616
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.MoveSubTree, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 268, y: -1786.6667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: d13117b1-013d-4777-afc4-f54b6293201f
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintSubTree,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 628, y: -1786.6667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: ac1b4411-3efd-4b9b-9282-9b0913a89ac6
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardRightTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 997.3333, y: -1496.6667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 157f841a5ca16f540a2e7e54c9a23f77, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 5
+  - GUID: cdacca80-44fa-4dd3-a57b-cb382f7c1bb3
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardLeftTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 997.3333, y: -1741.3334}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: a22b84d5e3e87f542a63c48e8ccb257f, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 5
+  - GUID: 1873211e-64dc-4ec1-afc7-39df54c930a5
+    NodeType: Player.AnimTree.CrouchLowerBodyNode.CrouchLowerBodySubTree, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: -126, y: -128.66667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkSubTree,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 628, y: -527.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: 0598e489-5531-4ab0-bbbe-0dcd1b575a28
+    NodeType: Player.AnimTree.PlayerAnimTreeRoot, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    Position: {x: -658, y: -236}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: 16019647-6af0-4db8-8ceb-5f158172e24a
+    NodeType: Player.AnimTree.LowerBodyNodes.LowerBodySubTree, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    Position: {x: -125.333336, y: -1826.6667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkSubTree,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 685.3333, y: -2526}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 0}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: 153d619f-15a6-426d-8079-ebe685ae9c2f
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkB,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1031.3334, y: -1003.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: cca9f18acef102e429916694c883b32c, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 75d50e73-b258-4c1d-bc2c-659fad7fa067
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkBL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1031.3334, y: -782}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 3227576c5e4950b428219462923189ee, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 968e76df-0ab8-49d3-8418-737d160b0375
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkBR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1031.3334, y: -560.6666}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: e71cee741307d674b85fdb5340a6a8fe, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: ba3ad637-9eb5-412c-9881-d7960c4bfba7
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkF,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1031.3334, y: -344}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 1827c69369a5dd34c9fb83c6f2c8185c, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 61346a2b-8336-431d-ba82-312686e1e8a7
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkFL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1403.3334, y: -1003.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 53d8e29133367f842a567b211a0b70b3, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 1830b901-3c70-443d-a09e-90b3143388c3
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkFR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1403.3334, y: -782}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 2a1c4fba4755399498c3d971c6b51355, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 2f887867-e650-4257-9445-3771b096b825
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1403.3334, y: -556}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: ef20004d78c6bcf44b5c877339a67726, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: b7a89062-94fc-4ba3-87e5-30ca8efd1332
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1403.3334, y: -334.6667}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: e645357d05efdd349b60ea058c971817, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 160f4d67-2dc9-4e4c-abb3-10a2e3d17967
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.SprintSubTreeNodes.SprintForwardTreeNode,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 997.3333, y: -1978}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: d55736ea0db6c6641aeb1d1ecc9e6705, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.6
+    WeightSpeed: 5
+  - GUID: 82d0a19d-7fba-4434-b7bf-e654f1170ec5
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkBR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1136.6666, y: -2457.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: df459976f0938a14594c4bbe58488b62, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 80938dda-b3ab-44f1-b72a-6957b87d05b7
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkFL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1546, y: -2900}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: afb78de1ce11d07418127e87e50b8e17, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: e578fbab-2426-42a5-9a28-9c22196bd069
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkFR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1546, y: -2678.6665}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: fc911f2896e29164bac050017ca21972, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 2e32a407-1868-41d8-86e7-7b58de2db4ee
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1546, y: -2457.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: fc1b502a0637b614181c34aa53a48c32, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 17264523-f3f0-472e-9c36-84dd4fd4212d
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkR,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1546, y: -2236}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 5976ddc9347032c439a2220430e693c3, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: 4ef6c275-a934-46c7-9934-5b6f09f40700
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkB,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1136.6666, y: -2900}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 037d3ecfa1fa41f44ab74952ef6f7c07, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: bd5602a8-bfe4-43f8-a4a6-aa0b8abd247d
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkBL,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1136.6666, y: -2678.6665}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 7ef8df78a72693043ac1e6873134b8e4, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: fd1a3051-cdf2-4738-9978-3166ebadd412
+    NodeType: Player.AnimTree.LowerBodyNodes.MoveSubTreeNodes.WalkSubTreeNodes.WalkF,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 1136.6666, y: -2247.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: d8600093cd0206042b172e113a0bac6b, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 2
+    WeightSpeed: 5
+  - GUID: b1b352a6-74f4-47ed-a171-bddfbda786e8
+    NodeType: Player.AnimTree.LowerBodyNodes.IdleTreeLeafNode, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    Position: {x: 243.33333, y: -2199.3333}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 456966df347e16f46a1846a289305e70, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1
+    WeightSpeed: 5
+  - GUID: cb1f60ad-52f9-4d9a-8540-f6e44c1f44f8
+    NodeType: Player.AnimTree.LowerBodyNodes.JumpSubTreeNodes.JumpTreeLeafNode, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Position: {x: 268, y: -2568}
+    useTagOnly: 0
+    Tag: 
+    DefaultClip: {fileID: 7400000, guid: 4084ec13bde18c44bb1f02a7c5d3a142, type: 2}
+    Mask: {fileID: 0}
+    weaponAsset: {fileID: 0}
+    AnimSpeed: 1.5
+    WeightSpeed: 5
+  Edges:
+  - ParentGUID: 7e309e3d-625c-43a3-980f-e7366d204082
+    ChildGUID: 0a73fd90-b469-4950-b7d9-1735f1b6b1bf
+  - ParentGUID: 1873211e-64dc-4ec1-afc7-39df54c930a5
+    ChildGUID: a404b667-feb6-4c11-a216-845adf127366
+  - ParentGUID: 1873211e-64dc-4ec1-afc7-39df54c930a5
+    ChildGUID: e9b3a9ef-bbee-45e5-9ae6-068eb24f0280
+  - ParentGUID: e9b3a9ef-bbee-45e5-9ae6-068eb24f0280
+    ChildGUID: 59d489ed-231f-4a15-ba84-f3d8c82d2ead
+  - ParentGUID: 59d489ed-231f-4a15-ba84-f3d8c82d2ead
+    ChildGUID: d652374f-91ea-4f9b-b0ae-55eb02142c40
+  - ParentGUID: 59d489ed-231f-4a15-ba84-f3d8c82d2ead
+    ChildGUID: d1995f1c-744f-4d3a-8592-716ca473a6c3
+  - ParentGUID: 59d489ed-231f-4a15-ba84-f3d8c82d2ead
+    ChildGUID: 84ad3203-6623-457c-898e-bf003f9a39d5
+  - ParentGUID: e9b3a9ef-bbee-45e5-9ae6-068eb24f0280
+    ChildGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+  - ParentGUID: 16019647-6af0-4db8-8ceb-5f158172e24a
+    ChildGUID: b1b352a6-74f4-47ed-a171-bddfbda786e8
+  - ParentGUID: 16019647-6af0-4db8-8ceb-5f158172e24a
+    ChildGUID: a577b6b3-8003-4d6f-8f11-80699bb77616
+  - ParentGUID: a577b6b3-8003-4d6f-8f11-80699bb77616
+    ChildGUID: d13117b1-013d-4777-afc4-f54b6293201f
+  - ParentGUID: d13117b1-013d-4777-afc4-f54b6293201f
+    ChildGUID: 160f4d67-2dc9-4e4c-abb3-10a2e3d17967
+  - ParentGUID: d13117b1-013d-4777-afc4-f54b6293201f
+    ChildGUID: cdacca80-44fa-4dd3-a57b-cb382f7c1bb3
+  - ParentGUID: d13117b1-013d-4777-afc4-f54b6293201f
+    ChildGUID: ac1b4411-3efd-4b9b-9282-9b0913a89ac6
+  - ParentGUID: a577b6b3-8003-4d6f-8f11-80699bb77616
+    ChildGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: 4ef6c275-a934-46c7-9934-5b6f09f40700
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: bd5602a8-bfe4-43f8-a4a6-aa0b8abd247d
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: 82d0a19d-7fba-4434-b7bf-e654f1170ec5
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: fd1a3051-cdf2-4738-9978-3166ebadd412
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: 80938dda-b3ab-44f1-b72a-6957b87d05b7
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: e578fbab-2426-42a5-9a28-9c22196bd069
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: 2e32a407-1868-41d8-86e7-7b58de2db4ee
+  - ParentGUID: ac73731f-c062-4bc2-a232-eba722f1bacf
+    ChildGUID: 17264523-f3f0-472e-9c36-84dd4fd4212d
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 153d619f-15a6-426d-8079-ebe685ae9c2f
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 75d50e73-b258-4c1d-bc2c-659fad7fa067
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 968e76df-0ab8-49d3-8418-737d160b0375
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: ba3ad637-9eb5-412c-9881-d7960c4bfba7
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 61346a2b-8336-431d-ba82-312686e1e8a7
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 1830b901-3c70-443d-a09e-90b3143388c3
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: 2f887867-e650-4257-9445-3771b096b825
+  - ParentGUID: d3902e00-637c-47d8-b45e-bfd98d4b39e4
+    ChildGUID: b7a89062-94fc-4ba3-87e5-30ca8efd1332
+  - ParentGUID: 0598e489-5531-4ab0-bbbe-0dcd1b575a28
+    ChildGUID: 16019647-6af0-4db8-8ceb-5f158172e24a
+  - ParentGUID: 0598e489-5531-4ab0-bbbe-0dcd1b575a28
+    ChildGUID: 1873211e-64dc-4ec1-afc7-39df54c930a5
+  - ParentGUID: 0598e489-5531-4ab0-bbbe-0dcd1b575a28
+    ChildGUID: 7e309e3d-625c-43a3-980f-e7366d204082
+  - ParentGUID: 16019647-6af0-4db8-8ceb-5f158172e24a
+    ChildGUID: cb1f60ad-52f9-4d9a-8540-f6e44c1f44f8

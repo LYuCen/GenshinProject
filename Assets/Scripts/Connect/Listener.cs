@@ -69,6 +69,8 @@ namespace Connect
         /// </summary>
         private void Dispatch(Message msg)
         {
+            if (PlayerPool.Instance == null && IsGameSceneMessage(msg.type)) return;
+            
             NetworkService.Instance?.Heartbeat?.OnAnyMessageReceived();
             
             if (NetworkMonitor.Instance) // 监听数据包大小
@@ -278,6 +280,36 @@ namespace Connect
                     
                     SceneManager.LoadScene("Lobby");
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 判定是否为游戏内请求
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private static bool IsGameSceneMessage(MessageType type)
+        {
+            switch (type)
+            {
+                case MessageType.S2C_PlayerShoot:
+                case MessageType.S2C_AllPlayerInfo:
+                case MessageType.S2C_DamageConfirm:
+                case MessageType.S2C_PlayerExit:
+                case MessageType.S2C_PlayerSpawn:
+                case MessageType.S2C_StateChange:
+                case MessageType.S2C_ElementAttach:
+                case MessageType.S2C_ElementDetach:
+                case MessageType.S2C_StatusEffect:
+                case MessageType.S2C_Position: 
+                case MessageType.S2C_Hp:       
+                case MessageType.S2C_PlayerDeath:
+                case MessageType.S2C_Revive:   
+                case MessageType.S2C_GameOver: 
+                    return true;
+                default:
+                    return false;
+
             }
         }
 

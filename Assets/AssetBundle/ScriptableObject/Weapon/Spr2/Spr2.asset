@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 315cc1019ab04219b36a71ca9140d69c, type: 3}
+  m_Name: Spr2
+  m_EditorClassIdentifier: 
+  weaponName: SPR2
+  weaponType: 2
+  features:
+  - {fileID: 11400000, guid: 772a81c4014cb7849816b00534720e20, type: 2}
+  - {fileID: 11400000, guid: 0fb3d07e981a11b49a3622a76da94487, type: 2}
+  - {fileID: 11400000, guid: 91da0b572016a864192a9d09b56698a0, type: 2}
+  - {fileID: 11400000, guid: 30c6b68f3ea293a4ba286b7d6accd190, type: 2}
+  components:
+  - {fileID: 11400000, guid: 3691f148b878a614f99838b61214a4cf, type: 2}
+  - {fileID: 11400000, guid: 1c5a7e9c03dfbd34995452329441e8c9, type: 2}
+  - {fileID: 11400000, guid: 4508159497d83d04c893b3a7a42deb8b, type: 2}
+  - {fileID: 11400000, guid: 6a581f9e0281cd348a3afdda0ea37dc0, type: 2}
+  - {fileID: 11400000, guid: d9cf6d53383e70643b24b89c7f5a90bc, type: 2}

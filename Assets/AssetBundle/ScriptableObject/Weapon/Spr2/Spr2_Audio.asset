@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c845ef371324eddb9356627d3e0c597, type: 3}
+  m_Name: Spr2_Audio
+  m_EditorClassIdentifier: 
+  getAudioClip: {fileID: 8300000, guid: 8fe61a390d0927540b5acfa0d7568f1d, type: 3}
+  fireAudioClip: {fileID: 0}
+  reloadAudioClip: {fileID: 8300000, guid: 3977df36bd11a734291660b2222be5d7, type: 3}
+  boltAudioClip: {fileID: 8300000, guid: ae325f62e948cb040bc837f14f749bcb, type: 3}

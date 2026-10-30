@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 751d91be93a34d488c81bdfb20ed0f3c, type: 3}
+  m_Name: MK14
+  m_EditorClassIdentifier: 
+  weaponType: 0
+  weaponName: MK14
+  bulletSpeed: 60
+  hitMp: 1.5
+  headshotMp: 2.2
+  shootCd: 0.1
+  reloadCd: 4
+  reloadAudioClip: {fileID: 8300000, guid: d6a055fd1b3fa5c4183af5560a1f29fd, type: 3}
+  shootAudioClip: {fileID: 8300000, guid: 39d8d9e56a50ead439fe6d2b2c7fc057, type: 3}
+  getWeaponAudioClip: {fileID: 8300000, guid: 4e65bf61f02ac6949bfd785251bab735, type: 3}
+  wholeTreeGraph: {fileID: 11400000, guid: 815b0c7874a990c4fa57bb6e7f8b328a, type: 2}
+  animMappings:
+  - tag: Reload
+    clip: {fileID: 7400000, guid: 50c7c40f7ce724746ae23ada5db2ea64, type: 2}

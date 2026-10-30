@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 751d91be93a34d488c81bdfb20ed0f3c, type: 3}
+  m_Name: Grenade
+  m_EditorClassIdentifier: 
+  weaponType: 2
+  weaponName: Grenade
+  bulletSpeed: 0
+  hitMp: 100
+  headshotMp: 1
+  shootCd: 1
+  reloadCd: 1
+  reloadAudioClip: {fileID: 0}
+  shootAudioClip: {fileID: 0}
+  getWeaponAudioClip: {fileID: 8300000, guid: 2681a2b7465fcc44db379e7f1b13ae4d, type: 3}
+  wholeTreeGraph: {fileID: 11400000, guid: 2dd1e30f47e3a9c488ed58908d692c24, type: 2}
+  animMappings:
+  - tag: HighStart
+    clip: {fileID: 7400000, guid: b593fe7359ac85346a9030098e9b24f7, type: 2}
+  - tag: HighLoop
+    clip: {fileID: 7400000, guid: 3801e69e299537d4cb168599a04122c7, type: 2}
+  - tag: HighEnd
+    clip: {fileID: 7400000, guid: 867b8dc07a2feed40bac0fc9db5d8d6b, type: 2}

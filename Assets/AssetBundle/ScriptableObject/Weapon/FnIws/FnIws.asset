@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 315cc1019ab04219b36a71ca9140d69c, type: 3}
+  m_Name: FnIws
+  m_EditorClassIdentifier: 
+  weaponName: FN_IWS
+  weaponType: 1
+  features:
+  - {fileID: 11400000, guid: b878f937eda70a641b9f14ee9cdec8dd, type: 2}
+  - {fileID: 11400000, guid: e0d343966801ba84e9b6e539e09b178e, type: 2}
+  - {fileID: 11400000, guid: f43d12f4cd7725f40a40542a84faf037, type: 2}
+  components:
+  - {fileID: 11400000, guid: 8b85ba3482516f944a064e56cda1eefa, type: 2}
+  - {fileID: 11400000, guid: d12cf1b3e54491946bcb8c08c1285438, type: 2}
+  - {fileID: 11400000, guid: 9b35fb1614e9de24c9c8b16799664bb3, type: 2}
+  - {fileID: 11400000, guid: 196aae891929b6442a164ee1a2fbe012, type: 2}
+  - {fileID: 11400000, guid: c528211f2035c0442840746053fe37cb, type: 2}

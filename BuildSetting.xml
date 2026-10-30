@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BuildSetting ProjectName="haru" BuildRoot="../AssetBundle">
+    <BuildItem AssetPath="Assets/AssetBundle/Icon/" ResourceType="Direct" BundleType="Directory" Suffix=".png"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Image/" ResourceType="Direct" BundleType="Directory" Suffix=".png|.renderTexture"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Model/" ResourceType="Direct" BundleType="Directory" Suffix=".prefab|.fbx"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Mesh/" ResourceType="Direct" BundleType="Directory" Suffix=".mesh"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Anim/" ResourceType="Direct" BundleType="File" Suffix=".anim"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Anim/AnimGraph/" ResourceType="Direct" BundleType="File" Suffix=".asset"/>
+    <BuildItem AssetPath="Assets/AssetBundle/ScriptableObject/" ResourceType="Direct" BundleType="File" Suffix=".asset"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Sounds/" ResourceType="Direct" BundleType="File" Suffix=".mp3|.wav"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Avatar/" ResourceType="Direct" BundleType="File" Suffix=".mask|.asset"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Materials/" ResourceType="Direct" BundleType="Directory" Suffix=".mat"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Shaders/" ResourceType="Direct" BundleType="Directory" Suffix=".shader|.shadergraph"/>
+    <BuildItem AssetPath="Assets/AssetBundle/Font/" ResourceType="Direct" BundleType="Directory" Suffix=".asset|.ttf"/>
+</BuildSetting>

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c845ef371324eddb9356627d3e0c597, type: 3}
+  m_Name: FnIws_Audio
+  m_EditorClassIdentifier: 
+  getAudioClip: {fileID: 8300000, guid: 0ff827c834f997e4e8d836b0c68f1e41, type: 3}
+  fireAudioClip: {fileID: 8300000, guid: ba3a4384eb8189a4dbfcfc8f66d71a26, type: 3}
+  reloadAudioClip: {fileID: 8300000, guid: f67073c54a120c5489d6de6a95ef18d0, type: 3}
+  boltAudioClip: {fileID: 0}

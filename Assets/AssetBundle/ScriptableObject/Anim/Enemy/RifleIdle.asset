@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3265f816f98548ec90dc50e5895fd426, type: 3}
+  m_Name: RifleIdle
+  m_EditorClassIdentifier: 
+  animClip: {fileID: 7400000, guid: 2d97013e7b85e554a878f7ec0587e483, type: 2}
+  animSpeed: 1
